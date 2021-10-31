@@ -1,8 +1,11 @@
 #pragma once
 #include <math.h>
+#include <float.h>
 
 constexpr float Pi = 3.14159265359f;
 constexpr float To_Radians = 0.0174533f;
+constexpr float Max_Float = 3.402823466e+38F;
+
 #pragma pack(push, 1)
 
 struct Vec2i {
@@ -38,7 +41,49 @@ struct Vec3 {
     constexpr Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
     operator float* () const { return (float*)array; }
+
+    Vec3 operator*(float t) {
+        return Vec3 {
+            x * t,
+            y * t,
+            z * t,
+        };
+    }
+
+    Vec3 operator*(const Vec3 &a) {
+        return Vec3 {
+            x * a.x,
+            y * a.y,
+            z * a.z,
+        };
+    }
 };
+
+Vec3 operator+(const Vec3 &a, const Vec3 &b) {
+    return Vec3 {
+        a.x + b.x,
+        a.y + b.y,
+        a.z + b.z,
+    };
+}
+
+Vec3 operator-(const Vec3 &a, const Vec3 &b) {
+    return Vec3 {
+        a.x - b.x,
+        a.y - b.y,
+        a.z - b.z,
+    };
+}
+
+
+Vec3 operator/(const Vec3 &v, float t) {
+    return Vec3 {
+        v.x / t,
+        v.y / t,
+        v.z / t,
+    };
+}
+
 
 struct Vec4 {
     union {
@@ -94,6 +139,19 @@ struct Mat4 {
 static _inline float dot(const Vec2 &a, const Vec2 &b) {return (a.x * b.x + a.y * b.y);}
 static _inline float dot(const Vec3 &a, const Vec3 &b) {return (a.x * b.x + a.y * b.y + a.z * b.z);}
 static _inline float dot(const Vec4 &a, const Vec4 &b) {return (a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);}
+
+static _inline float lensq(const Vec3 &v) {
+    float l = dot(v, v);
+    return l;
+}
+
+static Vec3 normalize(const Vec3 &a) {
+    float l = lensq(a);
+
+    if (l == 0.f) return Vec3(0);
+
+    return a / sqrtf(l);
+}
 
 _inline Mat4 operator *(const Mat4 &left, const Mat4 &right) {
     Mat4 result;
