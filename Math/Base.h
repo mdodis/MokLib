@@ -170,6 +170,10 @@ static _inline T min(T a, T b) { return a < b ? a : b; }
 template <typename T>
 static _inline T max(T a, T b) { return a > b ? a : b; }
 
+template <typename T>
+static _inline T clamp(T x, T a, T b) {
+    return max(a, min(x, b));
+}
 
 static _inline Vec3 operator*(const Mat4 &m, const Vec3 &v) {
     Vec4 v4;
