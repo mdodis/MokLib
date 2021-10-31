@@ -1,0 +1,22 @@
+# Output folders
+Binaries
+Intermediate
+
+# Visual Studio files
+.vs
+*.vcxproj*
+*.sln
+
+# Sublime Text files
+*.sublime-*
+
+# Clangd
+.cache
+compile_commands
+compile_commands.json
+
+# VSCode
+.VSCode
+
+# ImGui
+imgui.ini
