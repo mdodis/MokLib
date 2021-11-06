@@ -17,7 +17,9 @@ namespace FileMode {
 
 struct FileHandle {
     void *internal_handle;
+
 };
+#define IS_VALID_FILE(f) ((f).internal_handle != 0)
 
 bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind kind);
 FileHandle open_file(const Str &file_path, FileMode::Type mode);

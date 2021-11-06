@@ -36,18 +36,3 @@
         #define DLLEXPORT __declspec(dllimport)
     #endif
 #endif
-
-// @note: Protect against minwindef.h defining min/max
-#if OS_WINDOWS
-
-    #ifdef min
-        #undef min
-    #endif
-
-    #ifdef max
-        #undef max
-    #endif
-
-    #define min min
-    #define max max
-#endif

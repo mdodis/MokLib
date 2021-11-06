@@ -2,6 +2,7 @@
 #include "../Memory/Base.h"
 #include "../Base.h"
 #include "../Debugging.h"
+#include "Memory/Arena.h"
 #include <iterator>
 #include <cstddef>
 
@@ -130,4 +131,20 @@ struct TArray {
 
 	Iterator begin() { return Iterator(data, 0); }
 	Iterator end()   { return Iterator(data, size); }
+};
+
+template <typename T, uint32 Count>
+struct TInlineArray : TArray<T> {
+	TInlineArray() :TArray<T>(alloc_arena.to_alloc()) {
+
+	}
+
+	uint8 memory[(sizeof(T) * Count)];
+	Arena alloc_arena = {
+	    IAllocator{0},
+	    memory,
+	    (sizeof(T) * Count),
+	    0,
+	};
+
 };

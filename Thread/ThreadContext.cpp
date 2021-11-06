@@ -17,13 +17,18 @@ void ThreadContextBase::bootstrap_thread(uint64 size) {
     TlsSetValue(Context_Index, p);
 }
 
-void ThreadContextBase::set_context(uint32 value) {
-    Context_Index = value;
+void ThreadContextBase::set_context(void *value) {
+    Context_Index = *(uint32*)value;
 }
 
 void *ThreadContextBase::_get_context(void) {
     return TlsGetValue(Context_Index);
 }
+
+void *ThreadContextBase::get_context_index() {
+    return &Context_Index;
+}
+
 
 umm ThreadContextBase::alloc(uint64 size) {
     umm ptr = (umm)LocalAlloc(LPTR, size);

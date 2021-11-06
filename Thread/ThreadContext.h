@@ -12,8 +12,9 @@ struct ThreadContextBase {
 
     static void bootstrap_thread(uint64 size);
 
-    static void set_context(uint32 value);
+    static void set_context(void *value);
     static void *_get_context(void);
+    static void *get_context_index();
 
     template <typename T>
     static T *get(void) {

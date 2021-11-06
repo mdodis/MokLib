@@ -37,3 +37,18 @@
 #define NOIMAGE
 #define NOTAPE
 #include <Windows.h>
+
+#ifdef min
+    #undef min
+#endif
+
+#ifdef max
+    #undef max
+#endif
+
+#define min min
+#define max max
+
+#ifdef RGB
+    #undef RGB
+#endif

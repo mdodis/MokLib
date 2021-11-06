@@ -59,7 +59,7 @@ struct Vec3 {
     }
 };
 
-Vec3 operator+(const Vec3 &a, const Vec3 &b) {
+static _inline Vec3 operator+(const Vec3 &a, const Vec3 &b) {
     return Vec3 {
         a.x + b.x,
         a.y + b.y,
@@ -67,7 +67,7 @@ Vec3 operator+(const Vec3 &a, const Vec3 &b) {
     };
 }
 
-Vec3 operator-(const Vec3 &a, const Vec3 &b) {
+static _inline Vec3 operator-(const Vec3 &a, const Vec3 &b) {
     return Vec3 {
         a.x - b.x,
         a.y - b.y,
@@ -76,7 +76,7 @@ Vec3 operator-(const Vec3 &a, const Vec3 &b) {
 }
 
 
-Vec3 operator/(const Vec3 &v, float t) {
+static _inline Vec3 operator/(const Vec3 &v, float t) {
     return Vec3 {
         v.x / t,
         v.y / t,
@@ -153,7 +153,7 @@ static Vec3 normalize(const Vec3 &a) {
     return a / sqrtf(l);
 }
 
-_inline Mat4 operator *(const Mat4 &left, const Mat4 &right) {
+static _inline Mat4 operator *(const Mat4 &left, const Mat4 &right) {
     Mat4 result;
     for (int r = 0; r < 4; ++r) {
         for (int c = 0; c < 4; ++c) {
@@ -167,7 +167,7 @@ _inline Mat4 operator *(const Mat4 &left, const Mat4 &right) {
     return result;
 }
 
-_inline Mat4 transpose(const Mat4 &m) {
+static _inline Mat4 transpose(const Mat4 &m) {
     return Mat4 {
         m.rows[0].x, m.rows[1].x, m.rows[2].x, m.rows[3].x,
         m.rows[0].y, m.rows[1].y, m.rows[2].y, m.rows[3].y,
@@ -176,7 +176,7 @@ _inline Mat4 transpose(const Mat4 &m) {
     };
 }
 
-_inline Mat4 translation(Vec3 v) {
+static _inline Mat4 translation(Vec3 v) {
     return Mat4 {
         1, 0, 0, v.x,
         0, 1, 0, v.y,
@@ -185,7 +185,7 @@ _inline Mat4 translation(Vec3 v) {
     };
 }
 
-_inline Mat4 rotation_pitch(float angle) {
+static _inline Mat4 rotation_pitch(float angle) {
     return Mat4 {
         1,  0,            0,            0,
         0,  cosf(angle),  -sinf(angle), 0,
@@ -194,7 +194,7 @@ _inline Mat4 rotation_pitch(float angle) {
     };
 }
 
-_inline Mat4 rotation_yaw(float angle) {
+static _inline Mat4 rotation_yaw(float angle) {
     return Mat4 {
         cosf(angle),  0,  sinf(angle), 0,
         0,            1,  0,           0,
@@ -203,7 +203,7 @@ _inline Mat4 rotation_yaw(float angle) {
     };
 }
 
-_inline Mat4 scale(Vec3 by) {
+static _inline Mat4 scale(Vec3 by) {
     return Mat4 {
         by.x, 0,    0,    0,
         0,    by.y, 0,    0,
@@ -212,7 +212,7 @@ _inline Mat4 scale(Vec3 by) {
     };
 }
 
-_inline Mat4 perspective(float fov, float aspect, float znear, float zfar) {
+static _inline Mat4 perspective(float fov, float aspect, float znear, float zfar) {
     const float th = tanf(fov / 2.f);
     return  Mat4 {
         1.f / (aspect * th), 0,        0,                                 0,
