@@ -41,22 +41,6 @@ struct Vec3 {
     constexpr Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
     operator float* () const { return (float*)array; }
-
-    Vec3 operator*(float t) {
-        return Vec3 {
-            x * t,
-            y * t,
-            z * t,
-        };
-    }
-
-    Vec3 operator*(const Vec3 &a) {
-        return Vec3 {
-            x * a.x,
-            y * a.y,
-            z * a.z,
-        };
-    }
 };
 
 static _inline Vec3 operator+(const Vec3 &a, const Vec3 &b) {
@@ -75,6 +59,15 @@ static _inline Vec3 operator-(const Vec3 &a, const Vec3 &b) {
     };
 }
 
+Vec3 operator*(const Vec3 &v, float t) {
+    return Vec3 {
+        v.x * t,
+        v.y * t,
+        v.z * t,
+    };
+}
+
+Vec3 operator*(float t, const Vec3 &v) { return v * t; }
 
 static _inline Vec3 operator/(const Vec3 &v, float t) {
     return Vec3 {
