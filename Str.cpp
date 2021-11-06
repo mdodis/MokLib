@@ -53,6 +53,49 @@ int32 Str::first_of(char c, int32 start) {
     return -1;
 }
 
+int32 Str::last_of(const Str &s, int32 start) {
+    if (s.len <= 0) return -1;
+
+    if (start == -1) start = len - 1;
+
+    int sindex = s.len - 1;
+    int i;
+    for (i = start; i >= 0; --i) {
+        
+        if (data[i] == s[sindex]) {
+            sindex--;
+        } else {
+            sindex = s.len - 1;
+        }
+
+        if (sindex == -1) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+int32 Str::first_of(const Str &s, int32 start) {
+    if (s.len <= 0) return -1;
+    
+    int sindex = 0;
+    int i;
+    for (i = start; i < len; ++i) {
+        if (data[i] == s[sindex]) {
+            sindex++;
+        } else {
+            sindex = 0;
+        }
+
+        if (sindex == s.len) {
+            return i - s.len + 1;
+        }
+    }
+
+    return -1;
+}
+
 
 bool operator==(const Str &left, const Str &right) {
     if (left.len != right.len) return false;

@@ -6,6 +6,9 @@ Intermediate
 .vs
 *.vcxproj*
 *.sln
+*.pdb
+*.obj
+*.exe
 
 # Sublime Text files
 *.sublime-*

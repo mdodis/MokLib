@@ -58,6 +58,13 @@ struct Str {
     }
 
     /**
+     * Chops the string between left and right
+     */
+    _inline Str chop_middle(int32 left, int32 right) {
+        return Str((const char *)data + left, right - left);
+    }
+
+    /**
      * Finds the last instance of the specified character
      */
     int32 last_of(char c);
@@ -67,6 +74,18 @@ struct Str {
      * from @start
      */
     int32 first_of(char c, int32 start = 0);
+
+    /**
+     * Finds the last occurrence of the specified string, starting
+     * from @start
+     */ 
+    int32 last_of(const Str &s, int32 start = -1);
+
+    /**
+     * Find the first occurence of the specified string, starting
+     * from @start
+     */
+    int32 first_of(const Str &s, int32 start = 0);
 
 
     _inline char &operator[](int index) {
