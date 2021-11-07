@@ -59,7 +59,7 @@ static _inline Vec3 operator-(const Vec3 &a, const Vec3 &b) {
     };
 }
 
-Vec3 operator*(const Vec3 &v, float t) {
+static _inline Vec3 operator*(const Vec3 &v, float t) {
     return Vec3 {
         v.x * t,
         v.y * t,
@@ -67,7 +67,7 @@ Vec3 operator*(const Vec3 &v, float t) {
     };
 }
 
-Vec3 operator*(float t, const Vec3 &v) { return v * t; }
+static _inline Vec3 operator*(float t, const Vec3 &v) { return v * t; }
 
 static _inline Vec3 operator/(const Vec3 &v, float t) {
     return Vec3 {

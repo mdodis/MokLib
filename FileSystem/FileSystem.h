@@ -1,5 +1,6 @@
 #pragma once
 #include "../Str.h"
+#include "Memory/RawBuffer.h"
 
 enum class SymLinkKind {
     File,

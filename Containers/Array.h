@@ -5,6 +5,7 @@
 #include "Memory/Arena.h"
 #include <iterator>
 #include <cstddef>
+#include <initializer_list>
 
 template <typename T>
 struct TArray {
@@ -22,13 +23,19 @@ struct TArray {
 		this->size = 0;
 	}
 
+	_inline TArray(const IAllocator &alloc, std::initializer_list<T> init_list) :TArray(alloc) {
+		for (const T &elem : init_list) {
+			add(elem);
+		}
+	}
+
 	int32 add(const T &item) {
 		if (!data) {
-			init(Init_Capacity);
+			if (!init(Init_Capacity)) return -1;
 		}
 
-		if (capacity == (size + 1)) {
-			strech();
+		if (capacity == (size)) {
+			if (!strech()) return -1;
 		}
 
 		data[size++] = item;
@@ -37,11 +44,11 @@ struct TArray {
 
 	T *add() {
 		if (!data) {
-			init(Init_Capacity);
+			if (!init(Init_Capacity)) return 0;
 		}
 
-		if (capacity == (size + 1)) {
-			strech();
+		if (capacity == (size)) {
+			if (!strech()) return 0;
 		}
 
 		size++;
@@ -66,15 +73,28 @@ struct TArray {
 		size = 0;
 	}
 
-	void init(int32 amount) {
-		data = (T*)alloc.reserve(alloc.context, amount * sizeof(T));
-		capacity = amount;
-		size = 0;
+	void release() {
+		empty();
+		alloc.release(alloc.context, (umm)data);
 	}
 
-	void strech() {
-		data = (T*)alloc.resize(alloc.context, (umm)data, capacity * sizeof(T), capacity * 2 * sizeof(T));
+	bool init(int32 amount) {
+		data = (T*)alloc.reserve(alloc.context, amount * sizeof(T));
+		if (!data) {
+			return false;
+		}
+
+		capacity = amount;
+		size = 0;
+		return true;
+	}
+
+	bool strech() {
+		T *new_data = (T*)alloc.resize(alloc.context, (umm)data, capacity * sizeof(T), capacity * 2 * sizeof(T));
+		if (!new_data) return false;
+		data = new_data;
 		capacity *= 2;
+		return true;
 	}
 
 	_inline bool is_index_valid(int32 i) {
@@ -135,8 +155,12 @@ struct TArray {
 
 template <typename T, uint32 Count>
 struct TInlineArray : TArray<T> {
-	TInlineArray() :TArray<T>(alloc_arena.to_alloc()) {
+	TInlineArray() :TArray<T>(alloc_arena.to_alloc()) { init(Count); }
 
+	TInlineArray(std::initializer_list<T> init_list) : TInlineArray() {
+		for (const T &elem : init_list) {
+			add(elem);
+		}
 	}
 
 	uint8 memory[(sizeof(T) * Count)];

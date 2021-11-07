@@ -1,7 +1,9 @@
+#include "Containers/Array.h"
 #include "Log.h"
 
-void example_str(void);
-
+void example_str(void);     // Strings
+void example_arrays(void);   // Arrays 1
+void example_arrays2(void);  // Arrays 2
 
 int main(int argc, char const *argv[])
 {
@@ -11,13 +13,15 @@ int main(int argc, char const *argv[])
     PRINT("Hello, " + a + "!");
 
     example_str();
+    example_arrays();
 
     return 0;
 }
 
+// Example - Strings
 void example_str(void) {
-    // Strings are modelled as immutable buffer + length containers and nothing more
-    // operations on strings
+    // Strings are modelled as immutable buffer + length containers
+    // and nothing more
 
     // STATIC_STR is used for string literals, to avoid a strlen call.
     Str a = STATIC_STR("1337hay hay hay hay hay7331");
@@ -30,5 +34,61 @@ void example_str(void) {
     PRINT("First hay: " + first_hay);
 }
 
+// Example - Arrays 1
+void example_arrays(void) {
+
+    // Everything that would normally deal with allocations requires a ref to
+    // an allocator.
+    // get_system_allocator() is a very thin wrapper around stdlib's malloc
+    TArray<int> integers = {get_system_allocator(), {1, 2, 3, 4}};
+
+    integers.add(5);
+
+    int *last_int = integers.add();
+    *last_int = 6;
+
+    int accumulator = 0;
+    for (int &i : integers) {
+        accumulator += i;
+    }
+
+    PRINT("Sum: " + accumulator);
+
+    // Note that most containers will _not_ free memory at the end of their
+    // scope (explicitly). This is because you are not expected to use the
+    // system allocator wherever! Instead, use it as the base for other
+    // allocators like Arenas and Pools.
+    integers.release();
+
+    example_arrays2();
+}
+
+// Example - Arrays 2
+// For very small operations, or for declaring arrays that store data inline
+// You can use TInlineArray<T, Size>:
+struct ExampleArray2Struct {
+    TInlineArray<int, 16> inline_array;
+};
+
+void example_arrays2(void) {
+
+    // Capacity is handled up front
+    ExampleArray2Struct the_struct;
+    PRINT("Inline Array Capacity: " + the_struct.inline_array.capacity);
+
+    for (int32 i = 0; i < 16; ++i) {
+        the_struct.inline_array.add(i);
+    }
+
+    // We expect this to fail
+    int32 last_index = the_struct.inline_array.add(16);
+    ASSERT(last_index == -1);
+
+    PRINT("Elements = {");
+    for (const int32 &elem : the_struct.inline_array) {
+        PRINT("  " + elem + ",");
+    }
+    PRINT("}");
+}
 
 #include "Compile.inc"

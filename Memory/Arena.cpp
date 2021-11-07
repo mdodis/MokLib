@@ -12,7 +12,7 @@ Arena Arena::create(IAllocator base, uint64 size) {
 
 umm Arena::push(uint64 size) {
 	umm result = 0;
-	if (used + size <= capacity) {
+	if ((used + size) <= capacity) {
 		result = memory + used;
 		last_offset = used;
 		used += size;
@@ -28,11 +28,20 @@ umm Arena::resize(umm ptr, uint64 prev_size, uint64 new_size) {
 	if (new_size <= prev_size) return ptr;
 
 	if ((last_ptr == ptr) && ((last_offset + prev_size) >= used)) {
+
+		if ((last_offset + new_size) > capacity) {
+			return 0;
+		}
+
 		umm result = memory + last_offset;
 		used = last_offset;
-		used += new_size;
+		used = new_size;
 		return last_ptr;
 	} else {
+
+		if ((used + new_size) > capacity) {
+			return 0;
+		}
 
 		umm new_ptr = push(new_size);
 		memcpy(new_ptr, ptr, prev_size);
