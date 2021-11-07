@@ -114,7 +114,6 @@ struct Str {
 #endif
     }
 
-
     const uint8 *data;
     int32 len;
 
