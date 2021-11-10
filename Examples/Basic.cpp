@@ -1,9 +1,13 @@
 #include "Containers/Array.h"
+#include "Containers/Map.h"
 #include "Log.h"
+#include "Memory/Base.h"
+#include "Str.h"
 
-void example_str(void);     // Strings
-void example_arrays(void);   // Arrays 1
-void example_arrays2(void);  // Arrays 2
+void example_str(void);         // Strings
+void example_arrays(void);      // Arrays 1
+void example_arrays2(void);     // Arrays 2
+void example_maps(void);        // Maps
 
 int main(int argc, char const *argv[])
 {
@@ -14,6 +18,7 @@ int main(int argc, char const *argv[])
 
     example_str();
     example_arrays();
+    example_maps();
 
     return 0;
 }
@@ -90,5 +95,19 @@ void example_arrays2(void) {
     }
     PRINT("}");
 }
+
+// Example - Maps
+void example_maps(void) {
+    TMap<Str, int32> map(get_system_allocator(), 5);
+
+    map.add(STATIC_STR("Mitch"),    45);
+    map.add(STATIC_STR("Kenny"),    12);
+    map.add(STATIC_STR("Haley"),    25);
+    map.add(STATIC_STR("Michael"),  23);
+    map.add(STATIC_STR("Achilles"), 23);
+
+    ASSERT(map[STATIC_STR("Michael")] == 23);
+}
+
 
 #include "Compile.inc"

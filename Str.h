@@ -18,7 +18,7 @@ struct Str {
     Str();
     Str(const char *cstr);
     constexpr Str(const char *str, int32 len)
-        : data((const uint8*)str), len(len) {}
+        : data((const uint8*)str), len(len), len8(0) {}
 
     /**
      * Splits the string in question at @at , resulting into left and right strings
@@ -116,6 +116,7 @@ struct Str {
 
     const uint8 *data;
     int32 len;
+    uint32 len8; // Cached utf8 length storage space, if needed
 
     static const Str New_Line;
     static char Null;
@@ -123,5 +124,8 @@ struct Str {
 };
 
 bool operator==(const Str &left, const Str &right);
+static _inline bool operator!=(const Str &left, const Str &right) {
+    return !(left == right);
+}
 
 #define STATIC_STR(s) Str((s), ARRAY_COUNT(s) - 1)
