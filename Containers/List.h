@@ -76,3 +76,4 @@ struct TList {
         auto *(iterator) = (list)->root->next; \
         (iterator) && iterator != (list)->root; \
         iterator = iterator->next)
+

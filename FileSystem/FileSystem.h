@@ -1,4 +1,5 @@
 #pragma once
+#include "Host.h"
 #include "../Str.h"
 #include "Memory/RawBuffer.h"
 
@@ -17,7 +18,11 @@ namespace FileMode {
 }
 
 struct FileHandle {
+#if OS_WINDOWS
     void *internal_handle;
+#elif OS_LINUX
+    int internal_handle;
+#endif
 
 };
 #define IS_VALID_FILE(f) ((f).internal_handle != 0)

@@ -155,7 +155,7 @@ struct TArray {
 
 template <typename T, uint32 Count>
 struct TInlineArray : TArray<T> {
-	TInlineArray() :TArray<T>(alloc_arena.to_alloc()) { init(Count); }
+	TInlineArray() :TArray<T>(alloc_arena.to_alloc()) { this->init(Count); }
 
 	TInlineArray(std::initializer_list<T> init_list) : TInlineArray() {
 		for (const T &elem : init_list) {

@@ -1,8 +1,8 @@
 #include "FileSystem.h"
 #include "../Host.h"
-#include "../WinInc.h"
 
 #if OS_WINDOWS
+#include "../WinInc.h"
 
 bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind kind) {
 
@@ -78,6 +78,50 @@ void close_file(const FileHandle &file) {
     CloseHandle((HANDLE)file.internal_handle);
 }
 
+#elif OS_LINUX
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/stat.h>
+
+FileHandle open_file(const Str &file_path, FileMode::Type mode) {
+    static char path[1024];
+    memcpy(path, file_path.data, file_path.len);
+    path[file_path.len] = 0;
+
+    int access_flags = 0;
+
+    if (mode & FileMode::Read)      access_flags |= S_IRUSR;
+    if (mode & FileMode::Write)     access_flags |= S_IWUSR;
+
+    int fd = open(path, access_flags);
+    if (fd == -1) {
+        return FileHandle { 0 };
+    }
+
+    FileHandle result;
+    result.internal_handle = fd;
+
+    return result;
+}
+
+int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read) {
+    int fd = handle.internal_handle;
+    return read(fd, destination, bytes_to_read);
+}
+
+uint32 get_file_size(const FileHandle &handle) {
+    int fd = handle.internal_handle;
+    struct stat statinfo;
+    fstat(fd, &statinfo);
+
+    return (uint32)statinfo.st_size;
+}
+
+void close_file(const FileHandle &file) {
+    int fd = file.internal_handle;
+    close(fd);
+}
 
 #else
 

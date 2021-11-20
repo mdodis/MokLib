@@ -110,7 +110,6 @@ umm Sentry::resize(umm ptr, uint64 new_size) {
 
 }
 
-
 void Sentry::pop(umm ptr) {
     int32 allocation_index;
     Allocation *allocation = find_allocation(ptr, &allocation_index);
@@ -120,6 +119,20 @@ void Sentry::pop(umm ptr) {
 
     VirtualFree(allocation->base_ptr, 0, MEM_RELEASE);
     allocations.del(allocation_index);
+}
+
+#elif OS_LINUX
+
+umm Sentry::push(uint64 size) {
+    return 0;
+}
+
+umm Sentry::resize(umm ptr, uint64 new_size) {
+    return 0;
+}
+
+void Sentry::pop(umm ptr) {
+    return;
 }
 
 #else

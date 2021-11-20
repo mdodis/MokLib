@@ -35,6 +35,32 @@ umm ThreadContextBase::alloc(uint64 size) {
     return ptr;
 }
 
+#elif OS_LINUX
+
+void ThreadContextBase::setup(void) {
+    ASSERT(false);
+}
+
+void ThreadContextBase::bootstrap_thread(uint64 size) {
+    ASSERT(false);
+}
+
+void ThreadContextBase::set_context(void *value) {
+    ASSERT(false);
+}
+
+void *ThreadContextBase::_get_context(void) {
+    return 0;
+}
+
+void *ThreadContextBase::get_context_index() {
+    return 0;
+}
+
+umm ThreadContextBase::alloc(uint64 size) {
+    return 0;
+}
+
 #else
 #error "Unsupported TLS for Operating system type!"
 #endif

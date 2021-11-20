@@ -18,7 +18,7 @@ struct Str {
     Str();
     Str(const char *cstr);
     constexpr Str(const char *str, int32 len)
-        : data((const uint8*)str), len(len), len8(0) {}
+        : data((const uint8*)(void*)str), len(len), len8(0) {}
 
     /**
      * Splits the string in question at @at , resulting into left and right strings

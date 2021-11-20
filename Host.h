@@ -23,10 +23,16 @@
 
 #if defined(_MSC_VER) || defined(_MSC_FULL_VER)
     #define COMPILER_MSVC 1
+#elif defined(__GNUC__) || defined(__GNUG__)
+    #define COMPILER_GCC 1
 #endif
 
 #ifndef COMPILER_MSVC
     #define COMPILER_MSVC 0
+#endif
+
+#ifndef COMPILER_GCC
+    #define COMPILER_GCC 0
 #endif
 
 #if COMPILER_MSVC

@@ -24,7 +24,12 @@
 #endif
 
 #if MOK_DEBUG_BREAK
-	#define DEBUG_BREAK() __debugbreak()
+	#if OS_WINDOWS
+		#define DEBUG_BREAK() __debugbreak()
+	#elif OS_LINUX
+		#include <signal.h>
+		#define DEBUG_BREAK() raise(SIGTRAP);
+	#endif
 #else
 	#define DEBUG_BREAK()
 #endif

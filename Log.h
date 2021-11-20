@@ -7,7 +7,8 @@ struct ILog {
 
     void print(TList<Str> &what);
     _inline void print(StringBuilder &what) {
-        print(what.to_list());
+        TList<Str> list = what.to_list();
+        print(list);
     }
 
     virtual void add_output(const Str &what) = 0;

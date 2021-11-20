@@ -17,6 +17,8 @@ typedef uint8_t*	umm;
 
 #if COMPILER_MSVC
     #define _inline __forceinline
+#elif COMPILER_GCC
+    #define _inline inline __attribute__((always_inline))
 #else
     #error "Unsupported compiler type for _inline!"
 #endif
