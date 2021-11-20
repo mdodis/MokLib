@@ -33,7 +33,6 @@ struct Vec3 {
     union {
         float array[3];
         struct { float x, y, z; };
-        struct { Vec2 xy; float _z; };
     };
 
     Vec3() {}
@@ -80,12 +79,17 @@ static _inline Vec3 operator/(const Vec3 &v, float t) {
 
 struct Vec4 {
     union {
-        struct { float x, y, z, w; };
-        struct { Vec3 xyz; float __i0; };
         float array[4];
+        struct { float x, y, z, w; };
     };
 
     Vec4() {}
+    Vec4(Vec3 v3, float vw) {
+        x = v3.x;
+        y = v3.y;
+        z = v3.z;
+        w = vw;
+    }
     constexpr Vec4(float v) : x(v), y(v), z(v), w(v) {}
     constexpr Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 
@@ -227,9 +231,7 @@ static _inline T clamp(T x, T a, T b) {
 }
 
 static _inline Vec3 operator*(const Mat4 &m, const Vec3 &v) {
-    Vec4 v4;
-    v4.xyz = v;
-    v4.w = 0;
+    Vec4 v4(v, 0);
 
     return Vec3 {
         dot(v4, m[0]),

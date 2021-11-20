@@ -36,29 +36,34 @@ umm ThreadContextBase::alloc(uint64 size) {
 }
 
 #elif OS_LINUX
+#include <pthread.h>
+#include <stdlib.h>
+
+static pthread_key_t Key;
 
 void ThreadContextBase::setup(void) {
-    ASSERT(false);
+    pthread_key_create(&Key, 0);
 }
 
 void ThreadContextBase::bootstrap_thread(uint64 size) {
-    ASSERT(false);
+    void *p = malloc(size);
+    pthread_setspecific(Key, p);
 }
 
 void ThreadContextBase::set_context(void *value) {
-    ASSERT(false);
+    Key = *(pthread_key_t*)value;
 }
 
 void *ThreadContextBase::_get_context(void) {
-    return 0;
+    return pthread_getspecific(Key);
 }
 
 void *ThreadContextBase::get_context_index() {
-    return 0;
+    return (void*)&Key;
 }
 
 umm ThreadContextBase::alloc(uint64 size) {
-    return 0;
+    return (umm)malloc(size);
 }
 
 #else
