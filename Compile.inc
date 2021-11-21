@@ -8,6 +8,7 @@
 #include "Str.cpp"
 #include "StringBuilder.cpp"
 #include "FileSystem/FileSystem.cpp"
+#include "Importers/Importer.cpp"
 #include "Memory/Base.cpp"
 #include "Memory/Arena.cpp"
 #include "Memory/Pool.cpp"

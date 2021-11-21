@@ -63,7 +63,9 @@ uint32 get_file_size(const FileHandle &handle) {
     return GetFileSize((HANDLE)handle.internal_handle, 0);
 }
 
-int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read) {
+int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uint64 offset) {
+    SetFilePointer(handle.internal_handle, (uint32)offset, 0, FILE_BEGIN);
+
     DWORD bytes_read;
     BOOL success = ReadFile((HANDLE)handle.internal_handle, destination, bytes_to_read, &bytes_read, 0);
 

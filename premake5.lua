@@ -1,3 +1,5 @@
+-- Options
+-- MokLib_IncludeConverters
 -- Library
 project "Lib"
     kind "StaticLib"
@@ -11,7 +13,19 @@ project "Lib"
         "Memory/*.h", "Memory/*.cpp",
         "Thread/*.h", "Thread/*.cpp",
         "Time/*.h", "Time/*.cpp",
+        "Importers/*.h", "Importers/*.cpp",
     }
+
+    if (MokLib_IncludeConverters == nil) then
+        MokLib_IncludeConverters = true
+    end
+
+
+    if (MokLib_IncludeConverters) then
+        files {
+            "Converters/*.h", "Converters/*.cpp",
+        }
+    end
 
     DefaultSettings()
 

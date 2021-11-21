@@ -26,7 +26,7 @@ struct TMap {
         values = (Bin*)alloc.reserve(alloc.context, init_size * sizeof(Bin));
         memset(values, 0, init_size * sizeof(Bin));
 
-        num_bins = uint32(init_size * Bucket_Cellar_Factor);
+        num_bins = uint32(float(init_size) * Bucket_Cellar_Factor);
         num_total_bins = init_size;
 
         ASSERT(values);
