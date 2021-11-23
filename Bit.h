@@ -15,3 +15,14 @@ static _inline int32 bit_scan(uint32 value) {
 #else
 #warning "Bit intrin not present"
 #endif
+
+static _inline uint32 bit_count(uint32 value) {
+    uint32 result = 0;
+
+    while (value) {
+        result += value & 1;
+        value >>= 1;
+    }
+
+    return result;
+}

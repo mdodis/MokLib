@@ -34,6 +34,11 @@ uint32 get_file_size(const FileHandle &handle);
 int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uint64 offset = 0);
 void close_file(const FileHandle &file);
 
+template <typename T>
+bool read_struct(FileHandle &handle, T *destination, uint64 offset = 0) {
+    return read_file(handle, destination, sizeof(T)) == sizeof(T);
+}
+
 struct Tape {
     FileHandle file;
     uint64 current_offset;

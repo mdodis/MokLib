@@ -230,6 +230,17 @@ static _inline T clamp(T x, T a, T b) {
     return max(a, min(x, b));
 }
 
+template <typename T>
+static _inline constexpr T ipow(T x, int power) {
+    T result = x;
+    power--;
+    while (power > 0) {
+        result *= x;
+        power--;
+    }
+    return result;
+}
+
 static _inline Vec3 operator*(const Mat4 &m, const Vec3 &v) {
     Vec4 v4(v, 0);
 

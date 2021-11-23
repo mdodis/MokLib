@@ -5,8 +5,8 @@
 
 Raw ImageConverter::to_truecolor_rgba32(Desc *desc) {
 
-    const int32 width = desc->image->width;
-    const int32 height = desc->image->height;
+    const uint32 width  = (uint32)desc->image->width;
+    const uint32 height = (uint32)desc->image->height;
     uint32 final_image_size = width * height * sizeof(uint32);
     umm destination = desc->alloc->reserve(desc->alloc->context, final_image_size);
 
@@ -34,11 +34,32 @@ Raw ImageConverter::to_truecolor_rgba32(Desc *desc) {
             int32 blue_shift  = bit_scan(blue_mask);
             int32 alpha_shift = bit_scan(alpha_mask);
 
+            uint32 red_count   = bit_count(red_mask);
+            uint32 green_count = bit_count(green_mask);
+            uint32 blue_count  = bit_count(blue_mask);
+            uint32 alpha_count = bit_count(alpha_mask);
+
+            uint32 red_value   = ((buffer & red_mask)   >> red_shift);
+            uint32 green_value = ((buffer & green_mask) >> green_shift);
+            uint32 blue_value  = ((buffer & blue_mask)  >> blue_shift);
+            uint32 alpha_value = ((buffer & alpha_mask) >> alpha_shift);
+
+            int t = ipow(2, blue_count);
+            float nred   = (float(red_value)   / float(ipow(2, red_count)   - 1));
+            float ngreen = (float(green_value) / float(ipow(2, green_count) - 1));
+            float nblue  = (float(blue_value)  / float(ipow(2, blue_count)  - 1));
+            float nalpha = (float(alpha_value) / float(ipow(2, alpha_count) - 1));
+
+            red_value   = (uint32) (nred   * 255.f);
+            green_value = (uint32) (ngreen * 255.f);
+            blue_value  = (uint32) (nblue  * 255.f);
+            alpha_value = (uint32) (nalpha * 255.f);
+
             *(((uint32*)destination) + width * y + x) =
-                (((buffer & red_mask)   >> red_shift)   << 24) |
-                (((buffer & green_mask) >> green_shift) << 16) |
-                (((buffer & blue_mask)  >> blue_shift)  <<  8) |
-                (((buffer & alpha_mask) >> alpha_shift));
+                red_value   << 24 |
+                green_value << 16 |
+                blue_value  <<  8 |
+                alpha_value;
 
             column += column_size;
         }
