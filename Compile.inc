@@ -1,6 +1,11 @@
 /**
  * Include this file if you want to compile the library as a single unit
  */
+
+#ifndef MOK_INCLUDE_DLL
+    #define MOK_INCLUDE_DLL 0
+#endif
+
 #include "Arguments.cpp"
 #include "Hashing.cpp"
 #include "Log.cpp"
@@ -15,3 +20,7 @@
 #include "Thread/ThreadContext.cpp"
 #include "Time/Time.cpp"
 #include "Types.cpp"
+
+#if MOK_INCLUDE_DLL
+    #include "FileSystem/Dll.cpp"
+#endif

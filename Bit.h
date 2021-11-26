@@ -12,6 +12,15 @@ static _inline int32 bit_scan(uint32 value) {
         : -1;
 }
 
+#elif COMPILER_GCC
+
+static _inline int32 bit_scan(uint32 value) {
+    int result = __builtin_ffs(*((int*)&value));
+    return result == 0
+        ? result
+        : -1;
+}
+
 #else
 #warning "Bit intrin not present"
 #endif

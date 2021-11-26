@@ -1,5 +1,6 @@
 #pragma once
 #include "Host.h"
+#include <stddef.h>
 
 /**
  * Generic Types

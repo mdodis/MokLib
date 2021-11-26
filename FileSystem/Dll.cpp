@@ -1,0 +1,45 @@
+#include "Dll.h"
+#include "FileSystem/FileSystem.h"
+
+#if OS_WINDOWS
+// @todo
+
+#elif OS_LINUX
+#include <dlfcn.h>
+#include <string.h>
+
+Dll load_dll(Str filename) {
+
+    static char filename_nullterm[1024];
+    const char *filepath = (const char *)filename.data;
+
+    if (filename[filename.len - 1] != 0) {
+        memcpy(filename_nullterm, filename.data, filename.len);
+        filename_nullterm[filename.len] = 0;
+        filepath = filename_nullterm;
+    }
+
+    void *handle = dlopen(filepath, RTLD_LAZY);
+
+    if (!handle) {
+        return Dll {0};
+    }
+
+    Dll result;
+    result.handle = handle;
+    result.last_time = get_file_time(Str(filename_nullterm, filename.len));
+
+    return result;
+}
+
+void unload_dll(Dll &dll) {
+    dlclose(dll.handle);
+}
+
+void *Dll::get_proc_address(const char *name) {
+    return dlsym(handle, name);
+}
+
+#else
+#error "No dll support for given platform!"
+#endif

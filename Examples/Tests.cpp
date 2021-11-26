@@ -1,7 +1,5 @@
-#pragma once
 #include "Console.h"
 #include "Test/Test.h"
-#include <corecrt_wstdio.h>
 
 DEFTEST_UNIT(BasicUnit);
 

@@ -36,7 +36,7 @@ static _inline PROC_MEMORY_RELEASE_BASE(system_allocator_release_base) {
     return;
 }
 
-static IAllocator system_allocator = {
+static constexpr IAllocator system_allocator = {
     system_allocator_reserve,
     system_allocator_resize,
     system_allocator_release,

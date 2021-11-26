@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include <cstdio>
 // #include "WinInc.h"
 
 namespace ConsoleColor {
@@ -20,6 +21,10 @@ namespace ConsoleColor {
 
 };
 
+/**
+ * Windows
+ */
+
 #if OS_WINDOWS
 namespace Console {
     enum Handle {
@@ -28,10 +33,7 @@ namespace Console {
         Error  = -12,
     };
 };
-#endif
 
-
-#if OS_WINDOWS
 // Win32 Console color definitions
 #define WIN32_FG_BLUE                       0x0001 // text color contains blue.
 #define WIN32_FG_GREEN                      0x0002 // text color contains green.
@@ -82,3 +84,63 @@ namespace Console {
 
 #endif
 
+
+/**
+ * Linux
+ */
+
+#if OS_LINUX
+
+namespace Console {
+    enum Handle {
+        Input = 1,
+        Output,
+        Error
+    };
+}
+
+static const char *Color_Translation_Table[ConsoleColor::Count] = {
+    /* Red                  */ "\e[31m",
+    /* Red Bold             */ "\e[1;31m",
+    /* Red Underline        */ "\e[4;31m",
+    /* Red Bold Underline   */ "\e[1;4;31m",
+    /* Green                */ "\e[32m",
+    /* Green Bold           */ "\e[1;32m",
+    /* Green Underline      */ "\e[4;32m",
+    /* Green Bold Underline */ "\e[1;4;32m",
+    /* Blue                 */ "\e[34m",
+    /* Blue Bold            */ "\e[1;34m",
+    /* Blue Underline       */ "\e[4;34m",
+    /* Blue Bold Underline  */ "\e[1;4;34m",
+    /* White                */ "\e[31m",
+    /* White Bold           */ "\e[1;31m",
+    /* White Underline      */ "\e[4;31m",
+    /* White Bold Underline */ "\e[1;4;31m",
+    /* Default */              "\e[0m"
+};
+
+namespace Console {
+
+    static _inline void set_color(Console::Handle handle, ConsoleColor::Type color = ConsoleColor::Invalid) {
+
+        FILE *file;
+
+        switch (handle) {
+            case Input: {
+                file = stdin;
+            } break;
+
+            case Output: {
+                file = stdout;
+            } break;
+
+            case Error: {
+                file = stderr;
+            } break;
+        }
+
+        fputs(Color_Translation_Table[color], file);
+    }
+};
+
+#endif
