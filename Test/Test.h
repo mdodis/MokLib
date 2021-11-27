@@ -19,7 +19,12 @@
         DEFTEST_CASE_1(TestCaseDecl_, name)() { \
             TEST_UNIT(unit).cases.add(this); \
         } \
-        int run() override code \
+        TestResult run() override code \
         Str get_desc() override { return STATIC_STR(desc); }\
     }; \
     DEFTEST_CASE_1(TestCaseDecl_, name) DEFTEST_CASE_1(TestCase_, name)
+
+
+#define MPASSED()        (TestResult { true })
+#define MFAILED(desc)    (TestResult { false, STATIC_STR(desc)})
+#define MPASSIF(expr)    ((expr) ? TestResult{true} : TestResult{false, STATIC_STR("At: " __FILE__ ":" __LINE__)})

@@ -42,3 +42,44 @@
         #define DLLEXPORT __declspec(dllimport)
     #endif
 #endif
+
+/**
+ * Inline
+ */
+#if COMPILER_MSVC
+    #define _inline __forceinline
+#elif COMPILER_GCC
+    #define _inline inline __attribute__((always_inline))
+#else
+    #error "Unsupported compiler type for _inline!"
+#endif
+
+/**
+ * Restrict
+ */
+#if COMPILER_MSVC
+    #define _restrict __declspec(restrict)
+#else
+    #define _restrict
+#endif
+
+/**
+ * Allocator
+ */
+#if COMPILER_MSVC
+    #define _allocator __declspec(allocator)
+#else
+    #define _allocator
+#endif
+
+/**
+ * C Compatibility
+ */
+#if OS_WINDOWS
+    #define EXPORT __declspec(dllexport)
+    #define CEXPORT extern "C" EXPORT
+#endif
+
+#ifndef CEXPORT
+    #define CEXPORT
+#endif

@@ -1,6 +1,5 @@
 #include "Types.h"
 #include "Parsing.h"
-#include <stdlib.h>
 
 // uint32
 PROC_STRINGIFY(stringify_uint32) {

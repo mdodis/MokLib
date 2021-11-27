@@ -4,11 +4,16 @@
 #include "Time/Time.h"
 
 #if OS_WINDOWS
-#include "WinInc.h"
+
+struct HModule__ {
+    int unused;
+};
+
+typedef struct HModule__ *HModule;
 
 struct Dll {
     Time::TimeSpec last_time;
-    HMODULE handle;
+    HModule handle;
     void *get_proc_address(const char *name);
 };
 

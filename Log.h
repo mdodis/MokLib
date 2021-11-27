@@ -5,10 +5,10 @@
 
 struct ILog {
 
-    void print(TList<Str> &what);
-    _inline void print(StringBuilder &what) {
+    void print(TList<Str> &what, bool newline = true);
+    _inline void print(StringBuilder &what, bool newline = true) {
         TList<Str> list = what.to_list();
-        print(list);
+        print(list, newline);
     }
 
     virtual void add_output(const Str &what) = 0;
@@ -35,8 +35,14 @@ struct ConsoleOutputLog : ILog {
 
 static ConsoleOutputLog Global_Console_Output_Log;
 
-#define PRINT(what) do { \
+#define PRINTLN(what) do { \
         CREATE_INLINE_ARENA(console_arena, MOK_CONSOLE_ARENA_SIZE); \
         Global_Console_Output_Log.print(StringBuilder(console_arena.to_alloc()) + what); \
     } while(0)
+
+#define PRINT(what) do { \
+        CREATE_INLINE_ARENA(console_arena, MOK_CONSOLE_ARENA_SIZE); \
+        Global_Console_Output_Log.print(StringBuilder(console_arena.to_alloc()) + what, false); \
+    } while (0)
+
 #endif

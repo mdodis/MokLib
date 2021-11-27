@@ -8,7 +8,7 @@ project "Lib"
     files { 
         "*.h", "*.cpp",
         "Containers/*.h", "Containers/*.cpp",
-        "FileSystem/*.h", "FileSystem/*.cpp",
+        "FileSystem/FileSystem.h", "FileSystem/FileSystem.cpp",
         "Math/*.h", "Math/*.cpp",
         "Memory/*.h", "Memory/*.cpp",
         "Thread/*.h", "Thread/*.cpp",

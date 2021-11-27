@@ -38,6 +38,9 @@
 #define NOTAPE
 #include <Windows.h>
 
+/**
+ * Macros: min/max
+ */
 #ifdef min
     #undef min
 #endif
@@ -48,6 +51,13 @@
 
 #define min min
 #define max max
+
+/**
+ * Macros: FAILED()
+ */
+#ifdef FAILED
+    #undef FAILED
+#endif
 
 #ifdef RGB
     #undef RGB

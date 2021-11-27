@@ -16,26 +16,6 @@ typedef int32_t		int32;
 typedef int64_t		int64;
 typedef uint8_t*	umm;
 
-#if COMPILER_MSVC
-    #define _inline __forceinline
-#elif COMPILER_GCC
-    #define _inline inline __attribute__((always_inline))
-#else
-    #error "Unsupported compiler type for _inline!"
-#endif
-
-/**
- * C Compatibility
- */
-#if OS_WINDOWS
-    #define EXPORT __declspec(dllexport)
-    #define CEXPORT extern "C" EXPORT
-#endif
-
-#ifndef CEXPORT
-    #define CEXPORT
-#endif
-
 /**
  * Miscellaneous
  */
