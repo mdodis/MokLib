@@ -14,17 +14,27 @@
 #define TEST_UNIT(name) TEST_UNIT_1(TestUnit_,name)
 
 #define DEFTEST_CASE_1(x, y) x##y
-#define DEFTEST_CASE(name, unit, desc, code) \
+#define DEFTEST_CASE(name, unit, desc) \
     struct DEFTEST_CASE_1(TestCaseDecl_, name) : public TestCase { \
         DEFTEST_CASE_1(TestCaseDecl_, name)() { \
             TEST_UNIT(unit).cases.add(this); \
         } \
-        TestResult run() override code \
+        TestResult run() override; \
         Str get_desc() override { return STATIC_STR(desc); }\
     }; \
     DEFTEST_CASE_1(TestCaseDecl_, name) DEFTEST_CASE_1(TestCase_, name)
 
+#define TEST_CASE_1(x, y) x##y
+#define TEST_CASE(name) TestResult TEST_CASE_1(TestCaseDecl_, name)::run()
 
-#define MPASSED()        (TestResult { true })
-#define MFAILED(desc)    (TestResult { false, STATIC_STR(desc)})
-#define MPASSIF(expr)    ((expr) ? TestResult{true} : TestResult{false, STATIC_STR("At: " __FILE__ ":" __LINE__)})
+#define STR(s) #s
+#define CNCAT4(a,b,c,d) a b c STR(d)
+#define MPASSED()       (TestResult { true })
+#define MFAILED(desc)   (TestResult { false, STATIC_STR(desc)})
+#define MPASSIF(expr)   ((expr) ? TestResult{true}  : TestResult{false, STATIC_STR(CNCAT4("At: ",__FILE__,":",__LINE__))})
+#define MFAILIF(expr) \
+    do { \
+        if (expr) { \
+            return TestResult {false, STATIC_STR(CNCAT4("At: ",__FILE__,":",__LINE__))}; \
+        } \
+    }while(0)

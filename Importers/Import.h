@@ -50,6 +50,12 @@ struct Image {
     uint8 bpp;                  // Bits per pixel
     uint32 pitch;               // Pitch
     bool is_flipped;            // True if the image is flipped vertically
+
+    _inline uint32 offset_at(Vec2i pos) {
+        return
+            pitch * (is_flipped ? height - 1 - pos.y : pos.y) +
+            (bpp / 8) * pos.x;
+    }
 };
 
 struct Import {

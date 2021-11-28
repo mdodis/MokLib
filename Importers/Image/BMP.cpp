@@ -2,6 +2,7 @@
 #include "Importers/Import.h"
 #include "Debugging.h"
 #include "Importers/Importer.h"
+#include "Memory/Base.h"
 #include <math.h>
 #include <windows.h>
 #include <wingdi.h>
@@ -19,6 +20,15 @@ namespace BMPInfo {
         BM = 0x4d42,
     };
 };
+
+namespace BMPCompression {
+    enum Type {
+        None,
+        RLE8,
+        RLE4,
+        Bitfields,
+    };
+}
 
 /**
  * Core Header
@@ -82,36 +92,19 @@ struct BMPInfoHeader124 {
 
 #pragma pack(pop)
 
-static PixelFormat::Type bmp_get_pixel_format(uint32 compression, uint16 bpp) {
-    PixelFormat::Type format;
-
-    switch (bpp) {
-        case 32: {
-            format = PixelFormat::BGRA8;
-        } break;
-
-        case 24: {
-            format = PixelFormat::BGR8;
-        } break;
-
-        case 16: {
-            format = PixelFormat::B5G6R5;
-        } break;
-
-        default: {
-            ASSERT(false);
-        } break;
-    }
-
-    return format;
-}
-
 #define PROC_IMPORTER_BMP_EXTRACT(name) bool name(FileHandle file_handle, IAllocator alloc, struct Import *result, const BMPFileHeader &file_header)
 
 static PROC_IMPORTER_BMP_EXTRACT(extract_bmp_40);
 static PROC_IMPORTER_BMP_EXTRACT(extract_bmp_124);
 
-static void extract_bmp_set_default(int32 w, int32 h, uint16 bpp, uint32 compression, struct Import *result);
+static bool extract_bmp(FileHandle fh, IAllocator &alloc, int32 w, int32 h, uint16 bpp, uint32 compression, uint32 offset, struct Import *result);
+static bool read_bmp_compressed(FileHandle file_handle, IAllocator &alloc, struct Import *result, uint16 bpp, uint32 num_colors, uint32 offset, uint32 _compression);
+
+static bool read_bmp_raw(FileHandle file_handle, IAllocator &alloc, struct Import *result, uint32 offset) {
+    result->data.buffer = alloc.reserve(alloc.context, result->data.size);
+    int64 num_read = read_file(file_handle, result->data.buffer, result->data.size, offset);
+    return (num_read == result->data.size);
+}
 
 PROC_IMPORTER_LOAD(import_bmp_load) {
 
@@ -146,11 +139,15 @@ static PROC_IMPORTER_BMP_EXTRACT(extract_bmp_40) {
         return false;
     }
 
-    extract_bmp_set_default(info.width, info.height, info.bpp, info.compression, result);
-    result->data.buffer = alloc.reserve(alloc.context, result->data.size);
-    int64 num_read = read_file(file_handle, result->data.buffer, result->data.size, file_header.offset);
-
-    return (num_read == result->data.size);
+    return extract_bmp(
+        file_handle,
+        alloc,
+        info.width,
+        info.height,
+        info.bpp,
+        info.compression,
+        file_header.offset,
+        result);
 }
 
 static PROC_IMPORTER_BMP_EXTRACT(extract_bmp_124) {
@@ -159,17 +156,20 @@ static PROC_IMPORTER_BMP_EXTRACT(extract_bmp_124) {
         return false;
     }
 
-    extract_bmp_set_default(info.width, info.height, info.bpp, info.compression, result);
-    result->data.buffer = alloc.reserve(alloc.context, result->data.size);
-    int64 num_read = read_file(file_handle, result->data.buffer, result->data.size, file_header.offset);
-
-    return (num_read == result->data.size);
+    return extract_bmp(
+        file_handle,
+        alloc,
+        info.width,
+        info.height,
+        info.bpp,
+        info.compression,
+        file_header.offset,
+        result);
 }
 
-static void extract_bmp_set_default(int32 w, int32 h, uint16 bpp, uint32 compression, struct Import *result) {
+static bool extract_bmp(FileHandle fh, IAllocator &alloc, int32 w, int32 h, uint16 bpp, uint32 compression, uint32 offset, struct Import *result) {
     result->kind = ImportKind::Image;
     result->image.dimensions = Vec2i {w, abs(h)};
-    result->image.bpp = uint8(bpp);
     result->image.is_flipped = h > 0;
 
     uint32 pitch = (uint32)ceilf((bpp * result->image.width) / 32.f) * 4;
@@ -178,5 +178,66 @@ static void extract_bmp_set_default(int32 w, int32 h, uint16 bpp, uint32 compres
     uint32 image_size = pitch * result->image.dimensions.y;
     result->data.size = image_size;
 
-    result->image.format = bmp_get_pixel_format(compression, bpp);
+    switch (bpp) {
+        case 32: {
+            result->image.format = PixelFormat::BGRA8;
+            result->image.bpp = uint8(bpp);
+            return read_bmp_raw(fh, alloc, result, offset);
+        } break;
+
+        case 24: {
+            result->image.format = PixelFormat::BGR8;
+            result->image.bpp = uint8(bpp);
+            return read_bmp_raw(fh, alloc, result, offset);
+        } break;
+
+        case 16: {
+            result->image.format = PixelFormat::B5G6R5;
+            result->image.bpp = uint8(bpp);
+            return read_bmp_raw(fh, alloc, result, offset);
+        } break;
+
+        case 04: {
+
+            if (compression == BMPCompression::RLE4) {
+                return read_bmp_compressed(fh, alloc, result, offset, compression);
+            } else {
+                return false;
+            }
+
+        } break;
+
+        default: {
+            ASSERT(false);
+        } break;
+    }
+
+}
+
+static bool read_bmp_compressed(FileHandle file_handle, IAllocator &alloc, struct Import *result, uint16 bpp, uint32 num_colors, uint32 offset, uint32 _compression) {
+
+    BMPCompression::Type compression = BMPCompression::Type(_compression);
+
+    uint32 color_table_size = num_colors == 0
+        ? ipow(2, bpp)
+        : num_colors;
+
+    switch (compression) {
+
+        case BMPCompression::RLE4: {
+            umm output = alloc.reserve(alloc.context, result->data.size);
+            result->data.buffer = output;
+
+
+
+            umm color_table = alloc.reserve(alloc.context, )
+        } break;
+
+        case BMPCompression::None:
+        default: {
+            ASSERT(false);
+        } break;
+    }
+
+    return false;
 }
