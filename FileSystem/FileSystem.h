@@ -38,7 +38,7 @@ void close_file(const FileHandle &file);
 
 template <typename T>
 bool read_struct(FileHandle &handle, T *destination, uint64 offset = 0) {
-    return read_file(handle, destination, sizeof(T)) == sizeof(T);
+    return read_file(handle, destination, sizeof(T), offset) == sizeof(T);
 }
 
 struct Tape {
