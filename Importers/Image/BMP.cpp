@@ -1,4 +1,5 @@
 #include "BMP.h"
+#include "FileSystem/FileSystem.h"
 #include "Importers/Import.h"
 #include "Debugging.h"
 #include "Importers/Importer.h"
@@ -108,7 +109,7 @@ static PROC_IMPORTER_BMP_EXTRACT(extract_bmp_40);
 static PROC_IMPORTER_BMP_EXTRACT(extract_bmp_124);
 
 static bool extract_bmp(FileHandle fh, IAllocator &alloc, BMPAttribs *attribs, struct Import *result);
-static bool read_bmp_compressed(FileHandle file_handle, IAllocator &alloc, BMPAttribs *attribs, struct Import *result);
+static bool read_bmp_indexed(FileHandle file_handle, IAllocator &alloc, BMPAttribs *attribs, struct Import *result);
 
 static bool read_bmp_raw(FileHandle file_handle, IAllocator &alloc, struct Import *result, uint32 offset) {
     result->data.buffer = alloc.reserve(alloc.context, result->data.size);
@@ -219,13 +220,7 @@ static bool extract_bmp(FileHandle fh, IAllocator &alloc, BMPAttribs *attribs, s
         } break;
 
         case 04: {
-
-            if (attribs->compression == BMPCompression::RLE4) {
-                return read_bmp_compressed(fh, alloc, attribs, result);
-            } else {
-                return false;
-            }
-
+            return read_bmp_indexed(fh, alloc, attribs, result);
         } break;
 
         default: {
@@ -236,7 +231,7 @@ static bool extract_bmp(FileHandle fh, IAllocator &alloc, BMPAttribs *attribs, s
 
 }
 
-static bool read_bmp_compressed(FileHandle file_handle, IAllocator &alloc, BMPAttribs *attribs, struct Import *result) {
+static bool read_bmp_indexed(FileHandle file_handle, IAllocator &alloc, BMPAttribs *attribs, struct Import *result) {
 
     BMPCompression::Type compression = BMPCompression::Type(attribs->compression);
 
@@ -252,33 +247,65 @@ static bool read_bmp_compressed(FileHandle file_handle, IAllocator &alloc, BMPAt
     result->image.pitch = result->image.width * sizeof(uint32);
     result->image.is_flipped = false;
 
-    switch (compression) {
+    // Output Data
+    uint32 *output = (uint32*)alloc.reserve(alloc.context, converted_size);
+    result->data.buffer = output;
+    result->data.size = converted_size;
 
-        case BMPCompression::RLE4: {
-            uint32 *output = (uint32*)alloc.reserve(alloc.context, converted_size);
-            result->data.buffer = output;
-            result->data.size = converted_size;
+    // Color Table
+    const uint32 color_table_size = color_table_count * sizeof(uint32);
+    uint32 *color_table = (uint32*)alloc.reserve(alloc.context, color_table_size);
+    ASSERT(color_table);
 
-            // Color Table
-            const uint32 color_table_size = color_table_count * sizeof(uint32);
-            uint32 *color_table = (uint32*)alloc.reserve(alloc.context, color_table_size);
-            ASSERT(color_table);
+    read_file(file_handle, color_table, color_table_size, attribs->table_offset);
 
-            read_file(file_handle, color_table, color_table_size, attribs->table_offset);
+    uint32 curr_offset = attribs->offset;
+    for (int32 c = 0; c < attribs->dimensions.y; ++c) {
 
-            uint32 curr_offset = attribs->offset;
+        int32 y = is_flipped
+            ? attribs->dimensions.y - 1 - c
+            : c;
 
-            for (int32 c = 0; c < attribs->dimensions.y; ++c) {
+        u32 curr_row = curr_offset;
+        u32 row_end = curr_offset + pitch;
+        i32 x = 0;
 
-                int32 y = is_flipped
-                    ? attribs->dimensions.y - 1 - c
-                    : c;
+        // Parse each row depending on compression field
+        while (curr_row < row_end) {
 
-                uint32 curr_row = curr_offset;
-                uint32 row_end = curr_offset + pitch;
-                int32 x = 0;
+            uint8 left_pixel;
+            uint8 right_pixel;
 
-                while (curr_row < row_end) {
+            switch (compression) {
+
+                case BMPCompression::None: {
+
+                    if (x == result->image.width) {
+                        curr_row = row_end;
+                        break;
+                    }
+
+                    uint8 code;
+                    read_struct(file_handle, &code, curr_row);
+
+                    const u8 left_pixel  = code >> 4;
+                    const u8 right_pixel = code & 0x0f;
+
+                    // Assign color data for left pixel & right pixel (if available)
+                    const uint32 offset_at = result->image.offset_at(Vec2i{x++, y});
+                    uint32 *out_pixels = (uint32*)(umm(output) + offset_at);
+                    out_pixels[0] = color_table[left_pixel];
+
+                    if (x < result->image.width) {
+                        out_pixels[1] = color_table[right_pixel];
+                        x++;
+                    }
+
+                    curr_row += 1;
+
+                } break;
+
+                case BMPCompression::RLE4: {
                     uint8 rle;
                     read_struct<uint8>(file_handle, &rle, curr_row);
 
@@ -286,7 +313,6 @@ static bool read_bmp_compressed(FileHandle file_handle, IAllocator &alloc, BMPAt
                     const uint8 rcount = rle & 0x0f;
 
                     curr_row += 1;
-
                     if (repeat == 0) {
 
                         for (uint8 i = 0; i < rcount; ++i) {
@@ -299,9 +325,10 @@ static bool read_bmp_compressed(FileHandle file_handle, IAllocator &alloc, BMPAt
                             uint8 code;
                             read_struct<uint8>(file_handle, &code, curr_row);
 
-                            const uint8 left_pixel  = code >> 4;
-                            const uint8 right_pixel = code & 0x0f;
+                            const u8 left_pixel  = code >> 4;
+                            const u8 right_pixel = code & 0x0f;
 
+                            // Assign color data for left pixel & right pixel (if available)
                             const uint32 offset_at = result->image.offset_at(Vec2i{x++, y});
                             uint32 *out_pixels = (uint32*)(umm(output) + offset_at);
                             out_pixels[0] = color_table[left_pixel];
@@ -313,21 +340,22 @@ static bool read_bmp_compressed(FileHandle file_handle, IAllocator &alloc, BMPAt
                         }
 
                     } else {
+                        // @todo: Need to find case were repeat != 0
                         ASSERT(false);
                     }
-                }
 
-                curr_offset += pitch;
+                } break;
+
+                default: {
+
+                } break;
+
             }
 
-            return true;
-        } break;
+        }
 
-        case BMPCompression::None:
-        default: {
-            ASSERT(false);
-        } break;
+        curr_offset += pitch;
     }
 
-    return false;
+    return true;
 }
