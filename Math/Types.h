@@ -3,8 +3,8 @@
 #include "Types.h"
 #include "Parsing.h"
 
-PROC_STRINGIFY(stringify_vec2);
-PROC_DESTRINGIFY(destringify_vec2);
+static PROC_STRINGIFY(stringify_vec2);
+static PROC_DESTRINGIFY(destringify_vec2);
 static constexpr _inline IType type_of(const Vec2 &v) {
     return IType {
         "Vec2",

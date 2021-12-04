@@ -7,7 +7,7 @@
 #include "WinInc.h"
 
 struct Dll {
-    Time::TimeSpec last_time;
+    MTime::TimeSpec last_time;
     HMODULE handle;
     void *get_proc_address(const char *name);
 };
@@ -15,7 +15,7 @@ struct Dll {
 #elif OS_LINUX
 
 struct Dll {
-    Time::TimeSpec last_time;
+    MTime::TimeSpec last_time;
     void *handle;
     void *get_proc_address(const char *name);
 };

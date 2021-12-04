@@ -32,7 +32,7 @@ struct FileHandle {
 bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind kind);
 FileHandle open_file(const Str &file_path, FileMode::Type mode);
 uint32 get_file_size(const FileHandle &handle);
-Time::TimeSpec get_file_time(const Str &file_path);
+MTime::TimeSpec get_file_time(const Str &file_path);
 int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uint64 offset = 0);
 void close_file(const FileHandle &file);
 

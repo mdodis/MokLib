@@ -13,7 +13,7 @@ Str::Str() {
 
 Str::Str(const char *cstr) {
     data = (const uint8*)cstr;
-    len = (int32)strlen(cstr); // This struct is not meant to be used for huge strings
+    len = (int32)strlen(cstr) + 1; // This struct is not meant to be used for huge strings
 }
 
 bool Str::split(int32 at, Str *left, Str *right) const {

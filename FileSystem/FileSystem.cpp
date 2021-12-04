@@ -108,9 +108,9 @@ FileHandle open_file(const Str &file_path, FileMode::Type mode) {
     return result;
 }
 
-int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read) {
+int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uint64 offset) {
     int fd = handle.internal_handle;
-    return read(fd, destination, bytes_to_read);
+    return pread(fd, destination, bytes_to_read, offset);
 }
 
 uint32 get_file_size(const FileHandle &handle) {
@@ -121,15 +121,15 @@ uint32 get_file_size(const FileHandle &handle) {
     return (uint32)statinfo.st_size;
 }
 
-Time::TimeSpec get_file_time(const Str &file_path) {
+MTime::TimeSpec get_file_time(const Str &file_path) {
     // @todo: need to find a better way to temp convert
     // to null term strings
-    ASSERT(file_path[file_path.len] == 0);
+    ASSERT(file_path[file_path.len - 1] == 0);
 
     struct stat stat_result;
     stat((char*)file_path.data, &stat_result);
 
-    return Time::TimeSpec{stat_result.st_mtim};
+    return MTime::TimeSpec{stat_result.st_mtim};
 }
 
 

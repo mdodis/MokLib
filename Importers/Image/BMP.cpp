@@ -2,9 +2,6 @@
 #include "Importers/Import.h"
 #include "Debugging.h"
 #include "Importers/Importer.h"
-#include <math.h>
-#include <windows.h>
-#include <wingdi.h>
 
 #pragma pack(push, 1)
 struct BMPFileHeader {

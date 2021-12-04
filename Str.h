@@ -106,6 +106,7 @@ struct Str {
         if (index < len) {
             return *((const char*)(data)+index);
         } else {
+            printf("For String: %.*s\n", len, (char*)data);
             ASSERT(false);
             return Str::Null;
         }

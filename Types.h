@@ -70,11 +70,11 @@ static _inline PROC_DESTRINGIFY(destringify_str) {
 	// to support escape characters, but for now, we'll resort to a simple
 	// substring of "This Part" that excludes the quotes
 
-	if (input[0] != '\"')
+	if (input[0] != '\'')
 		return 0;
 
 	int32 start_quote = 0;
-	int32 end_quote = input.first_of('\"', start_quote + 1);
+	int32 end_quote = input.first_of('\'', start_quote + 1);
 
 	if ((start_quote == -1) || (end_quote == -1))
 		return 0;

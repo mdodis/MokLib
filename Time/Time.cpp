@@ -1,7 +1,7 @@
 #include "Time.h"
 #include "Debugging.h"
 
-namespace Time {
+namespace MTime {
 #if OS_WINDOWS
 #include "WinInc.h"
 

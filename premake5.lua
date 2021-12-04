@@ -30,3 +30,5 @@ project "Lib"
     DefaultSettings()
 
     includedirs { "." }
+
+    filter {}

@@ -2,7 +2,7 @@
 #include "../Base.h"
 #include "../Host.h"
 
-namespace Time {
+namespace MTime {
 
     #if OS_LINUX
         #include <stddef.h>
