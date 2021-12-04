@@ -10,8 +10,8 @@ extern ImporterRegistry Importer_Registry;
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        PRINT("Usage: Importers [File to open]");
-        PRINT("Not enough arguments.");
+        PRINTLN("Usage: Importers [File to open]");
+        PRINTLN("Not enough arguments.");
         return -1;
     }
 
@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     Import import;
     bool result = Importer_Registry.load_file(filepath, get_system_allocator(), &import);
     if (!result) {
-        PRINT("Failed to load file: " + filepath);
+        PRINTLN("Failed to load file: " + filepath);
         return -1;
     }
 

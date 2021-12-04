@@ -3,6 +3,11 @@
 #include "Memory/Base.h"
 #include "Str.h"
 
+struct TestResult {
+    bool passed;
+    Str reason;
+};
+
 struct TestUnit {
     TArray<struct TestCase*> cases;
 
@@ -16,7 +21,7 @@ struct TestUnit {
 };
 
 struct TestCase {
-    int return_code;
-    virtual int run() = 0;
+    TestResult result;
+    virtual TestResult run() = 0;
     virtual Str get_desc() = 0;
 };

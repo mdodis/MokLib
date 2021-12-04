@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
     Str a = STATIC_STR("77Mitch Taylor77");
     a = a.chop_middle(2, 14);
 
-    PRINT("Hello, " + a + "!");
+    PRINTLN("Hello, " + a + "!");
 
     example_str();
     example_arrays();
@@ -35,8 +35,8 @@ void example_str(void) {
     int32 last_hay = a.last_of(STATIC_STR("hay"));
     int32 first_hay = a.first_of(STATIC_STR("hay"));
 
-    PRINT("Last hay:  " + last_hay);
-    PRINT("First hay: " + first_hay);
+    PRINTLN("Last hay:  " + last_hay);
+    PRINTLN("First hay: " + first_hay);
 }
 
 // Example - Arrays 1
@@ -57,7 +57,7 @@ void example_arrays(void) {
         accumulator += i;
     }
 
-    PRINT("Sum: " + accumulator);
+    PRINTLN("Sum: " + accumulator);
 
     // Note that most containers will _not_ free memory at the end of their
     // scope (explicitly). This is because you are not expected to use the
@@ -79,7 +79,7 @@ void example_arrays2(void) {
 
     // Capacity is handled up front
     ExampleArray2Struct the_struct;
-    PRINT("Inline Array Capacity: " + the_struct.inline_array.capacity);
+    PRINTLN("Inline Array Capacity: " + the_struct.inline_array.capacity);
 
     for (int32 i = 0; i < 16; ++i) {
         the_struct.inline_array.add(i);
@@ -89,11 +89,11 @@ void example_arrays2(void) {
     int32 last_index = the_struct.inline_array.add(16);
     ASSERT(last_index == -1);
 
-    PRINT("Elements = {");
+    PRINTLN("Elements = {");
     for (const int32 &elem : the_struct.inline_array) {
-        PRINT("  " + elem + ",");
+        PRINTLN("  " + elem + ",");
     }
-    PRINT("}");
+    PRINTLN("}");
 }
 
 // Example - Maps

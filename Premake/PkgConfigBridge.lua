@@ -29,12 +29,18 @@ end
 function pkgload(module)
     local pkgconfig = require "pkgconfig"
     local mod = pkgconfig.parse(pkgconfig.load(module))
+    if mod.libs == nil then
+        return nil
+    end
     parse_mod_libs(mod)
     return mod
 end
 
 function pkgadd(name)
     local mod = pkgload(name)
+    if mod == nil then
+        return
+    end
     includedirs(mod.cflags)
     libdirs(mod.linkdirs)
     links(mod.links)

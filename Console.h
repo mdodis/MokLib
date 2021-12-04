@@ -4,13 +4,14 @@
 // #include "WinInc.h"
 
 namespace ConsoleColor {
-    enum Type {
+    enum Type : uint32 {
         Red     = 0x0000,
         Green   = 0x0004,
         Blue    = 0x0008,
         White   = 0x000C,
+        Yellow  = 0x0010,
 
-        Invalid = 0x0010,
+        Invalid = 0x0014,
         Count
     };
 
@@ -18,6 +19,8 @@ namespace ConsoleColor {
         Bold = 0x1,
         Underline = 0x2,
     };
+
+    typedef int Style;
 
 };
 
@@ -35,9 +38,9 @@ namespace Console {
 };
 
 // Win32 Console color definitions
-#define WIN32_FG_BLUE                       0x0001 // text color contains blue.
-#define WIN32_FG_GREEN                      0x0002 // text color contains green.
-#define WIN32_FG_RED                        0x0004 // text color contains red.
+#define WIN32_FG_B                          0x0001 // text color contains blue.
+#define WIN32_FG_G                          0x0002 // text color contains green.
+#define WIN32_FG_R                          0x0004 // text color contains red.
 #define WIN32_FG_INT                        0x0008 // text color is intensified.
 #define WIN32_BACKGROUND_BLUE               0x0010 // background color contains blue.
 #define WIN32_BACKGROUND_GREEN              0x0020 // background color contains green.
@@ -49,7 +52,7 @@ namespace Console {
 #define WIN32_COMMON_LVB_GRID_LVERTICAL     0x0800 // DBCS: Grid attribute: left vertical.
 #define WIN32_COMMON_LVB_GRID_RVERTICAL     0x1000 // DBCS: Grid attribute: right vertical.
 #define WIN32_COMMON_LVB_REVERSE_VIDEO      0x4000 // DBCS: Reverse fore/back ground attribute.
-#define WIN32_COMMON_LVB_UNDERSCORE         0x8000 // DBCS: Underscore.
+#define WIN32_UNDERSCORE                    0x8000 // DBCS: Underscore.
 #define WIN32_COMMON_LVB_SBCSDBCS           0x0300 // SBCS or DBCS flag.
 
 extern "C" __declspec(dllimport) int __stdcall SetConsoleTextAttribute(void *hConsoleOutput, unsigned short wAttributes);
@@ -57,27 +60,31 @@ extern "C" __declspec(dllimport) int __stdcall SetConsoleTextAttribute(void *hCo
 extern "C" __declspec(dllimport) void * __stdcall GetStdHandle(unsigned long nStdHandle);
 
 static uint16 Color_Translation_Table[ConsoleColor::Count] = {
-    /* Red                  */ WIN32_FG_RED,
-    /* Red Bold             */ WIN32_FG_RED | WIN32_FG_INT,
-    /* Red Underline        */ WIN32_FG_RED | WIN32_COMMON_LVB_UNDERSCORE,
-    /* Red Bold Underline   */ WIN32_FG_RED | WIN32_FG_INT | WIN32_COMMON_LVB_UNDERSCORE,
-    /* Green                */ WIN32_FG_GREEN,
-    /* Green Bold           */ WIN32_FG_GREEN | WIN32_FG_INT,
-    /* Green Underline      */ WIN32_FG_GREEN | WIN32_COMMON_LVB_UNDERSCORE,
-    /* Green Bold Underline */ WIN32_FG_GREEN | WIN32_FG_INT | WIN32_COMMON_LVB_UNDERSCORE,
-    /* Blue                 */ WIN32_FG_BLUE,
-    /* Blue Bold            */ WIN32_FG_BLUE | WIN32_FG_INT,
-    /* Blue Underline       */ WIN32_FG_BLUE | WIN32_COMMON_LVB_UNDERSCORE,
-    /* Blue Bold Underline  */ WIN32_FG_BLUE | WIN32_FG_INT | WIN32_COMMON_LVB_UNDERSCORE,
-    /* White                */ WIN32_FG_RED | WIN32_FG_GREEN | WIN32_FG_BLUE,
-    /* White Bold           */ WIN32_FG_RED | WIN32_FG_GREEN | WIN32_FG_BLUE | WIN32_FG_INT,
-    /* White Underline      */ WIN32_FG_RED | WIN32_FG_GREEN | WIN32_FG_BLUE | WIN32_COMMON_LVB_UNDERSCORE,
-    /* White Bold Underline */ WIN32_FG_RED | WIN32_FG_GREEN | WIN32_FG_BLUE | WIN32_FG_INT | WIN32_COMMON_LVB_UNDERSCORE,
-    /* Default */              WIN32_FG_RED | WIN32_FG_GREEN | WIN32_FG_BLUE
+    /*        Red */ WIN32_FG_R,
+    /*   B    Red */ WIN32_FG_R|WIN32_FG_INT,
+    /* U      Red */ WIN32_FG_R|WIN32_UNDERSCORE,
+    /* U B    Red */ WIN32_FG_R|WIN32_FG_INT|WIN32_UNDERSCORE,
+    /*      Green */ WIN32_FG_G,
+    /*   B  Green */ WIN32_FG_G|WIN32_FG_INT,
+    /* U    Green */ WIN32_FG_G|WIN32_UNDERSCORE,
+    /* U B  Green */ WIN32_FG_G|WIN32_FG_INT|WIN32_UNDERSCORE,
+    /*       Blue */ WIN32_FG_B,
+    /*   B   Blue */ WIN32_FG_B|WIN32_FG_INT,
+    /* U     Blue */ WIN32_FG_B|WIN32_UNDERSCORE,
+    /* U B   Blue */ WIN32_FG_B|WIN32_FG_INT|WIN32_UNDERSCORE,
+    /*      White */ WIN32_FG_R|WIN32_FG_G|WIN32_FG_B,
+    /*   B  White */ WIN32_FG_R|WIN32_FG_G|WIN32_FG_B|WIN32_FG_INT,
+    /* U    White */ WIN32_FG_R|WIN32_FG_G|WIN32_FG_B|WIN32_UNDERSCORE,
+    /* U B  White */ WIN32_FG_R|WIN32_FG_G|WIN32_FG_B|WIN32_FG_INT|WIN32_UNDERSCORE,
+    /*     Yellow */ WIN32_FG_R|WIN32_FG_G,
+    /*   B Yellow */ WIN32_FG_R|WIN32_FG_G|WIN32_FG_INT,
+    /* U   Yellow */ WIN32_FG_R|WIN32_FG_G|WIN32_UNDERSCORE,
+    /* U B Yellow */ WIN32_FG_R|WIN32_FG_G|WIN32_FG_INT|WIN32_UNDERSCORE,
+    /* Default    */ WIN32_FG_R|WIN32_FG_G|WIN32_FG_B
 };
 
 namespace Console {
-    static _inline void set_color(Console::Handle handle, ConsoleColor::Type color = ConsoleColor::Invalid) {
+    static _inline void set_color(Console::Handle handle, ConsoleColor::Style color = ConsoleColor::Invalid) {
         SetConsoleTextAttribute(GetStdHandle((unsigned long)handle), Color_Translation_Table[color]);
     }
 };
