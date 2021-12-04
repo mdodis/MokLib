@@ -64,6 +64,22 @@ uint32 get_file_size(const FileHandle &handle) {
     return GetFileSize((HANDLE)handle.internal_handle, 0);
 }
 
+MTime::TimeSpec get_file_time(const Str &file_path) {
+    ASSERT(file_path.has_null_term);
+
+    HANDLE file_handle = CreateFileA((char*)file_path.data,  0, FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+
+    FILETIME time;
+    GetFileTime(file_handle, 0, 0, &time);
+
+    CloseHandle(file_handle);
+
+    u64 result;
+    *((FILETIME*)&result) = time;
+
+    return MTime::TimeSpec{ result };
+}
+
 int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uint64 offset) {
     SetFilePointer(handle.internal_handle, (uint32)offset, 0, FILE_BEGIN);
 
@@ -76,6 +92,7 @@ int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uin
         return -1;
     }
 }
+
 
 void close_file(const FileHandle &file) {
     CloseHandle((HANDLE)file.internal_handle);

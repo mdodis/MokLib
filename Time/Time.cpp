@@ -36,6 +36,12 @@ TimeSpec operator-(const TimeSpec &lhs, const TimeSpec &rhs) {
     return result;
 }
 
+int compare_time(const TimeSpec &lhs, const TimeSpec &rhs) {
+    TimeSpec diff = lhs - rhs;
+    return CompareFileTime((FILETIME*)&rhs.time, (FILETIME*)&lhs.time);
+}
+
+
 #elif OS_LINUX
 
 TimeSpec now() {

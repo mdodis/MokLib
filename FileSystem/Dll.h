@@ -12,7 +12,7 @@ struct HModule__ {
 typedef struct HModule__ *HModule;
 
 struct Dll {
-    Time::TimeSpec last_time;
+    MTime::TimeSpec last_time;
     HModule handle;
     void *get_proc_address(const char *name);
 };
