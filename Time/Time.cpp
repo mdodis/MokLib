@@ -1,5 +1,5 @@
 #include "Time.h"
-#include "Debugging.h"
+#include "Debugging/Base.h"
 
 namespace MTime {
 #if OS_WINDOWS

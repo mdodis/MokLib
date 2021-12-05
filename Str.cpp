@@ -6,11 +6,6 @@ const Str Str::New_Line("\n", 1);
 char Str::Null = '\0';
 const Str Str::NullStr(0, 0);
 
-Str::Str() {
-    data = 0;
-    len = 0;
-}
-
 Str::Str(const char *cstr) {
     data = (const uint8*)cstr;
     len = (int32)strlen(cstr); // This struct is not meant to be used for huge strings

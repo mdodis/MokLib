@@ -1,7 +1,7 @@
 #include "BMP.h"
 #include "FileSystem/FileSystem.h"
 #include "Importers/Import.h"
-#include "Debugging.h"
+#include "Debugging/Base.h"
 #include "Importers/Importer.h"
 
 #pragma pack(push, 1)
@@ -268,9 +268,6 @@ static bool read_bmp_indexed(FileHandle file_handle, IAllocator &alloc, BMPAttri
 
         // Parse each row depending on compression field
         while (curr_row < row_end) {
-
-            uint8 left_pixel;
-            uint8 right_pixel;
 
             switch (compression) {
 

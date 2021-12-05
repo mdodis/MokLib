@@ -14,6 +14,7 @@ project "Lib"
         "Thread/*.h", "Thread/*.cpp",
         "Time/*.h", "Time/*.cpp",
         "Importers/*.h", "Importers/*.cpp",
+        "Debugging/*.h"
     }
 
     if (MokLib_IncludeConverters == nil) then

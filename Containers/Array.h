@@ -1,7 +1,7 @@
 #pragma once
 #include "../Memory/Base.h"
 #include "../Base.h"
-#include "../Debugging.h"
+#include "../Debugging/Base.h"
 #include "Memory/Arena.h"
 #include <iterator>
 #include <cstddef>

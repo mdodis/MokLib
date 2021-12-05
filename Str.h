@@ -2,7 +2,7 @@
 
 #include "Base.h"
 #include "Memory/Base.h"
-#include "Debugging.h"
+#include "Debugging/Base.h"
 
 #ifndef MOK_STR_RANGE_CHECK
     #define MOK_STR_RANGE_CHECK 1
@@ -15,7 +15,7 @@
  * @todo: Actual utf8 support (especially for .len)
  */
 struct Str {
-    Str();
+    Str() : data(0), len(0) {}
     Str(const char *cstr);
     constexpr Str(const char *str, int32 len, bool with_null_term = false)
         : data((const uint8*)(void*)str), len(len), has_null_term(with_null_term) {}
@@ -36,6 +36,11 @@ struct Str {
      * @see Str::split
      */
     _inline Str chop_left(int32 at) const {
+
+        if (at < 0) {
+            return Str::NullStr;
+        }
+
         Str left, right;
         if (split(at, &left, &right)) {
             return right;
@@ -49,6 +54,11 @@ struct Str {
      * @see Str::split
      */
     _inline Str chop_right(int32 at) {
+
+        if (at < 0) {
+            return Str::NullStr;
+        }
+
         Str left, right;
         if (split(at, &left, &right)) {
             return left;

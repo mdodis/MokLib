@@ -33,7 +33,7 @@ bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind
     return CreateSymbolicLinkW(Sym_Link_PathW, Target_PathW, flags);
 }
 
-FileHandle open_file(const Str &file_path, FileMode::Type mode) {
+FileHandle open_file(const Str &file_path, EFileMode mode) {
     static wchar_t file_pathw[1024];
 
     int file_path_lenw = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (const char*)file_path.data, file_path.len, file_pathw, ARRAY_COUNT(file_pathw));
@@ -41,17 +41,33 @@ FileHandle open_file(const Str &file_path, FileMode::Type mode) {
     file_pathw[file_path_lenw] = 0;
 
     DWORD access_flags = 0;
-
     if (mode & FileMode::Read)      access_flags |= GENERIC_READ;
     if (mode & FileMode::Write)     access_flags |= GENERIC_WRITE;
+    if (mode & FileMode::Append)    access_flags |= FILE_APPEND_DATA;
 
     DWORD share_mode = 0;
     if (mode & FileMode::ShareRead)  share_mode |= FILE_SHARE_READ;
     if (mode & FileMode::ShareWrite) share_mode |= FILE_SHARE_WRITE;
 
-    HANDLE result = CreateFileW(file_pathw, access_flags, share_mode, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    DWORD creation = 0;
+    if      (mode & FileMode::CreateAlways) creation |= CREATE_ALWAYS;
+    else if (mode & FileMode::OpenAlways)   creation |= OPEN_ALWAYS;
+    else creation = OPEN_EXISTING;
+
+    DWORD attribs = FILE_ATTRIBUTE_NORMAL;
+    if (mode & FileMode::NoBuffering) attribs |= FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH;
+
+    HANDLE result = CreateFileW(file_pathw,
+        access_flags,
+        share_mode,
+        0,
+        creation,
+        attribs,
+        0);
 
     if (result == INVALID_HANDLE_VALUE) {
+        DWORD last_error = GetLastError();
+
         return FileHandle {0};
     }
 
@@ -93,6 +109,14 @@ int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uin
     }
 }
 
+bool write_file(FileHandle &handle, const void *src, uint32 bytes_to_write, uint32 *bytes_written) {
+    return WriteFile((HANDLE)handle.internal_handle, src, bytes_to_write, (LPDWORD)bytes_written, 0);
+}
+
+
+void flush_file_buffers(FileHandle &handle) {
+    FlushFileBuffers((HANDLE)handle.internal_handle);
+}
 
 void close_file(const FileHandle &file) {
     CloseHandle((HANDLE)file.internal_handle);
