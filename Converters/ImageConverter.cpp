@@ -49,66 +49,15 @@ Raw ImageConverter::to_truecolor_rgba32(Desc *desc) {
             alpha_value = (uint32) (nalpha * 255.f);
 
             *(((uint32*)destination) + width * y + x) =
-                red_value   << 24 |
-                green_value << 16 |
-                blue_value  <<  8 |
-                alpha_value;
+                red_value   <<  0 |
+                green_value <<  8 |
+                blue_value  << 16 |
+                alpha_value << 24;
+
 
             column += column_size;
         }
 
-    }
-
-    return Raw {
-        destination,
-        final_image_size
-    };
-}
-
-Raw ImageConverter::to_truecolor_norm32(Desc *desc) {
-    const uint32 width  = (uint32)desc->image->width;
-    const uint32 height = (uint32)desc->image->height;
-    uint32 final_image_size = width * height * sizeof(uint32);
-    umm destination = desc->alloc->reserve(desc->alloc->context, final_image_size);
-
-    umm row = (umm)desc->data;
-    const uint32 column_size = desc->image->bpp / 8;
-
-    _ConversionConstants constants;
-    get_conversion_constants(desc, &constants);
-
-    for (uint32 y = 0; y < height; ++y) {
-
-        const umm row = umm(desc->data) + desc->image->pitch * (desc->image->is_flipped ? height - 1 - y : y);
-        umm column = row;
-        for (uint32 x = 0; x < width; ++x) {
-
-            uint32 buffer = 0; // assuming highest size for component would be a word
-            memcpy(&buffer, column, column_size);
-
-            const u32 red_value   = ((buffer & constants.masks[0]) >> constants.shifts[0]);
-            const u32 green_value = ((buffer & constants.masks[1]) >> constants.shifts[1]);
-            const u32 blue_value  = ((buffer & constants.masks[2]) >> constants.shifts[2]);
-            const u32 alpha_value = ((buffer & constants.masks[3]) >> constants.shifts[3]);
-
-            const float nred   = (float(red_value)   / float(ipow(2, constants.counts[0]) - 1));
-            const float ngreen = (float(green_value) / float(ipow(2, constants.counts[1]) - 1));
-            const float nblue  = (float(blue_value)  / float(ipow(2, constants.counts[2]) - 1));
-            const float nalpha = (float(alpha_value) / float(ipow(2, constants.counts[3]) - 1));
-
-            const u8 r8 = re_f32_u8(nred);
-            const u8 g8 = re_f32_u8(ngreen);
-            const u8 b8 = re_f32_u8(nblue);
-            const u8 a8 = re_f32_u8(nalpha);
-
-            u32 pixel =
-                (r8 << 24) |
-                (g8 << 16) |
-                (b8 <<  8) |
-                (a8 <<  0);
-
-            *(((u32*)destination) + width * y + x) = pixel;
-        }
     }
 
     return Raw {

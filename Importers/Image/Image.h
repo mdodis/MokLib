@@ -5,20 +5,20 @@
 
 namespace PixelFormat {
     enum Type {
-        RGB8X = 0,  // [R8 G8 B8 X8]  Packed 32bit components
-        RGBA8,      // [R8 G8 B8 A8]  Packed 32bit components
-        BGRA8,      // [B8 G8 R8 A8]  Packed 32bit components
-        BGR8,       // [B8 G8 R8]     Packed 24bit components
-        B5G6R5,     // [B5 G6 R5]     Packed 16bit components
+        RGB8X = 0,  // [R8 G8 B8 X8]  Padded 8bit components
+        RGBA8,      // [R8 G8 B8 A8]  Packed 8bit components
+        BGRA8,      // [B8 G8 R8 A8]  Packed 8bit components
+        BGR8,       // [B8 G8 R8]     Packed 8bit components
+        B5G6R5,     // [B5 G6 R5]     Packed 5bit components except for green (6 bits)
         Count,
     };
 
     static _inline uint32 mask_of(PixelFormat::Type format, uint32 component) {
 
         static uint32 table[PixelFormat::Count * 4] = {
-            0, 0, 0, 0,     // RGB8X
-            0, 0, 0, 0,     // RGBA8
-            0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000, // BGRA8
+            0xff000000, 0x00ff0000, 0x0000ff00, 0x00000000, // RGB8X
+            0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff, // RGBA8
+            0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000, // BGRA8
             0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000, // BGR8
             0x0000f800, 0X000007e0, 0x0000001f, 0x00000000, // B5G6R5
         };

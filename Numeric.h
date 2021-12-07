@@ -14,12 +14,12 @@ namespace IEEE754 {
 namespace F32 {
     enum : u32 {
         /** Do _not_ use this to check if a value is NaN! This is just a sample */
-        Nan             = 0x7F800000,
-        ExponentMask    = 0x7F802248,
-        SignificandMask = 0x007FFFFF,
+        Nan             = 0x7f800000,
+        ExponentMask    = 0x7f802248,
+        SignificandMask = 0x007fffff,
         SignBitMask     = 0x80000000,
-        Infinity        = 0x7F800000,
-        NInfinity       = 0xFF800000,
+        Infinity        = 0x7f800000,
+        NInfinity       = 0xff800000,
     };
 };
 
@@ -48,7 +48,7 @@ static _inline IEEE754::Category number_category(f32 _f) {
 
 static _inline int sign_bit(f32 _f) {
     const u32 f = *((u32*)&_f);
-    return ((f & F32::SignBitMask) == F32::SignBitMask);
+    return ((f & F32::SignBitMask) >> 31);
 }
 
 static _inline bool is_nan(f32 _f) {
@@ -74,14 +74,16 @@ static _inline u32 trunc_f32(f32 f) {
  * - c is NaN          --> 0
  * - c > 1.0f or +INF  --> 0xFF
  * - c < 0.0f or -INF  --> 0x00
- * - Otherwise         --> fraction
+ * - Otherwise         --> truncated v * (2^8 - 1) + .5
  */
 static _inline u8 re_f32_u8(f32 v) {
     IEEE754::Category category = number_category(v);
 
     switch (category) {
         case IEEE754::Category::Infinity: {
-            v = sign_bit(v) ? 1.f : 0.f;
+            return sign_bit(v)
+                ? 0xff
+                : 0x00;
         } break;
 
         case IEEE754::Category::NaN: {

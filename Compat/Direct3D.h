@@ -14,7 +14,7 @@ static _inline DXGI_FORMAT pixel_format_to_dxgi_format(PixelFormat::Type format)
 
     static DXGI_FORMAT table[PixelFormat::Count] = {
         DXGI_FORMAT_UNKNOWN,        // RGB8
-        DXGI_FORMAT_R8G8B8A8_UINT, // RGBA8
+        DXGI_FORMAT_R8G8B8A8_UNORM, // RGBA8
         DXGI_FORMAT_B8G8R8A8_UNORM, // BGRA8
         DXGI_FORMAT_UNKNOWN,        // BGR8
         DXGI_FORMAT_B5G6R5_UNORM,   // B5G6R5

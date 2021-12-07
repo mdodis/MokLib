@@ -10,5 +10,4 @@ struct ImageConverter {
     };
 
     static Raw to_truecolor_rgba32(Desc *desc);
-    static Raw to_truecolor_norm32(Desc *desc);
 };
