@@ -32,7 +32,7 @@ struct Str {
     bool split(int32 at, Str *left, Str *right) const;
 
     /**
-     * Chops the string at the character, returning the left part
+     * Chops the string at the character, returning the right part
      * @see Str::split
      */
     _inline Str chop_left(int32 at) const {
@@ -50,7 +50,7 @@ struct Str {
     }
 
     /**
-     * Chops the string at the character, returning the right part
+     * Chops the string at the character, returning the left part
      * @see Str::split
      */
     _inline Str chop_right(int32 at) {
@@ -97,6 +97,20 @@ struct Str {
      */
     int32 first_of(const Str &s, int32 start = 0);
 
+    /** Shorthand for chop_left(last_of(c) - 1) */
+    _inline Str chop_left_last_of(char c) {
+        return chop_left(last_of(c) - 1);
+    }
+
+    _inline Str chop_right_last_of(const Str &s) {
+        return chop_right(last_of(s) - 1);
+    }
+
+    /** True when the string starts with the specified needle */
+    bool starts_with(const Str &needle);
+
+    /** True when the string ends with the specified needle */
+    bool ends_with(const Str &needle);
 
     _inline char &operator[](int index) {
 #if MOK_STR_RANGE_CHECK
@@ -140,3 +154,5 @@ static _inline bool operator!=(const Str &left, const Str &right) {
 }
 
 #define STATIC_STR(s) Str((s), ARRAY_COUNT(s) - 1, true)
+/** This is a hack since we can't tell string literals and cstrings apart */
+#define LIT(s) Str((s), ARRAY_COUNT(s) - 1, true)

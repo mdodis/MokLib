@@ -37,8 +37,18 @@ TimeSpec operator-(const TimeSpec &lhs, const TimeSpec &rhs) {
 }
 
 int compare_time(const TimeSpec &lhs, const TimeSpec &rhs) {
-    TimeSpec diff = lhs - rhs;
-    return CompareFileTime((FILETIME*)&rhs.time, (FILETIME*)&lhs.time);
+    ULARGE_INTEGER lhs_int, rhs_int;
+    lhs_int.QuadPart = lhs.time;
+    rhs_int.QuadPart = rhs.time;
+
+    FILETIME lhs_time, rhs_time;
+    lhs_time.dwHighDateTime = lhs_int.HighPart;
+    lhs_time.dwLowDateTime  = lhs_int.LowPart;
+
+    rhs_time.dwHighDateTime = rhs_int.HighPart;
+    rhs_time.dwLowDateTime  = rhs_int.LowPart;
+
+    return CompareFileTime(&rhs_time, &lhs_time);
 }
 
 

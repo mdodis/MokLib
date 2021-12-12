@@ -104,3 +104,7 @@ static constexpr _inline IType type_of(const char * s) {
 		0
 	};
 }
+
+static constexpr _inline IType type_of(char * s) {
+	return type_of((const char*)s);
+}

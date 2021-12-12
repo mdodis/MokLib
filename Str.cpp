@@ -92,6 +92,32 @@ int32 Str::first_of(const Str &s, int32 start) {
     return -1;
 }
 
+bool Str::starts_with(const Str &needle) {
+    int32 i = 0;
+    while ((i < needle.len) && (i < len) && (data[i] == needle[i])) {
+        i++;
+    }
+
+    return (i == needle.len);
+}
+
+bool Str::ends_with(const Str &needle) {
+    i32 mi = len - 1;
+    i32 ni = needle.len - 1;
+    while ((mi >= 0) && (ni >= 0)) {
+        if (data[mi] != needle[ni]) {
+            return false;
+        }
+        mi--;
+        ni--;
+    }
+
+    if (mi < 0) {
+        return false;
+    }
+
+    return true;
+}
 
 bool operator==(const Str &left, const Str &right) {
     if (left.len != right.len) return false;
