@@ -45,6 +45,8 @@ bool write_file(FileHandle &handle, const void *src, uint32 bytes_to_write, uint
 void flush_file_buffers(FileHandle &handle);
 void close_file(const FileHandle &file);
 
+bool create_dir(const Str &pathname);
+
 template <typename T>
 bool read_struct(FileHandle &handle, T *destination, uint64 offset = 0) {
     return read_file(handle, destination, sizeof(T), offset) == sizeof(T);
@@ -63,5 +65,9 @@ struct Tape {
     template <typename T>
     bool read_struct(T *destination) {
         return read(destination, sizeof(T)) == sizeof(T);
+    }
+
+    int64 read_raw(Raw &destination) {
+        return read(destination.buffer, destination.size);
     }
 };

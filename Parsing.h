@@ -9,6 +9,11 @@ static bool is_whitespace(char c) {
         || (c == '\r');
 }
 
+static _inline bool is_newline(char c) {
+    return (c == '\n')
+        || (c == '\r');
+}
+
 static bool is_digit(char c) {
     return (c >= '0' && c <= '9');
 }
@@ -29,6 +34,14 @@ static int32 eat_whitespace(const Str &s, int32 i) {
         i++;
     }
     return i;
+}
+
+static int32 eat_line(const Str &s, int32 i = 0) {
+    while (i < s.len && !is_newline(s[i])) {
+        i++;
+    }
+
+    return i + 1;
 }
 
 int32 parse_cid(const Str &s, int32 i, Str &out);

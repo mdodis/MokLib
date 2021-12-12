@@ -12,7 +12,6 @@ struct HModule__ {
 typedef struct HModule__ *HModule;
 
 struct Dll {
-    MTime::TimeSpec last_time;
     HModule handle;
     void *get_proc_address(const char *name);
 };
@@ -20,7 +19,6 @@ struct Dll {
 #elif OS_LINUX
 
 struct Dll {
-    MTime::TimeSpec last_time;
     void *handle;
     void *get_proc_address(const char *name);
 };

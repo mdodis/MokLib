@@ -1,4 +1,5 @@
 #pragma once
+#include "../Base.h"
 #include <math.h>
 #include <float.h>
 
@@ -13,6 +14,15 @@ struct Vec2i {
         struct {int x, y; };
     };
 };
+
+static _inline bool operator==(const Vec2i &left, const Vec2i &right) {
+    return (left.x == right.x)
+        && (left.y == right.y);
+}
+
+static _inline Vec2i operator-(const Vec2i &left, const Vec2i &right) {
+    return Vec2i { (left.x - right.x), (left.y - right.y) };
+}
 
 struct Vec2 {
     union {
@@ -249,4 +259,17 @@ static _inline Vec3 operator*(const Mat4 &m, const Vec3 &v) {
         dot(v4, m[1]),
         dot(v4, m[2]),
     };
+}
+
+static _inline i32 abs(i32 v) {
+    return v > 0 ? v : -v;
+}
+
+static _inline Vec2i abs(const Vec2i &v) {
+    return Vec2i { abs(v.x), abs(v.y) };
+}
+
+static _inline f32 distance(const Vec2i &a, const Vec2i &b) {
+    Vec2i diff = (b - a);
+    return sqrtf(diff.x * diff.x + diff.y * diff.y);
 }

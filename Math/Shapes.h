@@ -1,5 +1,23 @@
 #pragma once
 #include "Base.h"
+#include "../Base.h"
+
+struct Recti {
+    Vec2i pos;
+    Vec2i size;
+
+    Recti() : Recti(0,0,0,0) {}
+    Recti(i32 x, i32 y, i32 w, i32 h) {
+        pos = {x, y};
+        size = {w ,h};
+    }
+
+    _inline Vec2i top_left()  { return { pos.x, pos.y }; }
+    _inline Vec2i top_right() { return { pos.x + size.x, pos.y }; }
+    _inline Vec2i bot_left()  { return { pos.x, pos.y + size.y }; }
+    _inline Vec2i bot_right() { return { pos.x + size.x, pos.y + size.y }; }
+
+};
 
 struct Sphere {
     Vec3 center;

@@ -149,8 +149,8 @@ struct TArray {
 		int32 curr_index;
 	};
 
-	Iterator begin() { return Iterator(data, 0); }
-	Iterator end()   { return Iterator(data, size); }
+	Iterator begin() const { return Iterator(data, 0); }
+	Iterator end()   const { return Iterator(data, size); }
 };
 
 template <typename T, uint32 Count>

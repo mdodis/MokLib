@@ -12,11 +12,16 @@ struct IImporter {
     ProcImporterLoad *load;
 };
 
-struct ImporterRegistry {
-    static constexpr uint32 Max_Importers = 16;
+struct IImporterRegistry {
+    virtual bool load_file(Str filename, IAllocator alloc, struct Import *result) = 0;
+};
 
-    IImporter importers[Max_Importers];
+struct ImporterRegistry : public IImporterRegistry {
+
+    ImporterRegistry(IImporter *importers, u32 num_importers)
+        :importers(importers), num_importers(num_importers) {}
+    IImporter *importers;
     uint32 num_importers;
 
-    bool load_file(Str filename, IAllocator alloc, struct Import *result);
+    virtual bool load_file(Str filename, IAllocator alloc, struct Import *result) override;
 };

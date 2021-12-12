@@ -88,12 +88,13 @@ MTime::TimeSpec get_file_time(const Str &file_path) {
     FILETIME time;
     GetFileTime(file_handle, 0, 0, &time);
 
+
     CloseHandle(file_handle);
 
-    u64 result;
-    *((FILETIME*)&result) = time;
-
-    return MTime::TimeSpec{ result };
+    ULARGE_INTEGER time_int;
+    time_int.HighPart = time.dwHighDateTime;
+    time_int.LowPart = time.dwLowDateTime;
+    return MTime::TimeSpec{ time_int.QuadPart };
 }
 
 int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uint64 offset) {
@@ -121,6 +122,22 @@ void flush_file_buffers(FileHandle &handle) {
 void close_file(const FileHandle &file) {
     CloseHandle((HANDLE)file.internal_handle);
 }
+
+bool create_dir(const Str &pathname) {
+
+    char *dirname;
+    static char buf[260];
+    if (pathname.has_null_term) {
+        dirname = (char*)pathname.data;
+    } else {
+        memcpy(buf, pathname.data, pathname.len);
+        buf[pathname.len] = 0;
+        dirname = buf;
+    }
+
+    return CreateDirectoryA(dirname, 0);
+}
+
 
 #elif OS_LINUX
 #include <unistd.h>

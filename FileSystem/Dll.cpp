@@ -25,7 +25,8 @@ Dll load_dll(Str filename) {
 }
 
 void unload_dll(Dll &dll) {
-    FreeLibrary((HMODULE)dll.handle);
+    BOOL result = FreeLibrary((HMODULE)dll.handle);
+    ASSERT(result);
 }
 
 void *Dll::get_proc_address(const char *name) {
@@ -55,7 +56,6 @@ Dll load_dll(Str filename) {
 
     Dll result;
     result.handle = handle;
-    result.last_time = get_file_time(Str(filename_nullterm, filename.len));
 
     return result;
 }
