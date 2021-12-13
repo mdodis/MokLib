@@ -71,15 +71,3 @@
 #else
     #define _allocator
 #endif
-
-/**
- * C Compatibility
- */
-#if OS_WINDOWS
-    #define EXPORT __declspec(dllexport)
-    #define CEXPORT extern "C" EXPORT
-#endif
-
-#ifndef CEXPORT
-    #define CEXPORT
-#endif

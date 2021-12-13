@@ -3,6 +3,7 @@
 #include "Importers/Import.h"
 #include "Debugging/Base.h"
 #include "Importers/Importer.h"
+#include "Math/Base.h"
 
 #pragma pack(push, 1)
 struct BMPFileHeader {
@@ -186,7 +187,7 @@ static PROC_IMPORTER_BMP_EXTRACT(extract_bmp_124) {
 
 static bool extract_bmp(FileHandle fh, IAllocator &alloc, BMPAttribs *attribs, struct Import *result) {
     result->kind = ImportKind::Image;
-    result->image.dimensions = Vec2i {attribs->dimensions.x, abs(attribs->dimensions.y)};
+    result->image.dimensions = Vec2i {attribs->dimensions.x, absolute(attribs->dimensions.y)};
     result->image.is_flipped = attribs->dimensions.y > 0;
 
     // Taken from https://en.wikipedia.org/wiki/BMP_file_format#Color_table

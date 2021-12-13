@@ -1,6 +1,7 @@
 #include "FileSystem.h"
 #include "../Host.h"
 #include "Time/Time.h"
+#include <sys/types.h>
 
 #if OS_WINDOWS
 #include "../WinInc.h"
@@ -145,7 +146,7 @@ bool create_dir(const Str &pathname) {
 #include <string.h>
 #include <sys/stat.h>
 
-FileHandle open_file(const Str &file_path, FileMode::Type mode) {
+FileHandle open_file(const Str &file_path, EFileMode mode) {
     static char path[1024];
     memcpy(path, file_path.data, file_path.len);
     path[file_path.len] = 0;
@@ -171,6 +172,18 @@ int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uin
     return pread(fd, destination, bytes_to_read, offset);
 }
 
+bool write_file(FileHandle &handle, const void *src, uint32 bytes_to_write, uint32 *bytes_written) {
+    int fd = handle.internal_handle;
+    i64 result = pwrite(fd, src, bytes_to_write, 0);
+    if (result < 0) {
+        *bytes_written = 0;
+        return false;
+    } else {
+        *bytes_written = result;
+        return true;
+    }
+}
+
 uint32 get_file_size(const FileHandle &handle) {
     int fd = handle.internal_handle;
     struct stat statinfo;
@@ -182,7 +195,7 @@ uint32 get_file_size(const FileHandle &handle) {
 MTime::TimeSpec get_file_time(const Str &file_path) {
     // @todo: need to find a better way to temp convert
     // to null term strings
-    ASSERT(file_path[file_path.len - 1] == 0);
+    ASSERT(file_path.has_null_term);
 
     struct stat stat_result;
     stat((char*)file_path.data, &stat_result);

@@ -261,12 +261,12 @@ static _inline Vec3 operator*(const Mat4 &m, const Vec3 &v) {
     };
 }
 
-static _inline i32 abs(i32 v) {
+static _inline i32 absolute(i32 v) {
     return v > 0 ? v : -v;
 }
 
-static _inline Vec2i abs(const Vec2i &v) {
-    return Vec2i { abs(v.x), abs(v.y) };
+static _inline Vec2i absolute(const Vec2i &v) {
+    return Vec2i { absolute(v.x), absolute(v.y) };
 }
 
 static _inline f32 distance(const Vec2i &a, const Vec2i &b) {

@@ -4,7 +4,7 @@
 // #include "WinInc.h"
 
 namespace ConsoleColor {
-    enum Type : uint32 {
+    enum : uint32 {
         Red     = 0x0000,
         Green   = 0x0004,
         Blue    = 0x0008,
@@ -20,7 +20,7 @@ namespace ConsoleColor {
         Underline = 0x2,
     };
 
-    typedef int Style;
+    typedef u32 Style;
 
 };
 
@@ -128,7 +128,7 @@ static const char *Color_Translation_Table[ConsoleColor::Count] = {
 
 namespace Console {
 
-    static _inline void set_color(Console::Handle handle, ConsoleColor::Type color = ConsoleColor::Invalid) {
+    static _inline void set_color(Console::Handle handle, ConsoleColor::Style color = ConsoleColor::Invalid) {
 
         FILE *file;
 

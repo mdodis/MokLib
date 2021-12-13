@@ -37,7 +37,7 @@ umm ThreadContextBase::alloc(uint64 size) {
 
 #elif OS_LINUX
 #include <pthread.h>
-#include "Compat/Malloc.h"
+#include <stdlib.h>
 
 static pthread_key_t Key;
 

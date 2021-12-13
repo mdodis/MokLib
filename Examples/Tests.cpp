@@ -3,9 +3,10 @@
 
 DEFTEST_UNIT(BasicUnit);
 
-DEFTEST_CASE(Add1And1, BasicUnit, "Make sure that 1 + 1 == 2", {
+DEFTEST_CASE(Add1And1, BasicUnit, "Make sure that 1 + 1 == 2");
+TEST_CASE(Add1And1) {
     return MPASSIF((1 + 1) == 2);
-});
+};
 
 int main(int argc, char *argv[]) {
     return TEST_UNIT(BasicUnit).run();

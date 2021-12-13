@@ -1,8 +1,8 @@
 #include "Dll.h"
 #include "FileSystem/FileSystem.h"
-#include "WinInc.h"
 
 #if OS_WINDOWS
+#include "WinInc.h"
 
 Dll load_dll(Str filename) {
     // Convert filename to wide string
