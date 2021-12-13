@@ -67,3 +67,5 @@ typedef double      f64;
 #define ARRAY_COUNT(a) (sizeof(a) / sizeof((a)[0]))
 
 #define UNUSED(x) ((void)(x))
+
+#define MCONCAT(x, y) x##y

@@ -271,5 +271,5 @@ static _inline Vec2i abs(const Vec2i &v) {
 
 static _inline f32 distance(const Vec2i &a, const Vec2i &b) {
     Vec2i diff = (b - a);
-    return sqrtf(diff.x * diff.x + diff.y * diff.y);
+    return sqrtf(f32(diff.x * diff.x) + f32(diff.y * diff.y));
 }

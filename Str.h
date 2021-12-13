@@ -53,7 +53,7 @@ struct Str {
      * Chops the string at the character, returning the left part
      * @see Str::split
      */
-    _inline Str chop_right(int32 at) {
+    _inline Str chop_right(int32 at) const {
 
         if (at < 0) {
             return Str::NullStr;
@@ -70,47 +70,47 @@ struct Str {
     /**
      * Chops the string between left and right
      */
-    _inline Str chop_middle(int32 left, int32 right) {
+    _inline Str chop_middle(int32 left, int32 right) const {
         return Str((const char *)data + left, right - left);
     }
 
     /**
      * Finds the last instance of the specified character
      */
-    int32 last_of(char c);
+    int32 last_of(char c) const;
 
     /**
      * Finds the first instance of the specified character, starting
      * from @start
      */
-    int32 first_of(char c, int32 start = 0);
+    int32 first_of(char c, int32 start = 0) const;
 
     /**
      * Finds the last occurrence of the specified string, starting
      * from @start
      */ 
-    int32 last_of(const Str &s, int32 start = -1);
+    int32 last_of(const Str &s, int32 start = -1) const;
 
     /**
      * Find the first occurence of the specified string, starting
      * from @start
      */
-    int32 first_of(const Str &s, int32 start = 0);
+    int32 first_of(const Str &s, int32 start = 0) const;
 
     /** Shorthand for chop_left(last_of(c) - 1) */
-    _inline Str chop_left_last_of(char c) {
+    _inline Str chop_left_last_of(char c) const {
         return chop_left(last_of(c) - 1);
     }
 
-    _inline Str chop_right_last_of(const Str &s) {
+    _inline Str chop_right_last_of(const Str &s) const {
         return chop_right(last_of(s) - 1);
     }
 
     /** True when the string starts with the specified needle */
-    bool starts_with(const Str &needle);
+    bool starts_with(const Str &needle) const;
 
     /** True when the string ends with the specified needle */
-    bool ends_with(const Str &needle);
+    bool ends_with(const Str &needle) const;
 
     _inline char &operator[](int index) {
 #if MOK_STR_RANGE_CHECK

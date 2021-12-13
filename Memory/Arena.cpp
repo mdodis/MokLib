@@ -12,6 +12,11 @@ Arena Arena::create(IAllocator base, uint64 size) {
 
 umm Arena::push(uint64 size) {
 	umm result = 0;
+
+	if (size == Arena::Remaining) {
+		size = capacity - used;
+	}
+
 	if ((used + size) <= capacity) {
 		result = memory + used;
 		last_offset = used;

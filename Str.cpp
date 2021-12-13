@@ -30,7 +30,7 @@ bool Str::split(int32 at, Str *left, Str *right) const {
     return true;
 }
 
-int32 Str::last_of(char c) {
+int32 Str::last_of(char c) const{
     for (int i = len - 1; i >= 0; --i) {
         if (data[i] == c) {
             return i;
@@ -40,7 +40,7 @@ int32 Str::last_of(char c) {
     return -1;
 }
 
-int32 Str::first_of(char c, int32 start) {
+int32 Str::first_of(char c, int32 start) const {
     for (int i = start; i < len; ++i) {
         if (data[i] == c) {
             return i;
@@ -49,7 +49,7 @@ int32 Str::first_of(char c, int32 start) {
     return -1;
 }
 
-int32 Str::last_of(const Str &s, int32 start) {
+int32 Str::last_of(const Str &s, int32 start) const {
     if (s.len <= 0) return -1;
 
     if (start == -1) start = len - 1;
@@ -72,7 +72,7 @@ int32 Str::last_of(const Str &s, int32 start) {
     return -1;
 }
 
-int32 Str::first_of(const Str &s, int32 start) {
+int32 Str::first_of(const Str &s, int32 start) const {
     if (s.len <= 0) return -1;
     
     int sindex = 0;
@@ -92,7 +92,7 @@ int32 Str::first_of(const Str &s, int32 start) {
     return -1;
 }
 
-bool Str::starts_with(const Str &needle) {
+bool Str::starts_with(const Str &needle) const {
     int32 i = 0;
     while ((i < needle.len) && (i < len) && (data[i] == needle[i])) {
         i++;
@@ -101,7 +101,7 @@ bool Str::starts_with(const Str &needle) {
     return (i == needle.len);
 }
 
-bool Str::ends_with(const Str &needle) {
+bool Str::ends_with(const Str &needle) const {
     i32 mi = len - 1;
     i32 ni = needle.len - 1;
     while ((mi >= 0) && (ni >= 0)) {

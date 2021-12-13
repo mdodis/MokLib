@@ -4,7 +4,7 @@
 
 struct Arena {
 	static constexpr uint64 Default_Size = MEGABYTES(1);
-
+	static constexpr u64 Remaining = ~0ull;
 	static Arena create(IAllocator base, uint64 size = Default_Size);
 
 	umm push(uint64 size);
@@ -41,5 +41,24 @@ struct ArenaScope {
 
 	~ArenaScope() {
 		arena->release_base();
+	}
+};
+
+#define SAVE_ARENA(arena) ArenaSave MCONCAT(_arena_save, __LINE__) (arena)
+
+struct ArenaSave {
+	Arena *arena;
+	u64 capacity, used, last_offset;
+	ArenaSave(Arena *a) {
+		arena = a;
+		capacity    = arena->capacity;
+		used        = arena->used;
+		last_offset = arena->last_offset;
+	}
+
+	~ArenaSave() {
+		arena->capacity    = capacity;
+		arena->used        = used;
+		arena->last_offset = last_offset;
 	}
 };
