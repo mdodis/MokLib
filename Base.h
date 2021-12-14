@@ -69,3 +69,4 @@ typedef double      f64;
 #define UNUSED(x) ((void)(x))
 
 #define MCONCAT(x, y) x##y
+#define MSTR(x) #x
