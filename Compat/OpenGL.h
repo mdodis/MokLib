@@ -39,6 +39,7 @@ bool create_gl_context(GLContextCreationFormatDesc *desc);
 bool gl_swap_interval(i32 interval);
 void *gl_get_proc_address(const char *name);
 bool gl_load_procs();
+void gl_swap_buffers(void *window_handle);
 
 #endif // MOK_COMPAT_OPENGL_H
 
@@ -48,7 +49,7 @@ bool gl_load_procs();
 #define PROC_WGL_CREATE_CONTEXT_ATTRIBS_ARB(name)   HGLRC name(HDC dc, HGLRC share_context, const i32 *attrib_list)
 #define PROC_WGL_GET_EXTENSIONS_STRING_ARB(name)    const char *name(HDC dc)
 #define PROC_WGL_SWAP_INTERVAL_EXT(name)            i32 name(i32 interval)
-#define PROC_WGL_CHOOSE_PIXEL_FORMAT_ARGB(name)     i32 name(HDC dc, const i32 *attribs_i, const i32 *attribs_f, u32 max_formats, i32 *formats, u32 *num_formats)
+#define PROC_WGL_CHOOSE_PIXEL_FORMAT_ARGB(name)     i32 name(HDC dc, const i32 *attribs_i, const float *attribs_f, u32 max_formats, i32 *formats, u32 *num_formats)
 
 typedef PROC_WGL_CREATE_CONTEXT_ATTRIBS_ARB(ProcWGLCreateContextAttribsARB);
 typedef PROC_WGL_GET_EXTENSIONS_STRING_ARB(ProcWGLGetExtensionsStringARB);
@@ -62,7 +63,7 @@ static struct {
     ProcWGLChoosePixelFormatARB    *choose_pixel_format_arb;
 
     const char *extensions;
-    enum {
+    enum : i32 {
         ContextMajorVersionARB   = 0x2091,
         ContextMinorVersionARB   = 0x2092,
         ContextProfileMaskARB    = 0x9126,
@@ -117,9 +118,10 @@ bool create_gl_context(GLContextCreationFormatDesc *desc) {
         return false;
     }
 
-    dummy_window = CreateWindowA(
+    dummy_window = CreateWindowExA(
         0,
         dummy_window_class.lpszClassName,
+        "Mok Dummy Window",
         0,
         CW_USEDEFAULT, CW_USEDEFAULT,
         CW_USEDEFAULT, CW_USEDEFAULT,
@@ -187,8 +189,8 @@ bool create_gl_context(GLContextCreationFormatDesc *desc) {
         WGL.SupportOpenGLARB,   1,
         WGL.DoubleBufferARB,    1,
         WGL.AccelerationARB,    WGL.FullAccelerationARB,
-        WGL.SupportOpenGLARB,   WGL.TypeRGBAARB,
-        WGL.PixelTypeARB,       desc->color_bits,
+        WGL.PixelTypeARB,       WGL.TypeRGBAARB,
+        WGL.ColorBitsARB,       desc->color_bits,
         WGL.DepthBitsARB,       desc->depth_bits,
         WGL.StencilBitsARB,     desc->stencil_bits,
         0
@@ -224,6 +226,7 @@ bool create_gl_context(GLContextCreationFormatDesc *desc) {
         WGL.ContextMajorVersionARB, desc->major_version,
         WGL.ContextMinorVersionARB, desc->minor_version,
         WGL.ContextProfileMaskARB,  profile_flags,
+        0
     };
 
     glrc = WGL.create_context_attribs_arb(dc, 0, gl_attribs);
@@ -244,6 +247,12 @@ bool gl_swap_interval(i32 interval) {
 
 void *gl_get_proc_address(const char *name) {
     return wglGetProcAddress(name);
+}
+
+void gl_swap_buffers(void *window_handle) {
+    HWND handle = *(HWND*)window_handle;
+    static HDC dc = GetDC(handle);
+    SwapBuffers(dc);
 }
 
 
