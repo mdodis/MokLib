@@ -56,6 +56,8 @@ struct Tape {
     FileHandle file;
     uint64 current_offset;
 
+    Tape(FileHandle file) : file(file), current_offset(0) {}
+
     int64 read(void *destination, uint32 amount) {
         int64 num_read = read_file(file, destination, amount, current_offset);
         current_offset += num_read;
