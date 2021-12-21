@@ -1,6 +1,9 @@
 #include "Importer.h"
+#include "Base.h"
 #include "Defer.h"
 #include "FileSystem/FileSystem.h"
+#include "Importers/Import.h"
+#include "Memory/Arena.h"
 
 bool ImporterRegistry::load_file(Str filename, IAllocator alloc, struct Import *result) {
 
@@ -21,7 +24,14 @@ bool ImporterRegistry::load_file(Str filename, IAllocator alloc, struct Import *
     }
 
     if (importer) {
-        return importer->load(fh, alloc, result);
+
+        Arena arena = Arena::create(alloc, MEGABYTES(1));
+        bool successful = importer->load(fh, arena.to_alloc(), result);
+        // result->data.buffer = arena.memory;
+        // result->data.size   = arena.used;
+
+        return successful;
+
     } else {
         return false;
     }

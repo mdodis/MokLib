@@ -13,6 +13,8 @@ struct Arena {
 	void release_base();
 	IAllocator to_alloc();
 
+	bool stretch(u64 required_size);
+
 	IAllocator base;
 	umm memory;
 	uint64 capacity, used;
@@ -27,7 +29,7 @@ struct Arena {
 #define CREATE_INLINE_ARENA(name, size) \
 	static uint8 memory_of__##name[(size)]; \
 	Arena name = { \
-		IAllocator{0}, \
+		Null_Allocator, \
 		memory_of__##name, \
 		(size), \
 		0, \

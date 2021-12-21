@@ -46,3 +46,25 @@ static constexpr IAllocator system_allocator = {
 constexpr IAllocator get_system_allocator(void) {
     return system_allocator;
 }
+
+static _inline PROC_MEMORY_RESERVE(null_allocator_reserve) {
+    return (umm)0;
+}
+
+static _inline PROC_MEMORY_RESIZE(null_allocator_resize) {
+    return (umm)0;
+}
+
+static _inline PROC_MEMORY_RELEASE(null_allocator_release) {
+}
+
+static _inline PROC_MEMORY_RELEASE_BASE(null_allocator_release_base) {
+    return;
+}
+
+static constexpr IAllocator Null_Allocator = {
+    null_allocator_reserve,
+    null_allocator_resize,
+    null_allocator_release,
+    null_allocator_release_base,
+};

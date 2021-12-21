@@ -23,7 +23,7 @@ struct TArray {
 		this->size = 0;
 	}
 
-	_inline TArray(const IAllocator &alloc, std::initializer_list<T> init_list) :TArray(alloc) {
+	_inline TArray(const IAllocator &alloc, std::initializer_list<T> init_list) : TArray(alloc) {
 		for (const T &elem : init_list) {
 			add(elem);
 		}
@@ -35,7 +35,7 @@ struct TArray {
 		}
 
 		if (capacity == (size)) {
-			if (!strech()) return -1;
+			if (!stretch()) return -1;
 		}
 
 		data[size++] = item;
@@ -48,7 +48,7 @@ struct TArray {
 		}
 
 		if (capacity == (size)) {
-			if (!strech()) return 0;
+			if (!stretch()) return 0;
 		}
 
 		size++;
@@ -89,7 +89,7 @@ struct TArray {
 		return true;
 	}
 
-	bool strech() {
+	bool stretch() {
 		T *new_data = (T*)alloc.resize(alloc.context, (umm)data, capacity * sizeof(T), capacity * 2 * sizeof(T));
 		if (!new_data) return false;
 		data = new_data;
@@ -109,6 +109,16 @@ struct TArray {
 	_inline const T &operator[](int32 idx) const {
 		ASSERT(is_index_valid(idx));
 		return data[idx];
+	}
+
+	i32 index_of(const T &query) const {
+		for (i32 i = 0; i < size; ++i) {
+			if (query == data[i]) {
+				return i;
+			}
+		}
+
+		return -1;
 	}
 
 	T *data;

@@ -8,6 +8,9 @@
 
 extern ImporterRegistry Importer_Registry;
 
+void output_image_ppm(Import &import);
+void print_vertices_model(Import &import);
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         PRINTLN("Usage: Importers [File to open]");
@@ -23,6 +26,26 @@ int main(int argc, char *argv[]) {
         PRINTLN("Failed to load file: " + filepath);
         return -1;
     }
+
+    switch (import.kind) {
+
+        case ImportKind::Image: {
+            output_image_ppm(import);
+        } break;
+
+        case ImportKind::Model: {
+            print_vertices_model(import);
+        } break;
+
+        default: {
+            return 0;
+        } break;
+    }
+
+    return 0;
+}
+
+void output_image_ppm(Import &import) {
 
     auto alloc = get_system_allocator();
 
@@ -53,10 +76,12 @@ int main(int argc, char *argv[]) {
     }
 
     fclose(f);
-
-
-    return 0;
 }
+
+void print_vertices_model(Import &import) {
+
+}
+
 
 #include "Compile.inc"
 #include "Importers/Importers.inc"

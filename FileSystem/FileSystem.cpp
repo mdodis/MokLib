@@ -77,7 +77,7 @@ FileHandle open_file(const Str &file_path, EFileMode mode) {
     };
 }
 
-uint32 get_file_size(const FileHandle &handle) {
+u64 get_file_size(const FileHandle &handle) {
     return GetFileSize((HANDLE)handle.internal_handle, 0);
 }
 
@@ -98,8 +98,15 @@ MTime::TimeSpec get_file_time(const Str &file_path) {
     return MTime::TimeSpec{ time_int.QuadPart };
 }
 
-int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uint64 offset) {
-    SetFilePointer(handle.internal_handle, (uint32)offset, 0, FILE_BEGIN);
+int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64 offset) {
+    LONG low_distance  = LONG(offset & ((~0ull) >> 32));
+    LONG high_distance = LONG(offset >> 32);
+
+    SetFilePointer(
+        handle.internal_handle,
+        low_distance,
+        &high_distance,
+        FILE_BEGIN);
 
     DWORD bytes_read;
     BOOL success = ReadFile((HANDLE)handle.internal_handle, destination, bytes_to_read, &bytes_read, 0);
@@ -111,7 +118,7 @@ int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uin
     }
 }
 
-bool write_file(FileHandle &handle, const void *src, uint32 bytes_to_write, uint32 *bytes_written) {
+bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written) {
     return WriteFile((HANDLE)handle.internal_handle, src, bytes_to_write, (LPDWORD)bytes_written, 0);
 }
 
@@ -167,12 +174,12 @@ FileHandle open_file(const Str &file_path, EFileMode mode) {
     return result;
 }
 
-int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uint64 offset) {
+int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64 offset) {
     int fd = handle.internal_handle;
     return pread(fd, destination, bytes_to_read, offset);
 }
 
-bool write_file(FileHandle &handle, const void *src, uint32 bytes_to_write, uint32 *bytes_written) {
+bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written) {
     int fd = handle.internal_handle;
     i64 result = pwrite(fd, src, bytes_to_write, 0);
     if (result < 0) {
@@ -184,12 +191,12 @@ bool write_file(FileHandle &handle, const void *src, uint32 bytes_to_write, uint
     }
 }
 
-uint32 get_file_size(const FileHandle &handle) {
+u64 get_file_size(const FileHandle &handle) {
     int fd = handle.internal_handle;
     struct stat statinfo;
     fstat(fd, &statinfo);
 
-    return (uint32)statinfo.st_size;
+    return (u64)statinfo.st_size;
 }
 
 MTime::TimeSpec get_file_time(const Str &file_path) {

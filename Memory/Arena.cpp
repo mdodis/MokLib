@@ -17,11 +17,15 @@ umm Arena::push(uint64 size) {
 		size = capacity - used;
 	}
 
-	if ((used + size) <= capacity) {
-		result = memory + used;
-		last_offset = used;
-		used += size;
+	if ((used + size) > capacity) {
+		if (!stretch(used + size)) {
+			return 0;
+		}
 	}
+
+	result = memory + used;
+	last_offset = used;
+	used += size;
 
 	return result;
 }
@@ -32,20 +36,23 @@ umm Arena::resize(umm ptr, uint64 prev_size, uint64 new_size) {
 	if (ptr == 0) return push(new_size);
 	if (new_size <= prev_size) return ptr;
 
-	if ((last_ptr == ptr) && ((last_offset + prev_size) >= used)) {
+	if (last_ptr == ptr) {
 
 		if ((last_offset + new_size) > capacity) {
-			return 0;
+			if (!stretch(last_offset + new_size)) {
+				return 0;
+			}
 		}
 
 		umm result = memory + last_offset;
-		used = last_offset;
-		used = new_size;
-		return last_ptr;
+		used = last_offset + new_size;
+		return result;
 	} else {
 
 		if ((used + new_size) > capacity) {
-			return 0;
+			if (!stretch(used + new_size)) {
+				return 0;
+			}
 		}
 
 		umm new_ptr = push(new_size);
@@ -63,6 +70,17 @@ void Arena::release(umm ptr) {
 		last_offset = 0;
 	}
 }
+
+bool Arena::stretch(u64 required_size) {
+	umm new_memory = base.resize(base.context, memory, capacity, required_size);
+	if (!new_memory)
+		return false;
+
+	memory = new_memory;
+	capacity = required_size;
+	return true;
+}
+
 
 void Arena::release_base() {
 	base.release(base.context, memory);

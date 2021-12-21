@@ -1,8 +1,6 @@
 #pragma once
 #include "Host.h"
 
-// @todo: better debug print function translation (use OutputDebugString for vs...)
-
 /**
  * Basic
  */
@@ -16,7 +14,25 @@
 
 #ifndef MOK_DEBUG_PRINTF
 	#include <stdio.h>
-	#define DEBUG_PRINTF(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
+	#include <stdarg.h>
+
+	#if OS_WINDOWS
+		extern "C" __declspec(dllimport) void OutputDebugStringA(const char *lpOutputString);
+		#define DEBUG_PRINTF(fmt, ...) _dbg_printf(fmt, __VA_ARGS__)
+
+		static void _dbg_printf(const char *fmt, ...) {
+			char buffer[2048];
+			va_list args;
+			va_start(args, fmt);
+			vsnprintf(buffer, sizeof(buffer), fmt, args);
+			OutputDebugStringA(buffer);
+			OutputDebugStringA("\n");
+			va_end(args);
+		}
+	#else
+		#define DEBUG_PRINTF(fmt, ...)
+		#warning "DEBUG_PRINTF is not supported for this platform"
+	#endif
 #endif
 
 #ifndef MOK_DEBUG_BREAK

@@ -1,9 +1,12 @@
 #include "LibPNG.h"
+#include "Base.h"
 #include "Debugging/Base.h"
 #include "Importers/Image/Image.h"
 #include "Importers/Import.h"
 #include "FileSystem/FileSystem.h"
 #include "Memory/Base.h"
+#include "Memory/Arena.h"
+#include "Tape.h"
 #include "WinInc.h"
 
 #define PROC_IMPORT_PNG_ERROR_HANDLER(name) void name(png_structp pngptr, png_const_charp error_msg)
@@ -43,6 +46,9 @@ enum {
 
 PROC_IMPORTER_LOAD(import_png_load) {
 
+    CREATE_SCOPED_ARENA(get_system_allocator(), temp, KILOBYTES(512));
+    auto temp_alloc = temp.to_alloc();
+
     u8 signature[PngSignatureSize];
     if (read_file(file_handle, signature, PngSignatureSize, 0) != PngSignatureSize) {
         return false;
@@ -52,17 +58,18 @@ PROC_IMPORTER_LOAD(import_png_load) {
         return false;
     }
 
+    // @bug: putting &alloc results in a crash inside libpng
     png_structp png_ptr = png_create_read_struct_2(
         PNG_LIBPNG_VER_STRING,
         import_png_user_error, import_png_user_error, import_png_user_error,
-        (png_voidp)&alloc, import_png_malloc, import_png_free);
+        (png_voidp)&temp_alloc, import_png_malloc, import_png_free);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         return false;
     }
 
-    Tape read_tape(file_handle);
+    FileTape read_tape(file_handle);
 
     png_set_read_fn(png_ptr, &read_tape, import_png_io_read);
     png_set_sig_bytes(png_ptr, 0);
@@ -108,7 +115,8 @@ PROC_IMPORTER_LOAD(import_png_load) {
         result->image.format = PixelFormat::RGBA8;
     }
 
-    umm *row_ptrs = (umm*)alloc.reserve(alloc.context, sizeof(umm) * result->image.height);
+
+    umm *row_ptrs = (umm*)temp.push(sizeof(umm) * result->image.height);
     ASSERT(row_ptrs);
 
     result->data.size = result->image.width

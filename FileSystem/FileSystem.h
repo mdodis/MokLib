@@ -3,6 +3,7 @@
 #include "../Str.h"
 #include "Memory/RawBuffer.h"
 #include "Time/Time.h"
+#include "Tape.h"
 #include <stdio.h>
 
 enum class SymLinkKind {
@@ -36,11 +37,11 @@ struct FileHandle {
 
 bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind kind);
 FileHandle open_file(const Str &file_path,EFileMode mode);
-uint32 get_file_size(const FileHandle &handle);
+u64 get_file_size(const FileHandle &handle);
 MTime::TimeSpec get_file_time(const Str &file_path);
-int64 read_file(FileHandle &handle, void *destination, uint32 bytes_to_read, uint64 offset = 0);
+int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64 offset = 0);
 // @todo: make this use an offset instead of a tape like interface
-bool write_file(FileHandle &handle, const void *src, uint32 bytes_to_write, uint32 *bytes_written);
+bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written);
 
 void flush_file_buffers(FileHandle &handle);
 void close_file(const FileHandle &file);
@@ -52,24 +53,17 @@ bool read_struct(FileHandle &handle, T *destination, uint64 offset = 0) {
     return read_file(handle, destination, sizeof(T), offset) == sizeof(T);
 }
 
-struct Tape {
+struct FileTape : public Tape {
     FileHandle file;
-    uint64 current_offset;
 
-    Tape(FileHandle file) : file(file), current_offset(0) {}
+    FileTape(FileHandle file) : file(file) {
+        current_offset = 0;
+        size = get_file_size(file);
+    }
 
-    int64 read(void *destination, uint32 amount) {
+    i64 read(void *destination, u32 amount) override {
         int64 num_read = read_file(file, destination, amount, current_offset);
         current_offset += num_read;
         return num_read;
-    }
-
-    template <typename T>
-    bool read_struct(T *destination) {
-        return read(destination, sizeof(T)) == sizeof(T);
-    }
-
-    int64 read_raw(Raw &destination) {
-        return read(destination.buffer, destination.size);
     }
 };

@@ -5,7 +5,7 @@ struct Raw {
     /** Pointer to buffer data */
     void *buffer;
     /** Size of the buffer (in bytes) */
-    uint32 size;
+    u64 size;
 };
 
 struct RawTexture : public Raw {
