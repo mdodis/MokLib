@@ -56,7 +56,7 @@ bool operator==(const OBJIndex &left, const OBJIndex &right) {
 PROC_IMPORTER_LOAD(import_obj_load) {
     FileTape tape(file_handle);
 
-    CREATE_SCOPED_ARENA(get_system_allocator(), temp_arena, Arena::Default_Size);
+    CREATE_SCOPED_ARENA(get_system_allocator(), temp_arena, Arena::Default_Block_Size);
 
     TArray<Vec3> vertices(temp_arena.to_alloc());
     TArray<Vec2> textures(temp_arena.to_alloc());

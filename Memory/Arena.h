@@ -3,12 +3,13 @@
 #include "Base.h"
 
 struct Arena {
-	static constexpr uint64 Default_Size = MEGABYTES(1);
-	static constexpr u64 Remaining = ~0ull;
-	static Arena create(IAllocator base, uint64 size = Default_Size);
+	static constexpr u64 Default_Block_Size = MEGABYTES(1);
+	static constexpr u64 Remaining 			= ~0ull;
 
-	umm push(uint64 size);
-	umm resize(umm ptr, uint64 prev_size, uint64 new_size);
+	static Arena create(IAllocator base, u64 size = Default_Block_Size);
+
+	umm push(u64 size);
+	umm resize(umm ptr, u64 prev_size, u64 new_size);
 	void release(umm ptr);
 	void release_base();
 	IAllocator to_alloc();
@@ -17,9 +18,10 @@ struct Arena {
 
 	IAllocator base;
 	umm memory;
-	uint64 capacity, used;
+	u64 capacity, used;
+	u64 min_block_size;
 
-	uint64 last_offset = 0;
+	u64 last_offset = 0;
 };
 
 #define CREATE_SCOPED_ARENA(base, name, size) \
