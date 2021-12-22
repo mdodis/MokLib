@@ -27,8 +27,8 @@ bool ImporterRegistry::load_file(Str filename, IAllocator alloc, struct Import *
 
         Arena arena = Arena::create(alloc, MEGABYTES(1));
         bool successful = importer->load(fh, arena.to_alloc(), result);
-        // result->data.buffer = arena.memory;
-        // result->data.size   = arena.used;
+        result->data.buffer = arena.get_block_data();
+        result->data.size   = arena.used;
 
         return successful;
 

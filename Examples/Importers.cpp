@@ -1,4 +1,6 @@
 #include "Log.h"
+#include "Math/Base.h"
+#include "Math/Types.h"
 #include "Memory/Base.h"
 #include "Str.h"
 #include "Importers/Importer.h"
@@ -78,8 +80,42 @@ void output_image_ppm(Import &import) {
     fclose(f);
 }
 
+#pragma pack(push, 1)
+struct Vertex {
+    Vec3 p;
+    Vec3 n;
+    Vec2 t;
+};
+#pragma pack(pop)
+
 void print_vertices_model(Import &import) {
 
+    PRINTLN("o MokModel.MokModel_001");
+    for (u32 i = 0; i < import.model.num_vertices; ++i) {
+        Vertex *v = &((Vertex*)import.model.vertices)[i];
+        PRINTLN("v " + v->p.x + " " + v->p.y + " " + v->p.z);
+    }
+
+    for (u32 i = 0; i < import.model.num_vertices; ++i) {
+        Vertex *v = &((Vertex*)import.model.vertices)[i];
+        PRINTLN("vt " + v->t.x + " " + v->t.y);
+    }
+
+    for (u32 i = 0; i < import.model.num_vertices; ++i) {
+        Vertex *v = &((Vertex*)import.model.vertices)[i];
+        PRINTLN("vn " + v->n.x + " " + v->n.y + " " + v->n.z);
+    }
+
+    for (u32 i = 0; i < import.model.num_indices; i += 3) {
+        const u32 index0 = 1 + ((u32*)import.model.indices)[i];
+        const u32 index1 = 1 + ((u32*)import.model.indices)[i + 1];
+        const u32 index2 = 1 + ((u32*)import.model.indices)[i + 2];
+
+        PRINTLN("f "
+            + index0 + "/" + index0 + "/" + index0 + " "
+            + index1 + "/" + index1 + "/" + index1 + " "
+            + index2 + "/" + index2 + "/" + index2);
+    }
 }
 
 

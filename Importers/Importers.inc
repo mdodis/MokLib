@@ -1,14 +1,27 @@
 #include "Base.h"
 #include "Importer.h"
-#include "Importers/Image/BMP.h"
-#include "Importers/Model/OBJ.h"
 #include "Str.h"
 
+#ifndef MOK_INCLUDE_DEFAULT_IMPORTERS
+    #define MOK_INCLUDE_DEFAULT_IMPORTERS 1
+#endif
+
+#ifndef MOK_DEFINE_DEFAULT_IMPORTERS
+    #define MOK_DEFINE_DEFAULT_IMPORTERS 1
+#endif
+
+#if MOK_INCLUDE_DEFAULT_IMPORTERS
+#include "Importers/Image/BMP.h"
+#include "Importers/Model/OBJ.h"
+#endif
+
+#if MOK_DEFINE_DEFAULT_IMPORTERS
 /**
  * Change this to define a different name for the default import registry
  */
 #ifndef MOK_IMPORTER_REGISTRY_NAME
     #define MOK_IMPORTER_REGISTRY_NAME Importer_Registry
+#endif
 #endif
 
 /**
@@ -20,6 +33,7 @@
     {LIT("Wavefront OBJ"),  LIT(".obj"), import_obj_load}, \
 
 
+#if MOK_DEFINE_DEFAULT_IMPORTERS
 static IImporter _Importers[] = {
     MOK_DEFAULT_IMPORTERS
 };
@@ -28,7 +42,9 @@ ImporterRegistry MOK_IMPORTER_REGISTRY_NAME = {
     _Importers,
     ARRAY_COUNT(_Importers)
 };
+#endif
 
-
+#if MOK_INCLUDE_DEFAULT_IMPORTERS
 #include "Importers/Image/BMP.cpp"
 #include "Importers/Model/OBJ.cpp"
+#endif

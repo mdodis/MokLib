@@ -29,3 +29,12 @@ static _inline D3D11_SUBRESOURCE_DATA raw_to_subresource_data(const RawTexture &
     result.SysMemPitch = data.pitch;
     return result;
 }
+
+static _inline DXGI_FORMAT index_format_to_dxgi_format(IndexFormat::Type format) {
+    static DXGI_FORMAT table[IndexFormat::Count] = {
+        DXGI_FORMAT_R16_UINT, // UInt16
+        DXGI_FORMAT_R32_UINT, // UInt32
+    };
+
+    return table[format];
+}

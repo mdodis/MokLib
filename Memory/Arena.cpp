@@ -125,6 +125,11 @@ void Arena::release_base() {
 
 }
 
+umm Arena::get_block_data() {
+	return memory + sizeof(_ArenaBlockHdr);
+}
+
+
 // IAllocator interface
 PROC_MEMORY_RESERVE(arena_reserve) {
 	Arena *arena = (Arena*)context;

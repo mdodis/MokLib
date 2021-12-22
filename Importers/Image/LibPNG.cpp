@@ -64,7 +64,7 @@ PROC_IMPORTER_LOAD(import_png_load) {
     png_structp png_ptr = png_create_read_struct_2(
         PNG_LIBPNG_VER_STRING,
         import_png_user_error, import_png_user_error, import_png_user_error,
-        (png_voidp)&alloc, import_png_malloc, import_png_free);
+        (png_voidp)&temp_alloc, import_png_malloc, import_png_free);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {

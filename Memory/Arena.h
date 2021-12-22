@@ -16,6 +16,8 @@ struct Arena {
 
 	bool stretch(u64 required_size);
 
+	umm get_block_data();
+
 	IAllocator base;
 	umm memory;
 	u64 capacity, used;

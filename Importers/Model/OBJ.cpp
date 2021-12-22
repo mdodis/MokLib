@@ -207,8 +207,8 @@ PROC_IMPORTER_LOAD(import_obj_load) {
 
     result->model.num_vertices = output_vertices.size;
     result->model.num_indices  = indices.size;
-    result->model.ptr_vertices = (umm)output_vertices.data;
-    result->model.ptr_indices  = output_indices;
+    result->model.vertices     = (umm)output_vertices.data;
+    result->model.indices      = output_indices;
     result->kind = ImportKind::Model;
     return true;
 }

@@ -53,3 +53,27 @@ static PROC_DESTRINGIFY(destringify_vec2) {
 
     return i;
 }
+
+// Vec3
+static PROC_STRINGIFY(stringify_vec3);
+static constexpr _inline IType type_of(const Vec3 &v) {
+    return IType {
+        "Vec3",
+        stringify_vec3,
+        0
+    };
+}
+
+static PROC_STRINGIFY(stringify_vec3) {
+    Vec3 *v = (Vec3*)ptr;
+
+    output.append(STATIC_STR("["));
+
+    stringify_float((umm)&v->x, output, allocator);
+    output.append(STATIC_STR(","));
+    stringify_float((umm)&v->y, output, allocator);
+    output.append(STATIC_STR(","));
+    stringify_float((umm)&v->z, output, allocator);
+
+    output.append(STATIC_STR("]"));
+}
