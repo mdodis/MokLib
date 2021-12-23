@@ -13,6 +13,7 @@
 #include "Str.cpp"
 #include "StringBuilder.cpp"
 #include "FileSystem/FileSystem.cpp"
+#include "FileSystem/DirectoryIterator.cpp"
 #include "Importers/Importer.cpp"
 #include "Memory/Arena.cpp"
 #include "Memory/Pool.cpp"

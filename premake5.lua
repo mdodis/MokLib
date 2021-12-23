@@ -4,6 +4,7 @@
 project "Lib"
     kind "StaticLib"
     language "C++"
+    pic "On"
 
     files { 
         "*.h", "*.cpp",

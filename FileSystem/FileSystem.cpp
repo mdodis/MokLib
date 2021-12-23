@@ -216,6 +216,22 @@ void close_file(const FileHandle &file) {
     close(fd);
 }
 
+bool create_dir(const Str &pathname) {
+
+    char *dirname;
+    static char buf[260];
+    if (pathname.has_null_term) {
+        dirname = (char*)pathname.data;
+    } else {
+        memcpy(buf, pathname.data, pathname.len);
+        buf[pathname.len] = 0;
+        dirname = buf;
+    }
+
+    return mkdir(dirname, S_IFDIR) == 0;
+}
+
+
 #else
 
 #error "Unsupported platform for FileSystem"

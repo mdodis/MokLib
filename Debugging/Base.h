@@ -30,8 +30,7 @@
 			va_end(args);
 		}
 	#else
-		#define DEBUG_PRINTF(fmt, ...)
-		#warning "DEBUG_PRINTF is not supported for this platform"
+		#define DEBUG_PRINTF(fmt, ...) printf(fmt, __VA_ARGS__)
 	#endif
 #endif
 

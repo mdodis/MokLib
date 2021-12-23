@@ -55,8 +55,32 @@ bool DirectoryIterator::next_file(FileData *result) {
 }
 
 #elif OS_LINUX
+#include <sys/types.h>
+#include <dirent.h>
 
-#error "Directory Iterator not supported for Linux!"
+DirectoryIterator open_dir(Str filename) {
+    ASSERT(filename.has_null_term);
+
+    DIR *dir_handle = opendir((char*)filename.data);
+
+    return DirectoryIterator {
+        filename,
+        dir_handle
+    };
+}
+
+bool DirectoryIterator::next_file(FileData *result) {
+    DIR *dir_handle = (DIR*)handle;
+
+    struct dirent *read_result = readdir(dir_handle);
+    if (!read_result) {
+        return false;
+    }
+
+    result->filename = Str(read_result->d_name);
+
+    return true;
+}
 
 #else
 

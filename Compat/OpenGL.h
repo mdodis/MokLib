@@ -7,12 +7,15 @@
 #include <gl/GL.h>
 typedef char GLchar;
 typedef GLsizei* GLsizeiptr;
+#elif OS_LINUX
+#include <GL/gl.h>
 #endif
 
 #define GL_ALL_PROCS \
 GLPROC(void, UseProgram, GLuint program);
 
 #define GLPROC(rett, name, ...) typedef rett(*ProcGL##name)(__VA_ARGS__); extern ProcGL##name gl##name;
+
 GL_ALL_PROCS
 #undef GLPROC
 
@@ -255,8 +258,26 @@ void gl_swap_buffers(void *window_handle) {
     SwapBuffers(dc);
 }
 
+#elif OS_LINUX
 
-#endif // OS_WINDOWS
+bool create_gl_context(GLContextCreationFormatDesc *desc) {
+    return false;
+}
+
+bool gl_swap_interval(i32 interval) {
+    return false;
+}
+
+void *gl_get_proc_address(const char *name) {
+    return 0;
+}
+
+void gl_swap_buffers(void *window_handle) {
+}
+
+#endif // OS_WINDOWS || OS_LINUX
+
+
 
 #define GLPROC(rett, name, ...) ProcGL##name gl##name;
 GL_ALL_PROCS

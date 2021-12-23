@@ -7,14 +7,11 @@
 #include "Memory/Base.h"
 #include "Memory/Arena.h"
 #include "Tape.h"
-#include "WinInc.h"
 
 #define PROC_IMPORT_PNG_ERROR_HANDLER(name) void name(png_structp pngptr, png_const_charp error_msg)
 typedef PROC_IMPORT_PNG_ERROR_HANDLER(ProcImportPNGErrorHandler);
 
 PROC_IMPORT_PNG_ERROR_HANDLER(import_png_user_error) {
-    OutputDebugStringA("PNG error: ");
-    OutputDebugStringA(error_msg);
 }
 
 png_voidp import_png_malloc(png_structp ptr, png_alloc_size_t size) {
@@ -63,7 +60,7 @@ PROC_IMPORTER_LOAD(import_png_load) {
     // @bug: putting &alloc results in a crash inside libpng
     png_structp png_ptr = png_create_read_struct_2(
         PNG_LIBPNG_VER_STRING,
-        import_png_user_error, import_png_user_error, import_png_user_error,
+        (png_voidp)import_png_user_error, import_png_user_error, import_png_user_error,
         (png_voidp)&temp_alloc, import_png_malloc, import_png_free);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
