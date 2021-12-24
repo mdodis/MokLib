@@ -1,10 +1,10 @@
 #pragma once
 #include "Host.h"
-#include "../Str.h"
+#include "Str.h"
 #include "Memory/RawBuffer.h"
 #include "Time/Time.h"
 #include "Tape.h"
-#include <stdio.h>
+#include "Console.h"
 
 enum class SymLinkKind {
     File,
@@ -41,7 +41,7 @@ u64 get_file_size(const FileHandle &handle);
 MTime::TimeSpec get_file_time(const Str &file_path);
 int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64 offset = 0);
 // @todo: make this use an offset instead of a tape like interface
-bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written);
+bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written, u64 offset = 0);
 
 void flush_file_buffers(FileHandle &handle);
 void close_file(const FileHandle &file);
@@ -53,7 +53,19 @@ bool read_struct(FileHandle &handle, T *destination, uint64 offset = 0) {
     return read_file(handle, destination, sizeof(T), offset) == sizeof(T);
 }
 
-struct FileTape : public Tape {
+struct StreamTape : public Tape {
+    FileHandle stream_file;
+
+    StreamTape() : stream_file({0}) {}
+    StreamTape(FileHandle file) : stream_file(file) {}
+
+    virtual i64  read(void *destination, u32 amount) override;
+    virtual bool write(const void *src, u32 amount) override;
+    virtual bool end() override;
+    virtual void move(i64 offset) override;
+};
+
+struct FileTape : public SizedTape {
     FileHandle file;
 
     FileTape(FileHandle file) : file(file) {
@@ -66,4 +78,12 @@ struct FileTape : public Tape {
         current_offset += num_read;
         return num_read;
     }
+
+    bool write(const void *src, u32 amount) override {
+        u64 bytes_written;
+        return write_file(file, src, amount, &bytes_written, current_offset);
+    }
 };
+
+
+StreamTape get_stream(Console::Handle kind);

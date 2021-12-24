@@ -1,13 +1,16 @@
 #pragma once
 #include "Math/Base.h"
 #include "Memory/RawBuffer.h"
+#include "Str.h"
 #include <stdio.h>
 #include <string.h>
 
 struct Tape {
     // Interface
-    u64 current_offset, size;
     virtual i64 read(void *destination, u32 amount) = 0;
+    virtual bool write(const void *src, u32 num_bytes) = 0;
+    virtual bool end() = 0;
+    virtual void move(i64 offset) = 0;
 
     // Helpers
     template <typename T>
@@ -43,20 +46,29 @@ struct Tape {
         return read(destination.buffer, u32(destination.size));
     }
 
-    _inline bool end() {
+    bool write_str(const Str &str) {
+        return write(str.data, str.len);
+    }
+};
+
+struct SizedTape : public Tape {
+    // Interface
+    u64 current_offset, size;
+    virtual bool end() override {
         return current_offset >= size;
     }
 
-    _inline void move(i64 offset) {
+    virtual void move(i64 offset) override {
         if (offset < 0) {
             current_offset -= u64(-offset);
         } else {
             current_offset += offset;
         }
     }
+
 };
 
-struct RawTape : public Tape {
+struct RawTape : public SizedTape {
     Raw raw;
 
     RawTape(const Raw &raw) : raw(raw) {
@@ -72,5 +84,15 @@ struct RawTape : public Tape {
         u64 offset = min(current_offset, size - current_offset);
         memcpy(destination, umm(raw.buffer) + offset, amount);
         return amount;
+    }
+
+    bool write(const void *src, u32 amount) override {
+        if ((current_offset + amount) > size) {
+            return false;
+        }
+
+        u64 offset = min(current_offset, size - current_offset);
+        memcpy(raw.buffer, src, amount);
+        return true;
     }
 };

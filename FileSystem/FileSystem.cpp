@@ -1,5 +1,6 @@
 #include "FileSystem.h"
 #include "../Host.h"
+#include "Console.h"
 #include "Time/Time.h"
 #include <sys/types.h>
 
@@ -118,7 +119,16 @@ int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64
     }
 }
 
-bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written) {
+bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written, u64 offset) {
+    LONG low_distance  = LONG(offset & ((~0ull) >> 32));
+    LONG high_distance = LONG(offset >> 32);
+
+    SetFilePointer(
+        (HANDLE)handle.internal_handle,
+        low_distance,
+        &high_distance,
+        FILE_BEGIN);
+
     return WriteFile((HANDLE)handle.internal_handle, src, bytes_to_write, (LPDWORD)bytes_written, 0);
 }
 
@@ -144,6 +154,63 @@ bool create_dir(const Str &pathname) {
     }
 
     return CreateDirectoryA(dirname, 0);
+}
+
+i64 StreamTape::read(void *destination, u32 amount) {
+    DWORD bytes_read;
+    BOOL success = ReadFile(
+        (HANDLE)stream_file.internal_handle,
+        destination,
+        amount,
+        &bytes_read,
+        0);
+
+    if (success && (bytes_read == 0)) {
+        return EOF;
+    }
+
+    return bytes_read;
+}
+
+bool StreamTape::write(const void *src, u32 amount) {
+    DWORD bytes_written;
+    BOOL success = WriteFile(
+        (HANDLE)stream_file.internal_handle,
+        src,
+        amount,
+        &bytes_written,
+        0);
+    return success;
+}
+
+bool StreamTape::end() {
+    DWORD bytes_read;
+    char dest;
+    BOOL success = ReadFile(
+        (HANDLE)stream_file.internal_handle,
+        &dest,
+        1,
+        &bytes_read,
+        0);
+
+    return success && (bytes_read != 0);
+}
+
+StreamTape get_stream(Console::Handle kind) {
+    HANDLE handle = GetStdHandle(kind);
+    return StreamTape(FileHandle{(void*)handle});
+}
+
+void StreamTape::move(i64 offset) {
+
+    LONG low_distance  = LONG(offset & ((~0ull) >> 32));
+    LONG high_distance = LONG(offset >> 32);
+
+    SetFilePointer(
+        (HANDLE)stream_file.internal_handle,
+        low_distance,
+        &high_distance,
+        FILE_CURRENT);
 }
 
 
@@ -179,7 +246,7 @@ int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64
     return pread(fd, destination, bytes_to_read, offset);
 }
 
-bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written) {
+bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written, u64 offset) {
     int fd = handle.internal_handle;
     i64 result = pwrite(fd, src, bytes_to_write, 0);
     if (result < 0) {

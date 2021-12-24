@@ -1,7 +1,16 @@
 #pragma once
 #include "Base.h"
 #include <cstdio>
-// #include "WinInc.h"
+
+/**
+ * Functions
+ *
+ * // Change the style of the current console
+ * void set_color(Console::Handle handle, ConsoleColor::Style color)
+ *
+ * // Set charset (for Windows mainly)
+ * void set_charset()
+ */
 
 namespace ConsoleColor {
     enum : uint32 {
@@ -35,6 +44,10 @@ namespace Console {
         Output = -11,
         Error  = -12,
     };
+
+    enum CharSet {
+        Utf8 = 65001,
+    };
 };
 
 // Win32 Console color definitions
@@ -58,6 +71,8 @@ namespace Console {
 extern "C" __declspec(dllimport) int __stdcall SetConsoleTextAttribute(void *hConsoleOutput, unsigned short wAttributes);
 
 extern "C" __declspec(dllimport) void * __stdcall GetStdHandle(unsigned long nStdHandle);
+
+extern "C" __declspec(dllimport) int __stdcall SetConsoleOutputCP(unsigned int wCodePageID);
 
 static uint16 Color_Translation_Table[ConsoleColor::Count] = {
     /*        Red */ WIN32_FG_R,
@@ -86,6 +101,10 @@ static uint16 Color_Translation_Table[ConsoleColor::Count] = {
 namespace Console {
     static _inline void set_color(Console::Handle handle, ConsoleColor::Style color = ConsoleColor::Invalid) {
         SetConsoleTextAttribute(GetStdHandle((unsigned long)handle), Color_Translation_Table[color]);
+    }
+
+    static _inline void set_charset(i32 charset) {
+        SetConsoleOutputCP(charset);
     }
 };
 
