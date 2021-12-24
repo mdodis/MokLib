@@ -1,6 +1,9 @@
 #ifndef MOK_COMPAT_OPENGL_H
 #define MOK_COMPAT_OPENGL_H
 #include "Base.h"
+#include "Debugging/Base.h"
+#include "Defer.h"
+#include "Str.h"
 
 #if OS_WINDOWS
 #include "WinInc.h"
@@ -8,7 +11,11 @@
 typedef char GLchar;
 typedef GLsizei* GLsizeiptr;
 #elif OS_LINUX
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
 #include <GL/gl.h>
+#include <GL/glx.h>
 #endif
 
 #define GL_ALL_PROCS \
@@ -260,8 +267,120 @@ void gl_swap_buffers(void *window_handle) {
 
 #elif OS_LINUX
 
+#define PROC_GLX_CREATE_CONTEXT_ATTRIBS_ARB(name) GLXContext name(Display *display, GLXFBConfig config, GLXContext parent, Bool b, const int *a)
+typedef PROC_GLX_CREATE_CONTEXT_ATTRIBS_ARB(ProcGlxCreateContextAttribsARB);
+
+static struct {
+    ProcGlxCreateContextAttribsARB *create_context_attribs_arb;
+    GLXContext context;
+} GLX;
+
+/**
+ * We expect handle to be an array of two pointers:
+ *     Display*
+ *     Window*
+ */
+
 bool create_gl_context(GLContextCreationFormatDesc *desc) {
-    return false;
+    umm *params = (umm*)desc->handle;
+    Display *display = (Display*)((umm*)desc->handle)[0];
+    Window  *window  = (Window*) ((umm*)desc->handle)[1];
+    const i32 screen = DefaultScreen(display);
+
+    GLint attribs[] = {
+        GLX_X_RENDERABLE,   True,
+        GLX_DRAWABLE_TYPE,  GLX_WINDOW_BIT,
+        GLX_RENDER_TYPE,    GLX_RGBA_BIT,
+        GLX_X_VISUAL_TYPE,  GLX_TRUE_COLOR,
+        GLX_RED_SIZE,       desc->color_bits / 3,
+        GLX_GREEN_SIZE,     desc->color_bits / 3,
+        GLX_BLUE_SIZE,      desc->color_bits / 3,
+        GLX_ALPHA_SIZE,     desc->alpha_bits,
+        GLX_DEPTH_SIZE,     desc->depth_bits,
+        GLX_STENCIL_SIZE,   desc->stencil_bits,
+        GLX_DOUBLEBUFFER,   True,
+        None
+    };
+
+    i32 num_configs;
+    GLXFBConfig *configs = glXChooseFBConfig(
+        display,
+        screen,
+        attribs,
+        &num_configs);
+
+    if (configs == 0) {
+        return false;
+    }
+
+    GLXFBConfig config = configs[0];
+
+    XVisualInfo *visual_info = glXGetVisualFromFBConfig(display, config);
+    XFree(configs);
+
+    Colormap colormap = XCreateColormap(
+        display,
+        RootWindow(display, screen),
+        visual_info->visual,
+        AllocNone);
+
+    XSetWindowAttributes window_attribs;
+    window_attribs.background_pixel  = WhitePixel(display, screen);
+    window_attribs.border_pixel      = BlackPixel(display, screen);
+    window_attribs.override_redirect = True;
+    window_attribs.colormap          = colormap;
+    window_attribs.event_mask        = ExposureMask;
+
+    XChangeWindowAttributes(
+        display,
+        *window,
+        CWBackPixel | CWColormap | CWBorderPixel | CWEventMask,
+        &window_attribs);
+
+    GLX.create_context_attribs_arb = (ProcGlxCreateContextAttribsARB*)glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+
+    i32 flags = 0;
+
+    if (desc->profile_flags & GLProfileFlag::CoreProfile) {
+        flags |= GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
+    }
+
+    i32 context_attribs[] = {
+        GLX_CONTEXT_MAJOR_VERSION_ARB, desc->major_version,
+        GLX_CONTEXT_MINOR_VERSION_ARB, desc->minor_version,
+        GLX_CONTEXT_FLAGS_ARB,         flags,
+        None
+    };
+
+    GLXContext context = 0;
+
+    const char *glx_extensions = glXQueryExtensionsString(display, screen);
+    Str extensions(glx_extensions);
+
+    if (extensions.first_of("GLX_ARB_create_context") != -1) {
+
+        context = glXCreateNewContext(
+            display,
+            config,
+            GLX_RGBA_TYPE,
+            0,
+            True);
+
+    } else {
+        return false;
+    }
+
+    XSync(display, False);
+
+    if (!glXIsDirect(display, context)) {
+        DEBUG_PRINTF("%s", "GLX context is indirect!");
+    }
+
+    glXMakeCurrent(display, *window, context);
+
+    GLX.context = context;
+
+    return true;
 }
 
 bool gl_swap_interval(i32 interval) {
@@ -269,10 +388,14 @@ bool gl_swap_interval(i32 interval) {
 }
 
 void *gl_get_proc_address(const char *name) {
-    return 0;
+    return (void*)glXGetProcAddress((const GLubyte*)name);
 }
 
 void gl_swap_buffers(void *window_handle) {
+    Display *display = (Display*)((umm*)window_handle)[0];
+    Window  *window  = (Window*) ((umm*)window_handle)[1];
+
+    glXSwapBuffers(display, *window);
 }
 
 #endif // OS_WINDOWS || OS_LINUX
