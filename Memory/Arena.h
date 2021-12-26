@@ -30,6 +30,16 @@ struct Arena {
 	Arena name = Arena::create(base, (size)); \
 	ArenaScope name__##scope(&name);
 
+#define CREATE_GLOBAL_ARENA(name, size) \
+	static uint8 memory_of__##name[(size)]; \
+	static Arena name = { \
+		Null_Allocator, \
+		memory_of__##name, \
+		(size), \
+		0, \
+	};
+
+
 #define CREATE_INLINE_ARENA(name, size) \
 	static uint8 memory_of__##name[(size)]; \
 	Arena name = { \

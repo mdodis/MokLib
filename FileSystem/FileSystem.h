@@ -2,6 +2,7 @@
 #include "Host.h"
 #include "Str.h"
 #include "Memory/RawBuffer.h"
+#include "Memory/Arena.h"
 #include "Time/Time.h"
 #include "Tape.h"
 #include "Console.h"
@@ -87,3 +88,19 @@ struct FileTape : public SizedTape {
 
 
 StreamTape get_stream(Console::Handle kind);
+extern Arena Print_Arena;
+
+#define PRINT(what) do { \
+        SAVE_ARENA(&Print_Arena); \
+        _print(Console::Output, (StringBuilder(Print_Arena.to_alloc()) + what).to_list()); \
+    } while (0)
+
+#define PRINTLN(what) PRINT(what + "\n")
+
+static _inline void _print(Console::Handle to, const TList<Str> &list) {
+    auto stream = get_stream(to);
+
+    for (const Str &str : list) {
+        stream.write_str(str);
+    }
+}

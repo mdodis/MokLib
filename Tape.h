@@ -1,4 +1,5 @@
 #pragma once
+#include "Containers/List.h"
 #include "Math/Base.h"
 #include "Memory/RawBuffer.h"
 #include "Str.h"
@@ -69,6 +70,16 @@ struct Tape {
 
     bool write_str(const Str &str) {
         return write(str.data, str.len);
+    }
+
+    bool write_str(const TList<Str> &strs) {
+        for (const Str &str : strs) {
+            if (!write(str.data, str.len)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 };
 

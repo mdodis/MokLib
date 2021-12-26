@@ -68,6 +68,9 @@ struct TList {
 	Iterator begin() { return Iterator(root->next); }
 	Iterator end()   { return Iterator(root); }
 
+	const Iterator begin() const { return Iterator(root->next); }
+	const Iterator end()   const { return Iterator(root); }
+
 };
 
 

@@ -5,6 +5,8 @@
 #include "Time/Time.h"
 #include <sys/types.h>
 
+CREATE_INLINE_ARENA(Print_Arena, 2048);
+
 #if OS_WINDOWS
 #include "../WinInc.h"
 
