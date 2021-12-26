@@ -7,8 +7,8 @@
 
 struct Tape {
     // Interface
-    virtual i64 read(void *destination, u32 amount) = 0;
-    virtual bool write(const void *src, u32 num_bytes) = 0;
+    virtual u64  read(void *destination, u64 amount) = 0;
+    virtual bool write(const void *src, u64 num_bytes) = 0;
     virtual bool end() = 0;
     virtual void move(i64 offset) = 0;
 
@@ -46,6 +46,27 @@ struct Tape {
         return read(destination.buffer, u32(destination.size));
     }
 
+    Str read_line(const IAllocator &alloc) {
+        const u32 initial_buffer_size = 1024;
+
+        u32 buffer_size = initial_buffer_size;
+        char *data = (char*)alloc.reserve(alloc.context, initial_buffer_size);
+
+        i64 num_read = read(data, initial_buffer_size);
+        if (num_read == -1) {
+            alloc.release(alloc.context, (umm)data);
+            return Str::NullStr;
+        } else {
+
+            if ((data[num_read - 1]) == '\r' || (data[num_read - 1]) == '\n')
+                num_read--;
+            if ((data[num_read - 1]) == '\r' || (data[num_read - 1]) == '\n')
+                num_read--;
+
+            return Str(data, num_read);
+        }
+    }
+
     bool write_str(const Str &str) {
         return write(str.data, str.len);
     }
@@ -76,17 +97,18 @@ struct RawTape : public SizedTape {
         size = raw.size;
     }
 
-    i64 read(void *destination, u32 amount) override {
+    u64 read(void *destination, u64 amount) override {
         if (current_offset == size) {
-            return -1;
+            return U64::Max;
         }
 
-        u64 offset = min(current_offset, size - current_offset);
+        u64 offset = current_offset;
         memcpy(destination, umm(raw.buffer) + offset, amount);
+        current_offset += amount;
         return amount;
     }
 
-    bool write(const void *src, u32 amount) override {
+    bool write(const void *src, u64 amount) override {
         if ((current_offset + amount) > size) {
             return false;
         }

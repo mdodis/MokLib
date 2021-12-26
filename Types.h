@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #define PROC_STRINGIFY(name) void name(umm ptr, TList<Str> &output, IAllocator &allocator)
-#define PROC_DESTRINGIFY(name) int32 name(umm ptr, Str input)
+#define PROC_DESTRINGIFY(name) u64 name(umm ptr, Str input)
 typedef PROC_STRINGIFY(ProcStringify);
 typedef PROC_DESTRINGIFY(ProcDestringify);
 
@@ -73,10 +73,10 @@ static _inline PROC_DESTRINGIFY(destringify_str) {
 	if (input[0] != '\'')
 		return 0;
 
-	int32 start_quote = 0;
-	int32 end_quote = input.first_of('\'', start_quote + 1);
+	u64 start_quote = 0;
+	u64 end_quote = input.first_of('\'', start_quote + 1);
 
-	if ((start_quote == -1) || (end_quote == -1))
+	if (end_quote == input.len)
 		return 0;
 
 	if ((start_quote + 1) == end_quote) {

@@ -1,15 +1,15 @@
 #include "Hashing.h"
 
-uint32 murmur_hash2(const void *key, int32 len, uint32 seed) {
+u64 murmur_hash2(const void *key, u64 len, uint32 seed) {
     // 'm' and 'r' are mixing constants generated offline.
     // They're not really 'magic', they just happen to work well.
 
-    const uint32 m = 0x5bd1e995;
-    const int32  r = 24;
+    const u64 m = 0x5bd1e995;
+    const u64 r = 24;
 
     // Initialize the hash to a 'random' value
 
-    uint32 h = seed ^ len;
+    u64 h = seed ^ len;
 
     // Mix 4 bytes at a time into the hash
 

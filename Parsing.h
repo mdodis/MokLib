@@ -38,14 +38,14 @@ static bool is_valid_cid(char c) {
         || (c >= '0' && c <= '9');
 }
 
-static int32 eat_whitespace(const Str &s, int32 i) {
+static u64 eat_whitespace(const Str &s, u64 i) {
     while (i < s.len && is_whitespace(s[i])) {
         i++;
     }
     return i;
 }
 
-static int32 eat_line(const Str &s, int32 i = 0) {
+static u64 eat_line(const Str &s, u64 i = 0) {
     while (i < s.len && !is_newline(s[i])) {
         i++;
     }
@@ -64,38 +64,43 @@ static u32 match_strings(Str to, Str *strings, u32 num_strings) {
 }
 
 
-int32 parse_cid(const Str &s, int32 i, Str &out);
+u64 parse_cid(const Str &s, u64 i, Str &out);
 
 /**
  * Tape parsing
  */
-
-static void eat_whitespace(Tape *tape) {
+static void eat_whitespace(struct Tape *tape) {
     char c = tape->read_char();
     while ((c != EOF) && (is_whitespace(c))) {
         c = tape->read_char();
     }
 
-    tape->move(-1);
+    if (c != EOF)
+        tape->move(-1);
 }
 
-static void eat_line(Tape *tape) {
+static void eat_line(struct Tape *tape) {
     char c = tape->read_char();
 
     while ((c != EOF) && (!is_newline(c))) {
         c = tape->read_char();
     }
+
+    if (c != EOF)
+        tape->move(-1);
 }
 
-static void eat_space(Tape *tape) {
+static void eat_space(struct Tape *tape) {
     char c = tape->read_char();
     while ((c != EOF) && (is_space(c))) {
         c = tape->read_char();
     }
-    tape->move(-1);
+
+    if (c != EOF)
+        tape->move(-1);
 }
 
-static bool match_string(Tape *tape, const Str &string) {
+static bool match_string(struct Tape *tape, const Str &string) {
     char c;
     int32 i = 0;
 
@@ -116,7 +121,7 @@ static bool match_string(Tape *tape, const Str &string) {
     return false;
 }
 
-static u32 match_strings(Tape *tape, Str *strings, u32 num_strings) {
+static u32 match_strings(struct Tape *tape, Str *strings, u32 num_strings) {
     for (u32 i = 0; i < num_strings; ++i) {
         if (match_string(tape, strings[i])) {
             return i;
@@ -126,7 +131,7 @@ static u32 match_strings(Tape *tape, Str *strings, u32 num_strings) {
     return num_strings;
 }
 
-static Str parse_string(Tape *tape, IAllocator &alloc) {
+static Str parse_string(struct Tape *tape, IAllocator &alloc) {
     int32 i = 0;
     char c;
 
@@ -143,7 +148,7 @@ static Str parse_string(Tape *tape, IAllocator &alloc) {
     return Str(result.data, result.size);
 }
 
-static bool parse_num(Tape *tape, float &result) {
+static bool parse_num(struct Tape *tape, float &result) {
     char c;
     char buf[16];
     i32 i = 0;
@@ -151,7 +156,9 @@ static bool parse_num(Tape *tape, float &result) {
     while ((c = tape->read_char()) != EOF) {
 
         if (is_digit(c) || (c == '.') || (c == '-')) {
-            buf[i++] = c;
+            if (i < 15) {
+                buf[i++] = c;
+            }
         } else {
             break;
         }
@@ -169,7 +176,7 @@ static bool parse_num(Tape *tape, float &result) {
     return true;
 }
 
-static bool parse_num(Tape *tape, u32 &result) {
+static bool parse_num(struct Tape *tape, u32 &result) {
     char c;
     char buf[16];
     i32 i = 0;
@@ -177,7 +184,9 @@ static bool parse_num(Tape *tape, u32 &result) {
     while ((c = tape->read_char()) != EOF) {
 
         if (is_digit(c)) {
-            buf[i++] = c;
+            if (i < 15) {
+                buf[i++] = c;
+            }
         } else {
             break;
         }
@@ -194,3 +203,5 @@ static bool parse_num(Tape *tape, u32 &result) {
 
     return true;
 }
+
+Str parse_cid(struct Tape *tape, IAllocator &alloc);

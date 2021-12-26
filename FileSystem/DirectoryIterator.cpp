@@ -24,7 +24,7 @@ bool DirectoryIterator::next_file(FileData *result) {
             CP_UTF8,
             MB_ERR_INVALID_CHARS,
             (const char*)directory.data,
-            directory.len,
+            (u32)directory.len,
             Cached_Directory_Entry,
             ARRAY_COUNT(Cached_Directory_Entry));
         Cached_Directory_Entry[lenw++] = L'*';

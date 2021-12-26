@@ -7,7 +7,13 @@
 Dll load_dll(Str filename) {
     // Convert filename to wide string
     wchar_t filenamew[1024];
-    int32 num_written = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (char*)filename.data, filename.len, filenamew, ARRAY_COUNT(filenamew));
+    int32 num_written = MultiByteToWideChar(
+        CP_UTF8,
+        MB_ERR_INVALID_CHARS,
+        (char*)filename.data,
+        (u32)filename.len,
+        filenamew,
+        ARRAY_COUNT(filenamew));
     ASSERT(num_written == filename.len);
     filenamew[num_written] = 0;
 

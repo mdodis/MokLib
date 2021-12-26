@@ -7,12 +7,12 @@ char Str::Null = '\0';
 const Str Str::NullStr(0, 0);
 
 Str::Str(const char *cstr) {
-    data = (const uint8*)cstr;
-    len = (int32)strlen(cstr); // This struct is not meant to be used for huge strings
+    data = (char*)cstr;
+    len = (u64)strlen(cstr); // This struct is not meant to be used for huge strings
     has_null_term = true;
 }
 
-bool Str::split(int32 at, Str *left, Str *right) const {
+bool Str::split(u64 at, Str *left, Str *right) const {
     if (len < at) {
         return false;
     }
@@ -30,8 +30,8 @@ bool Str::split(int32 at, Str *left, Str *right) const {
     return true;
 }
 
-int32 Str::last_of(char c) const{
-    for (int i = len - 1; i >= 0; --i) {
+u64 Str::last_of(char c) const{
+    for (u64 i = len - 1; i >= 0; --i) {
         if (data[i] == c) {
             return i;
         }
@@ -40,8 +40,8 @@ int32 Str::last_of(char c) const{
     return -1;
 }
 
-int32 Str::first_of(char c, int32 start) const {
-    for (int i = start; i < len; ++i) {
+u64 Str::first_of(char c, u64 start) const {
+    for (u64 i = start; i < len; ++i) {
         if (data[i] == c) {
             return i;
         }
@@ -49,13 +49,13 @@ int32 Str::first_of(char c, int32 start) const {
     return -1;
 }
 
-int32 Str::last_of(const Str &s, int32 start) const {
-    if (s.len <= 0) return -1;
+u64 Str::last_of(const Str &s, u64 start) const {
+    if (s.len == 0) return len;
 
-    if (start == -1) start = len - 1;
+    if (start == StartEnd) start = len - 1;
 
-    int sindex = s.len - 1;
-    int i;
+    u64 sindex = s.len - 1;
+    u64 i;
     for (i = start; i >= 0; --i) {
         
         if (data[i] == s[sindex]) {
@@ -69,14 +69,14 @@ int32 Str::last_of(const Str &s, int32 start) const {
         }
     }
 
-    return -1;
+    return len;
 }
 
-int32 Str::first_of(const Str &s, int32 start) const {
-    if (s.len <= 0) return -1;
+u64 Str::first_of(const Str &s, u64 start) const {
+    if (s.len == 0) return -1;
     
-    int sindex = 0;
-    int i;
+    u64 sindex = 0;
+    u64 i;
     for (i = start; i < len; ++i) {
         if (data[i] == s[sindex]) {
             sindex++;
@@ -89,11 +89,11 @@ int32 Str::first_of(const Str &s, int32 start) const {
         }
     }
 
-    return -1;
+    return len;
 }
 
 bool Str::starts_with(const Str &needle) const {
-    int32 i = 0;
+    u64 i = 0;
     while ((i < needle.len) && (i < len) && (data[i] == needle[i])) {
         i++;
     }
@@ -102,8 +102,13 @@ bool Str::starts_with(const Str &needle) const {
 }
 
 bool Str::ends_with(const Str &needle) const {
-    i32 mi = len - 1;
-    i32 ni = needle.len - 1;
+
+#if MOK_STR_RANGE_CHECK
+    if ((len == 0) || (needle.len == 0)) return false;
+#endif
+
+    u64 mi = len - 1;
+    u64 ni = needle.len - 1;
     while ((mi >= 0) && (ni >= 0)) {
         if (data[mi] != needle[ni]) {
             return false;

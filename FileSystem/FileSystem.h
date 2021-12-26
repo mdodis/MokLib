@@ -39,9 +39,9 @@ bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind
 FileHandle open_file(const Str &file_path,EFileMode mode);
 u64 get_file_size(const FileHandle &handle);
 MTime::TimeSpec get_file_time(const Str &file_path);
-int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64 offset = 0);
+u64 read_file(FileHandle &handle, void *destination, u64 bytes_to_read, uint64 offset = 0);
 // @todo: make this use an offset instead of a tape like interface
-bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written, u64 offset = 0);
+bool write_file(FileHandle &handle, const void *src, u64 bytes_to_write, u64 *bytes_written, u64 offset = 0);
 
 void flush_file_buffers(FileHandle &handle);
 void close_file(const FileHandle &file);
@@ -59,8 +59,8 @@ struct StreamTape : public Tape {
     StreamTape() : stream_file({0}) {}
     StreamTape(FileHandle file) : stream_file(file) {}
 
-    virtual i64  read(void *destination, u32 amount) override;
-    virtual bool write(const void *src, u32 amount) override;
+    virtual u64  read(void *destination, u64 amount) override;
+    virtual bool write(const void *src, u64 amount) override;
     virtual bool end() override;
     virtual void move(i64 offset) override;
 };
@@ -73,13 +73,13 @@ struct FileTape : public SizedTape {
         size = get_file_size(file);
     }
 
-    i64 read(void *destination, u32 amount) override {
+    u64 read(void *destination, u64 amount) override {
         int64 num_read = read_file(file, destination, amount, current_offset);
         current_offset += num_read;
         return num_read;
     }
 
-    bool write(const void *src, u32 amount) override {
+    bool write(const void *src, u64 amount) override {
         u64 bytes_written;
         return write_file(file, src, amount, &bytes_written, current_offset);
     }

@@ -10,9 +10,11 @@ PROC_STRINGIFY(stringify_uint32) {
         return;
     }
 
-    char *buffer = (char*)allocator.reserve(allocator.context, 10);
+    const u8 max_digits = 10;
+
+    char *buffer = (char*)allocator.reserve(allocator.context, max_digits + 1);
     // memset(buffer, 0, 10);
-    uint8 i = 9;
+    u8 i = max_digits;
 
     while (num != 0) {
         uint8 digit = num % 10;
@@ -23,13 +25,13 @@ PROC_STRINGIFY(stringify_uint32) {
         --i;
     }
 
-    output.append(Str(buffer + i + 1, 9 - i));
+    output.append(Str(buffer + i + 1, max_digits - i));
 }
 
 PROC_DESTRINGIFY(destringify_uint32) {
     uint32 result = 0;
 
-    int32 i = 0;
+    u64 i = 0;
     while ((i < input.len) && is_digit(input[i])) {
         result *= 10;
         result += input[i] - '0';

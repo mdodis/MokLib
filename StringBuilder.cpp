@@ -9,18 +9,18 @@ TList<Str> StringBuilder::to_list(void) {
 }
 
 
-char *StringBuilder::_cstr(bool with_null_term, uint32 *out_size) {
+char *StringBuilder::_cstr(bool with_null_term, u64 *out_size) {
 
 	TList<Str> output = to_list();
 
-	uint32 total_size = 0;
+	u64 total_size = 0;
 	LIST_FOR_EACH(&output, iter) {
 		total_size += iter->data.len;
 	}
 
 	char *buffer = (char*)allocator.reserve(allocator.context, total_size + with_null_term);
 
-	uint32 offset = 0;
+	u64 offset = 0;
 	LIST_FOR_EACH(&output, iter) {
 		memcpy(buffer + offset, iter->data.data, iter->data.len);
 		offset += iter->data.len;

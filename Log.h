@@ -36,7 +36,7 @@ struct ILog {
 #include <stdio.h>
 struct ConsoleOutputLog : ILog {
     virtual void add_output(const Str &what) override {
-        printf("%.*s", what.len, what.data);
+        printf("%.*s", (i32)what.len, what.data);
     }
 };
 

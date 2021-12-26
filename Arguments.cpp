@@ -1,8 +1,8 @@
 #include "Arguments.h"
 #include "Parsing.h"
 
-static int32 find_matching_argument_index(IArgument **args, int32 num_args, const Str &id) {
-    for (int32 i = 0; i < num_args; ++i) {
+static i32 find_matching_argument_index(IArgument **args, int32 num_args, const Str &id) {
+    for (i32 i = 0; i < num_args; ++i) {
         if (args[i]->name == id) {
             return i;
         }
@@ -11,7 +11,7 @@ static int32 find_matching_argument_index(IArgument **args, int32 num_args, cons
 }
 
 void parse_arguments(const Str &s, IArgument **args, int32 num_args) {
-    int32 i = 0;
+    u64 i = 0;
 
     i = eat_whitespace(s, i);
     while (i < s.len) {
@@ -34,7 +34,7 @@ void parse_arguments(const Str &s, IArgument **args, int32 num_args) {
 
                 umm data_ptr = args[arg_index]->get_data_ptr();
                 Str input_str = s.chop_left(i - 1);
-                int32 num_read = args[arg_index]->type.destringify(data_ptr, input_str);
+                u64 num_read = args[arg_index]->type.destringify(data_ptr, input_str);
                 i += num_read;
             }
 

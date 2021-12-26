@@ -1,5 +1,6 @@
 #include "FileSystem.h"
 #include "../Host.h"
+#include "Base.h"
 #include "Console.h"
 #include "Time/Time.h"
 #include <sys/types.h>
@@ -12,11 +13,23 @@ bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind
     static wchar_t Sym_Link_PathW[1024];
     static wchar_t Target_PathW[1024];
 
-    int link_lenw = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (const char*)symlink_path.data, symlink_path.len, Sym_Link_PathW, ARRAY_COUNT(Sym_Link_PathW));
+    int link_lenw = MultiByteToWideChar(
+        CP_UTF8,
+        MB_ERR_INVALID_CHARS,
+        (const char*)symlink_path.data,
+        (i32)symlink_path.len,
+        Sym_Link_PathW,
+        ARRAY_COUNT(Sym_Link_PathW));
 
     Sym_Link_PathW[link_lenw] = 0;
 
-    int target_lenw = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (const char*)target_path.data, target_path.len, Target_PathW, ARRAY_COUNT(Target_PathW));
+    int target_lenw = MultiByteToWideChar(
+        CP_UTF8,
+        MB_ERR_INVALID_CHARS,
+        (const char*)target_path.data,
+        (u32)target_path.len,
+        Target_PathW,
+        ARRAY_COUNT(Target_PathW));
 
     Target_PathW[target_lenw] = 0;
 
@@ -38,7 +51,13 @@ bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind
 FileHandle open_file(const Str &file_path, EFileMode mode) {
     static wchar_t file_pathw[1024];
 
-    int file_path_lenw = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, (const char*)file_path.data, file_path.len, file_pathw, ARRAY_COUNT(file_pathw));
+    int file_path_lenw = MultiByteToWideChar(
+        CP_UTF8,
+        MB_ERR_INVALID_CHARS,
+        (const char*)file_path.data,
+        (u32)file_path.len,
+        file_pathw,
+        ARRAY_COUNT(file_pathw));
 
     file_pathw[file_path_lenw] = 0;
 
@@ -99,7 +118,7 @@ MTime::TimeSpec get_file_time(const Str &file_path) {
     return MTime::TimeSpec{ time_int.QuadPart };
 }
 
-int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64 offset) {
+u64 read_file(FileHandle &handle, void *destination, u64 bytes_to_read, u64 offset) {
     LONG low_distance  = LONG(offset & ((~0ull) >> 32));
     LONG high_distance = LONG(offset >> 32);
 
@@ -109,8 +128,9 @@ int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64
         &high_distance,
         FILE_BEGIN);
 
+    // @todo: actually read u64
     DWORD bytes_read;
-    BOOL success = ReadFile((HANDLE)handle.internal_handle, destination, bytes_to_read, &bytes_read, 0);
+    BOOL success = ReadFile((HANDLE)handle.internal_handle, destination, (u32)bytes_to_read, &bytes_read, 0);
 
     if (success) {
         return bytes_read;
@@ -119,7 +139,7 @@ int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64
     }
 }
 
-bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written, u64 offset) {
+bool write_file(FileHandle &handle, const void *src, u64 bytes_to_write, u64 *bytes_written, u64 offset) {
     LONG low_distance  = LONG(offset & ((~0ull) >> 32));
     LONG high_distance = LONG(offset >> 32);
 
@@ -129,7 +149,8 @@ bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *by
         &high_distance,
         FILE_BEGIN);
 
-    return WriteFile((HANDLE)handle.internal_handle, src, bytes_to_write, (LPDWORD)bytes_written, 0);
+    // @todo: actually read u64
+    return WriteFile((HANDLE)handle.internal_handle, src, (u32)bytes_to_write, (LPDWORD)bytes_written, 0);
 }
 
 
@@ -156,28 +177,30 @@ bool create_dir(const Str &pathname) {
     return CreateDirectoryA(dirname, 0);
 }
 
-i64 StreamTape::read(void *destination, u32 amount) {
+u64 StreamTape::read(void *destination, u64 amount) {
     DWORD bytes_read;
     BOOL success = ReadFile(
         (HANDLE)stream_file.internal_handle,
         destination,
-        amount,
+        (i32)amount,
         &bytes_read,
         0);
 
     if (success && (bytes_read == 0)) {
-        return EOF;
+        return U64::Max;
+    } else if (!success) {
+        return U64::Max;
+    } else {
+        return bytes_read;
     }
-
-    return bytes_read;
 }
 
-bool StreamTape::write(const void *src, u32 amount) {
+bool StreamTape::write(const void *src, u64 amount) {
     DWORD bytes_written;
     BOOL success = WriteFile(
         (HANDLE)stream_file.internal_handle,
         src,
-        amount,
+        (u32)amount,
         &bytes_written,
         0);
     return success;
@@ -241,7 +264,7 @@ FileHandle open_file(const Str &file_path, EFileMode mode) {
     return result;
 }
 
-int64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64 offset) {
+u64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64 offset) {
     int fd = handle.internal_handle;
     return pread(fd, destination, bytes_to_read, offset);
 }

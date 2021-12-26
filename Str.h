@@ -3,6 +3,7 @@
 #include "Base.h"
 #include "Memory/Base.h"
 #include "Debugging/Base.h"
+#include "Memory/RawBuffer.h"
 
 #ifndef MOK_STR_RANGE_CHECK
     #define MOK_STR_RANGE_CHECK 1
@@ -17,8 +18,8 @@
 struct Str {
     Str() : data(0), len(0) {}
     Str(const char *cstr);
-    constexpr Str(const char *str, int32 len, bool with_null_term = false)
-        : data((const uint8*)(void*)str), len(len), has_null_term(with_null_term) {}
+    constexpr Str(const char *str, u64 len, bool with_null_term = false)
+        : data((char*)str), len(len), has_null_term(with_null_term) {}
 
     /**
      * Splits the string in question at @at , resulting into left and right strings
@@ -29,13 +30,13 @@ struct Str {
      *
      * @return true if the split operation was successful
      */
-    bool split(int32 at, Str *left, Str *right) const;
+    bool split(u64 at, Str *left, Str *right) const;
 
     /**
      * Chops the string at the character, returning the right part
      * @see Str::split
      */
-    _inline Str chop_left(int32 at) const {
+    _inline Str chop_left(u64 at) const {
 
         if (at < 0) {
             return Str::NullStr;
@@ -53,7 +54,7 @@ struct Str {
      * Chops the string at the character, returning the left part
      * @see Str::split
      */
-    _inline Str chop_right(int32 at) const {
+    _inline Str chop_right(u64 at) const {
 
         if (at < 0) {
             return Str::NullStr;
@@ -70,32 +71,32 @@ struct Str {
     /**
      * Chops the string between left and right
      */
-    _inline Str chop_middle(int32 left, int32 right) const {
+    _inline Str chop_middle(u64 left, u64 right) const {
         return Str((const char *)data + left, right - left);
     }
 
     /**
      * Finds the last instance of the specified character
      */
-    int32 last_of(char c) const;
+    u64 last_of(char c) const;
 
     /**
      * Finds the first instance of the specified character, starting
      * from @start
      */
-    int32 first_of(char c, int32 start = 0) const;
+    u64 first_of(char c, u64 start = 0) const;
 
     /**
      * Finds the last occurrence of the specified string, starting
      * from @start
      */ 
-    int32 last_of(const Str &s, int32 start = -1) const;
+    u64 last_of(const Str &s, u64 start = Str::StartEnd) const;
 
     /**
      * Find the first occurence of the specified string, starting
      * from @start
      */
-    int32 first_of(const Str &s, int32 start = 0) const;
+    u64 first_of(const Str &s, u64 start = 0) const;
 
     /** Shorthand for chop_left(last_of(c) - 1) */
     _inline Str chop_left_last_of(char c) const {
@@ -112,7 +113,7 @@ struct Str {
     /** True when the string ends with the specified needle */
     bool ends_with(const Str &needle) const;
 
-    _inline char &operator[](int index) {
+    _inline char &operator[](u64 index) {
 #if MOK_STR_RANGE_CHECK
         if (index < len) {
             return *((char*)(data) + index);
@@ -125,12 +126,11 @@ struct Str {
 #endif
     }
 
-    _inline const char &operator[](int index) const {
+    _inline const char &operator[](u64 index) const {
 #if MOK_STR_RANGE_CHECK
         if (index < len) {
             return *((const char*)(data)+index);
         } else {
-            printf("For String: %.*s\n", len, (char*)data);
             ASSERT(false);
             return Str::Null;
         }
@@ -139,10 +139,15 @@ struct Str {
 #endif
     }
 
-    const uint8 *data;
-    int32 len;
+    _inline operator Raw() const {
+        return Raw {data, len};
+    }
+
+    char *data;
+    u64 len;
     bool has_null_term = false;
 
+    static constexpr u64 StartEnd = U64::Max;
     static const Str New_Line;
     static char Null;
     static const Str NullStr;

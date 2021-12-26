@@ -27,7 +27,7 @@ static PROC_STRINGIFY(stringify_vec2) {
 
 static PROC_DESTRINGIFY(destringify_vec2) {
     Vec2 result;
-    int32 i = 0;
+    u64 i = 0;
 
     if (input[i] != '[')
         return 0;

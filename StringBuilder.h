@@ -28,7 +28,7 @@ struct StringBuilder {
 	}
 
 	_inline Str str() {
-		uint32 sz;
+		u64 sz;
 		char *b = _cstr(false, &sz);
 		return Str(b, sz);
 	}
@@ -37,7 +37,7 @@ struct StringBuilder {
 
 	_inline char *cstr() { return _cstr(true, 0); }
 
-	char *_cstr(bool with_null_term, uint32 *out_size);
+	char *_cstr(bool with_null_term, u64 *out_size);
 
 	struct Node {
 		IType type;

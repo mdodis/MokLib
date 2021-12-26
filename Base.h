@@ -70,3 +70,10 @@ typedef double      f64;
 
 #define MCONCAT(x, y) x##y
 #define MSTR(x) #x
+
+namespace U64 {
+    enum {
+        Max = ~0ull,
+        Min = 0
+    };
+};
