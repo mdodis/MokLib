@@ -144,7 +144,8 @@ static Str parse_string(struct Tape *tape, IAllocator &alloc) {
         }
     }
 
-    tape->move(-1);
+    if (c != EOF)
+        tape->move(-1);
     return Str(result.data, result.size);
 }
 
