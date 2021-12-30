@@ -22,8 +22,8 @@ struct TMap {
 
     }
 
-    _inline TMap(const IAllocator &alloc, uint32 init_size = Num_Total_Bins) :alloc(alloc) {
-        values = (Bin*)alloc.reserve(alloc.context, init_size * sizeof(Bin));
+    _inline TMap(IAllocator &alloc, uint32 init_size = Num_Total_Bins) :alloc(alloc) {
+        values = (Bin*)alloc.reserve(init_size * sizeof(Bin));
         memset(values, 0, init_size * sizeof(Bin));
 
         num_bins = uint32(float(init_size) * Bucket_Cellar_Factor);
@@ -96,7 +96,7 @@ struct TMap {
     uint32 num_bins;
     uint32 num_total_bins;
 
-    IAllocator alloc;
+    IAllocator &alloc;
     static constexpr uint32 Hash_Seed = 0x1337;
     static constexpr uint32 Num_Total_Bins = 256;
     static constexpr float Bucket_Cellar_Factor = 0.86f;

@@ -12,7 +12,7 @@ PROC_STRINGIFY(stringify_uint32) {
 
     const u8 max_digits = 10;
 
-    char *buffer = (char*)allocator.reserve(allocator.context, max_digits + 1);
+    char *buffer = (char*)allocator.reserve(max_digits + 1);
     // memset(buffer, 0, 10);
     u8 i = max_digits;
 
@@ -66,7 +66,7 @@ PROC_STRINGIFY(stringify_int32) {
 // float
 PROC_STRINGIFY(stringify_float) {
     float f = *((float*)ptr);
-    char *buffer = (char*)allocator.reserve(allocator.context, 16);
+    char *buffer = (char*)allocator.reserve(16);
 
     snprintf(buffer, 16, "%f", f);
 

@@ -3,7 +3,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Memory/Base.h"
 
-#define PROC_IMPORTER_LOAD(name) bool name(FileHandle file_handle, IAllocator alloc, struct Import *result)
+#define PROC_IMPORTER_LOAD(name) bool name(FileHandle file_handle, IAllocator *alloc, struct Import *result)
 typedef PROC_IMPORTER_LOAD(ProcImporterLoad);
 
 struct IImporter {
@@ -13,7 +13,7 @@ struct IImporter {
 };
 
 struct IImporterRegistry {
-    virtual bool load_file(Str filename, IAllocator alloc, struct Import *result) = 0;
+    virtual bool load_file(Str filename, IAllocator *alloc, struct Import *result) = 0;
 };
 
 struct ImporterRegistry : public IImporterRegistry {
@@ -23,5 +23,5 @@ struct ImporterRegistry : public IImporterRegistry {
     IImporter *importers;
     uint32 num_importers;
 
-    virtual bool load_file(Str filename, IAllocator alloc, struct Import *result) override;
+    virtual bool load_file(Str filename, IAllocator *alloc, struct Import *result) override;
 };

@@ -16,7 +16,7 @@ Raw ImageConverter::to_truecolor_rgba32(Desc *desc) {
     const uint32 width  = (uint32)desc->image->width;
     const uint32 height = (uint32)desc->image->height;
     uint32 final_image_size = width * height * sizeof(uint32);
-    umm destination = desc->alloc->reserve(desc->alloc->context, final_image_size);
+    umm destination = desc->alloc->reserve(final_image_size);
 
     umm row = (umm)desc->data;
     const uint32 column_size = desc->image->bpp / 8;

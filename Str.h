@@ -113,6 +113,11 @@ struct Str {
     /** True when the string ends with the specified needle */
     bool ends_with(const Str &needle) const;
 
+    /** Converts letter characters to upper-case in-place. */
+    Str &to_upper();
+
+    Str dup(IAllocator &alloc);
+
     _inline char &operator[](u64 index) {
 #if MOK_STR_RANGE_CHECK
         if (index < len) {

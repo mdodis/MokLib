@@ -47,15 +47,15 @@ struct Tape {
         return read(destination.buffer, u32(destination.size));
     }
 
-    Str read_line(const IAllocator &alloc) {
+    Str read_line(IAllocator &alloc) {
         const u32 initial_buffer_size = 1024;
 
         u32 buffer_size = initial_buffer_size;
-        char *data = (char*)alloc.reserve(alloc.context, initial_buffer_size);
+        char *data = (char*)alloc.reserve(initial_buffer_size);
 
         i64 num_read = read(data, initial_buffer_size);
         if (num_read == -1) {
-            alloc.release(alloc.context, (umm)data);
+            alloc.release((umm)data);
             return Str::NullStr;
         } else {
 

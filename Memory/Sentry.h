@@ -6,7 +6,7 @@
  * A debuggable allocator that protects separate allocations
  * through guard pages
  */
-struct Sentry {
+struct Sentry : IAllocator {
 
     struct Allocation {
         umm base_ptr;
@@ -21,16 +21,18 @@ struct Sentry {
         Underflow
     };
 
-    Sentry(IAllocator base, Mode mode) :mode(mode) {
+    Sentry(IAllocator *base, Mode mode) :mode(mode) {
         allocations = TArray<Allocation>(base);
     }
 
-    umm push(uint64 size);
-    umm resize(umm ptr, uint64 new_size);
-    void pop(umm ptr);
-    Allocation *find_allocation(umm ptr, int32 *out_index = 0);
+    virtual PROC_MEMORY_RESERVE(reserve) override;
+    virtual PROC_MEMORY_RESIZE(resize)   override;
+    virtual PROC_MEMORY_RELEASE(release) override;
+    virtual _inline PROC_MEMORY_RELEASE_BASE(release_base) override {
+        return;
+    }
 
-    IAllocator to_alloc();
+    Allocation *find_allocation(umm ptr, int32 *out_index = 0);
 
     Mode mode;
     TArray<Allocation> allocations;

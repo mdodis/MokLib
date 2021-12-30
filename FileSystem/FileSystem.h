@@ -82,7 +82,9 @@ struct FileTape : public SizedTape {
 
     bool write(const void *src, u64 amount) override {
         u64 bytes_written;
-        return write_file(file, src, amount, &bytes_written, current_offset);
+        bool success = write_file(file, src, amount, &bytes_written, current_offset);
+        current_offset += success ? bytes_written : 0;
+        return success;
     }
 };
 
@@ -92,7 +94,7 @@ extern Arena Print_Arena;
 
 #define PRINT(what) do { \
         SAVE_ARENA(&Print_Arena); \
-        _print(Console::Output, (StringBuilder(Print_Arena.to_alloc()) + what).to_list()); \
+        _print(Console::Output, (StringBuilder(&Print_Arena) + what).to_list()); \
     } while (0)
 
 #define PRINTLN(what) PRINT(what + "\n")

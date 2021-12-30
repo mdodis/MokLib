@@ -3,7 +3,7 @@
 TList<Str> StringBuilder::to_list(void) {
 	TList<Str> output(allocator);
 	LIST_FOR_EACH(&list, iter) {
-		iter->data.type.stringify(iter->data.ptr, output, output.alloc);
+		iter->data.type.stringify(iter->data.ptr, output, *output.alloc);
 	}
 	return output;
 }
@@ -18,7 +18,7 @@ char *StringBuilder::_cstr(bool with_null_term, u64 *out_size) {
 		total_size += iter->data.len;
 	}
 
-	char *buffer = (char*)allocator.reserve(allocator.context, total_size + with_null_term);
+	char *buffer = (char*)allocator->reserve(total_size + with_null_term);
 
 	u64 offset = 0;
 	LIST_FOR_EACH(&output, iter) {

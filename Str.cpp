@@ -1,5 +1,6 @@
 #include "Str.h"
 #include "Memory/Extras.h"
+#include "Parsing.h"
 #include <string.h>
 
 const Str Str::New_Line("\n", 1);
@@ -109,7 +110,7 @@ bool Str::ends_with(const Str &needle) const {
 
     u64 mi = len - 1;
     u64 ni = needle.len - 1;
-    while ((mi >= 0) && (ni >= 0)) {
+    while ((mi != 0) && (ni != 0)) {
         if (data[mi] != needle[ni]) {
             return false;
         }
@@ -136,4 +137,17 @@ bool operator==(const Str &left, const Str &right) {
     }
 
     return true;
+}
+
+Str &Str::to_upper() {
+    for (u64 i = 0; i < len; ++i) {
+        data[i] = uppercase_of(data[i]);
+    }
+    return *this;
+}
+
+Str Str::dup(IAllocator &alloc) {
+    umm dup_data = alloc.reserve(len);
+    memcpy(dup_data, data, len);
+    return Str((char*)dup_data, len);
 }

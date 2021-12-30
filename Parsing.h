@@ -6,37 +6,98 @@
 #include "Tape.h"
 #include <stdlib.h>
 
-static bool is_whitespace(char c) {
+/**
+ * Character classes
+ */
+
+#define PROC_CHAR_IS_CLASS(name) bool name(char c)
+typedef PROC_CHAR_IS_CLASS(ProcCharClassIs);
+
+static _inline PROC_CHAR_IS_CLASS(is_whitespace) {
     return (c == ' ')
         || (c == '\t')
         || (c == '\n')
         || (c == '\r');
 }
 
-static _inline bool is_newline(char c) {
+static _inline PROC_CHAR_IS_CLASS(isnt_whitespace) {
+    return !is_whitespace(c);
+}
+
+static _inline PROC_CHAR_IS_CLASS(is_newline) {
     return (c == '\n')
         || (c == '\r');
 }
 
-static _inline bool is_space(char c) {
+static _inline PROC_CHAR_IS_CLASS(is_space) {
     return (c == ' ')
         || (c == '\t');
 }
 
-static bool is_digit(char c) {
+static _inline PROC_CHAR_IS_CLASS(is_digit) {
     return (c >= '0' && c <= '9');
 }
 
-static bool is_valid_cid_begin(char c) {
+static _inline PROC_CHAR_IS_CLASS(is_uppercase_letter) {
+    return (c >= 'A' && c <= 'Z');
+}
+
+static _inline PROC_CHAR_IS_CLASS(is_lowercase_letter) {
+    return (c >= 'a' && c <= 'z');
+}
+
+static _inline PROC_CHAR_IS_CLASS(is_letter) {
+    return is_uppercase_letter(c)
+        || is_lowercase_letter(c);
+}
+
+static _inline PROC_CHAR_IS_CLASS(is_alphanumeric) {
+    return is_letter(c)
+        || is_digit(c);
+}
+
+static _inline PROC_CHAR_IS_CLASS(is_math_op) {
+    return (c == '~')
+        || (c == '+')
+        || (c == '-')
+        || (c == '*')
+        || (c == '/')
+        || (c == '>')
+        || (c == '<')
+        || (c == '=')
+        || (c == '!')
+        || (c == '^');
+}
+
+static _inline PROC_CHAR_IS_CLASS(is_valid_cid_begin) {
     return (c >= 'A' && c <= 'Z')
         || (c >= 'a' && c <= 'z')
         || (c == '_');
 }
 
-static bool is_valid_cid(char c) {
+static _inline PROC_CHAR_IS_CLASS(is_alpha_or_math) {
+    return is_alphanumeric(c)
+        || is_math_op(c);
+}
+
+static _inline PROC_CHAR_IS_CLASS(is_valid_cid) {
     return is_valid_cid_begin(c)
         || (c >= '0' && c <= '9');
 }
+
+/**
+ * Per-character conversion functions
+ */
+
+static _inline char uppercase_of(char c) {
+    return is_lowercase_letter(c)
+        ? c - ('a' - 'A')
+        : c;
+}
+
+/**
+ * Parsing functions
+ */
 
 static u64 eat_whitespace(const Str &s, u64 i) {
     while (i < s.len && is_whitespace(s[i])) {
@@ -131,23 +192,10 @@ static u32 match_strings(struct Tape *tape, Str *strings, u32 num_strings) {
     return num_strings;
 }
 
-static Str parse_string(struct Tape *tape, IAllocator &alloc) {
-    int32 i = 0;
-    char c;
-
-    TArray<char> result(alloc);
-    while ((c = tape->read_char()) != EOF) {
-        if (!is_whitespace(c)) {
-            result.add(c);
-        } else {
-            break;
-        }
-    }
-
-    if (c != EOF)
-        tape->move(-1);
-    return Str(result.data, result.size);
-}
+Str parse_string(
+    struct Tape *tape,
+    IAllocator &alloc,
+    ProcCharClassIs *predicate = isnt_whitespace);
 
 static bool parse_num(struct Tape *tape, float &result) {
     char c;
@@ -193,7 +241,9 @@ static bool parse_num(struct Tape *tape, u32 &result) {
         }
     }
 
-    tape->move(-1);
+
+    if (c != EOF)
+        tape->move(-1);
 
     if (i == 0) {
         return false;

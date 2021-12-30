@@ -4,7 +4,7 @@
 #if OS_WINDOWS
 #include "../WinInc.h"
 
-umm Sentry::push(uint64 size) {
+PROC_MEMORY_RESERVE(Sentry::reserve) {
     SYSTEM_INFO info;
     GetSystemInfo(&info);
 
@@ -51,11 +51,11 @@ umm Sentry::push(uint64 size) {
     return ptr;
 }
 
-umm Sentry::resize(umm ptr, uint64 new_size) {
+PROC_MEMORY_RESIZE(Sentry::resize) {
 
     Allocation *allocation = find_allocation(ptr);
     if (!allocation)
-        return push(new_size);
+        return reserve(new_size);
 
 
     SYSTEM_INFO info;
@@ -99,18 +99,18 @@ umm Sentry::resize(umm ptr, uint64 new_size) {
         const uint64 prev_size = allocation->size;
 
 
-        umm new_ptr = push(new_size);
+        umm new_ptr = reserve(new_size);
 
         memcpy(new_ptr, prev_ptr, prev_size);
 
-        pop(prev_ptr);
+        release(prev_ptr);
         return new_ptr;
     }
 
 
 }
 
-void Sentry::pop(umm ptr) {
+PROC_MEMORY_RELEASE(Sentry::release) {
     int32 allocation_index;
     Allocation *allocation = find_allocation(ptr, &allocation_index);
 
@@ -157,39 +157,3 @@ Sentry::Allocation *Sentry::find_allocation(umm ptr, int32 *out_index) {
 
     return allocation;
 }
-
-PROC_MEMORY_RESERVE(sentry_reserve) {
-    Sentry *sentry = (Sentry*)context;
-    return sentry->push(size);
-}
-
-PROC_MEMORY_RESIZE(sentry_resize) {
-    Sentry *sentry = (Sentry*)context;
-    return sentry->resize(ptr, new_size);
-}
-
-PROC_MEMORY_RELEASE(sentry_release) {
-    Sentry *sentry = (Sentry*)context;
-    sentry->pop(ptr);
-}
-
-PROC_MEMORY_RELEASE_BASE(sentry_release_base) {
-    Sentry *sentry = (Sentry*)context;
-    for (int32 i = 0; i < sentry->allocations.size; ++i) {
-        sentry->pop(sentry->allocations[i].ptr);
-    }
-
-    sentry->allocations.empty();
-}
-
-IAllocator Sentry::to_alloc() {
-
-    return IAllocator {
-        sentry_reserve,
-        sentry_resize,
-        sentry_release,
-        sentry_release_base,
-        this
-    };
-}
-

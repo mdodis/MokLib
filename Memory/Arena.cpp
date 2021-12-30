@@ -12,20 +12,17 @@ struct _ArenaBlockHdr {
 
 #define GET_ARENA_BLOCK_HEADER(base) (_ArenaBlockHdr*)(base)
 
-Arena Arena::create(IAllocator base, uint64 size) {
-	Arena result = {};
-	result.base = base;
-
+Arena::Arena(IAllocator *base, u64 size) : base(base) {
 	size += sizeof(_ArenaBlockHdr);
 
-	result.capacity = size;
-	result.min_block_size = size;
-	result.memory = base.reserve(base.context, size);
-	result.last_offset = 0u;
+	capacity = size;
+	min_block_size = size;
+	memory = base->reserve(size);
+	used = 0;
+	last_offset = 0u;
 
-	_ArenaBlockHdr *hdr = (_ArenaBlockHdr*)result.push(sizeof(_ArenaBlockHdr));
+	_ArenaBlockHdr *hdr = (_ArenaBlockHdr*)push(sizeof(_ArenaBlockHdr));
 	hdr->memory = 0;
-	return result;
 }
 
 umm Arena::push(uint64 size) {
@@ -44,7 +41,7 @@ umm Arena::push(uint64 size) {
 	return result;
 }
 
-umm Arena::resize(umm ptr, uint64 prev_size, uint64 new_size) {
+PROC_MEMORY_RESIZE(Arena::resize) {
 	umm last_ptr = memory + last_offset;
 
 	if (ptr == 0) return push(new_size);
@@ -70,7 +67,7 @@ umm Arena::resize(umm ptr, uint64 prev_size, uint64 new_size) {
 }
 
 
-void Arena::release(umm ptr) {
+PROC_MEMORY_RELEASE(Arena::release) {
 	umm last_ptr = memory + last_offset;
 
 	if (last_ptr == ptr) {
@@ -81,6 +78,9 @@ void Arena::release(umm ptr) {
 
 bool Arena::stretch(u64 required_size) {
 
+	if (min_block_size == 0)
+		return false;
+
 	const u64 new_block_size = max(min_block_size, required_size)
 		+ sizeof(_ArenaBlockHdr);
 
@@ -90,7 +90,7 @@ bool Arena::stretch(u64 required_size) {
 	const u64 prev_used        = used;
 	const u64 prev_last_offset = last_offset;
 
-	const umm new_memory = base.reserve(base.context, new_block_size);
+	const umm new_memory = base->reserve(new_block_size);
 	if (!new_memory) {
 		return false;
 	}
@@ -110,53 +110,26 @@ bool Arena::stretch(u64 required_size) {
 }
 
 
-void Arena::release_base() {
+PROC_MEMORY_RELEASE_BASE(Arena::release_base) {
+
+	if (min_block_size == 0) {
+		base->release(memory);
+		return;
+	}
 
 	auto *header = GET_ARENA_BLOCK_HEADER(memory);
 	umm last_memory = header->memory;
-	base.release(base.context, memory);
+	base->release(memory);
 
 	while (last_memory != 0) {
 		header = GET_ARENA_BLOCK_HEADER(last_memory);
 		const umm memory_to_delete = last_memory;
 		last_memory = header->memory;
-		base.release(base.context, memory_to_delete);
+		base->release(memory_to_delete);
 	}
 
 }
 
 umm Arena::get_block_data() {
 	return memory + sizeof(_ArenaBlockHdr);
-}
-
-
-// IAllocator interface
-PROC_MEMORY_RESERVE(arena_reserve) {
-	Arena *arena = (Arena*)context;
-	return arena->push(size);
-}
-
-PROC_MEMORY_RESIZE(arena_resize) {
-	Arena *arena = (Arena*)context;
-	return arena->resize(ptr, prev_size, new_size);
-}
-
-PROC_MEMORY_RELEASE(arena_release) {
-	Arena *arena = (Arena*)context;
-	arena->release(ptr);
-}
-
-PROC_MEMORY_RELEASE_BASE(arena_release_base) {
-	Arena *arena = (Arena*)context;
-	arena->release_base();
-}
-
-IAllocator Arena::to_alloc() {
-	return IAllocator {
-		arena_reserve,
-		arena_resize,
-		arena_release,
-		arena_release_base,
-		this
-	};
 }

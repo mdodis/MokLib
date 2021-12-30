@@ -5,7 +5,7 @@
 #include "Importers/Import.h"
 #include "Memory/Arena.h"
 
-bool ImporterRegistry::load_file(Str filename, IAllocator alloc, struct Import *result) {
+bool ImporterRegistry::load_file(Str filename, IAllocator *alloc, struct Import *result) {
 
     FileHandle fh = open_file(filename, FileMode::Read);
     DEFER({
@@ -25,8 +25,8 @@ bool ImporterRegistry::load_file(Str filename, IAllocator alloc, struct Import *
 
     if (importer) {
 
-        Arena arena = Arena::create(alloc, MEGABYTES(1));
-        bool successful = importer->load(fh, arena.to_alloc(), result);
+        Arena arena = Arena(alloc, MEGABYTES(1));
+        bool successful = importer->load(fh, &arena, result);
         result->data.buffer = arena.get_block_data();
         result->data.size   = arena.used;
 

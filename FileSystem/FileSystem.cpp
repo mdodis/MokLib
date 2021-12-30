@@ -151,8 +151,13 @@ bool write_file(FileHandle &handle, const void *src, u64 bytes_to_write, u64 *by
         &high_distance,
         FILE_BEGIN);
 
-    // @todo: actually read u64
-    return WriteFile((HANDLE)handle.internal_handle, src, (u32)bytes_to_write, (LPDWORD)bytes_written, 0);
+    DWORD bytes_written32;
+    BOOL success = WriteFile((HANDLE)handle.internal_handle, src, (u32)bytes_to_write, &bytes_written32, 0);
+
+    if (success && bytes_written)
+        *bytes_written = bytes_written32;
+
+    return success;
 }
 
 

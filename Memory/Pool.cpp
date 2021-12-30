@@ -1,13 +1,13 @@
 #include "Pool.h"
 #include "../Debugging/Base.h"
 
-Pool Pool::create(IAllocator base, uint64 block_size, uint32 num_blocks) {
+Pool Pool::create(IAllocator *base, uint64 block_size, uint32 num_blocks) {
     Pool result = {};
     result.base = base;
     result.block_size = block_size;
     result.num_blocks = num_blocks;
     result.chunk_size = sizeof(Pool::FreeNode) + block_size;
-    result.memory = base.reserve(base.context, result.chunk_size * num_blocks);
+    result.memory = base->reserve(result.chunk_size * num_blocks);
     result.capacity = result.chunk_size * num_blocks;
     result.erase();
 
@@ -26,7 +26,7 @@ umm Pool::push() {
     return result_block;
 }
 
-void Pool::release(umm ptr) {
+PROC_MEMORY_RELEASE(Pool::release) {
 
     const umm start = memory;
     const umm end   = memory + capacity;
@@ -52,37 +52,6 @@ void Pool::erase() {
     }
 }
 
-void Pool::release_base() {
-    base.release(base.context, memory);
-}
-
-PROC_MEMORY_RESERVE(pool_reserve) {
-    Pool *pool = (Pool*)context;
-    if (pool->block_size != size)
-        return 0;
-    return pool->push();
-}
-
-PROC_MEMORY_RESIZE(pool_resize) {
-    return 0;
-}
-
-PROC_MEMORY_RELEASE(pool_release) {
-    Pool *pool = (Pool*)context;
-    pool->release(ptr);
-}
-
-PROC_MEMORY_RELEASE_BASE(pool_release_base) {
-    Pool *pool = (Pool*)context;
-    pool->release_base();
-}
-
-IAllocator Pool::to_alloc() {
-    return IAllocator {
-        pool_reserve,
-        pool_resize,
-        pool_release,
-        pool_release_base,
-        (void*)this
-    };
+PROC_MEMORY_RELEASE_BASE(Pool::release_base) {
+    base->release(memory);
 }

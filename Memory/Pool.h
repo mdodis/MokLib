@@ -6,14 +6,25 @@
  *
  * @todo: alignment
  */
-struct Pool {
+struct Pool : IAllocator {
 
-    static Pool create(IAllocator base, uint64 block_size, uint32 num_blocks);
+    static Pool create(IAllocator *base, uint64 block_size, uint32 num_blocks);
+
+    virtual _inline PROC_MEMORY_RESERVE(reserve) override {
+        if (block_size != size)
+            return 0;
+        return push();
+    }
+
+    virtual _inline PROC_MEMORY_RESIZE(resize) override {
+        return 0;
+    }
+
+    virtual PROC_MEMORY_RELEASE(release) override;
+    virtual PROC_MEMORY_RELEASE_BASE(release_base) override;
 
     umm push();
-    void release(umm ptr);
     void erase();
-    void release_base();
 
     IAllocator to_alloc();
 
@@ -21,7 +32,7 @@ struct Pool {
         FreeNode *next;
     };
 
-    IAllocator base;
+    IAllocator *base;
     umm memory;
     uint64 capacity, block_size;
     uint32 num_blocks;

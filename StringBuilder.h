@@ -10,7 +10,7 @@
  */
 struct StringBuilder {
 
-	_inline StringBuilder(const IAllocator& allocator)
+	_inline StringBuilder(IAllocator *allocator)
 		:allocator(allocator), list(allocator) {}
 
 	template <typename T>
@@ -44,6 +44,6 @@ struct StringBuilder {
 		umm ptr;
 	};
 
-	IAllocator allocator;
+	IAllocator *allocator;
 	TList<Node> list;
 };

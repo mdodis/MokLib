@@ -16,14 +16,14 @@ struct TArray {
 		this->size = 0;
 	}
 
-	_inline TArray(const IAllocator &alloc) {
+	_inline TArray(IAllocator *alloc) {
 		this->alloc = alloc;
 		this->data = 0;
 		this->capacity = 0;
 		this->size = 0;
 	}
 
-	_inline TArray(const IAllocator &alloc, std::initializer_list<T> init_list) : TArray(alloc) {
+	_inline TArray(IAllocator *alloc, std::initializer_list<T> init_list) : TArray(alloc) {
 		for (const T &elem : init_list) {
 			add(elem);
 		}
@@ -75,11 +75,11 @@ struct TArray {
 
 	void release() {
 		empty();
-		alloc.release(alloc.context, (umm)data);
+		alloc->release((umm)data);
 	}
 
 	bool init(int32 amount) {
-		data = (T*)alloc.reserve(alloc.context, amount * sizeof(T));
+		data = (T*)alloc->reserve(amount * sizeof(T));
 		if (!data) {
 			return false;
 		}
@@ -90,11 +90,18 @@ struct TArray {
 	}
 
 	bool stretch() {
-		T *new_data = (T*)alloc.resize(alloc.context, (umm)data, capacity * sizeof(T), capacity * 2 * sizeof(T));
+		T *new_data = (T*)alloc->resize((umm)data, capacity * sizeof(T), capacity * 2 * sizeof(T));
 		if (!new_data) return false;
 		data = new_data;
 		capacity *= 2;
 		return true;
+	}
+
+	T *last() const {
+		if (size > 0)
+			return ((T*)data) + (size - 1);
+		else
+			return 0;
 	}
 
 	_inline bool is_index_valid(int32 i) {
@@ -122,7 +129,7 @@ struct TArray {
 	}
 
 	T *data;
-	IAllocator alloc;
+	IAllocator *alloc;
 	int32 capacity, size;
 
 	static constexpr int32 Init_Capacity = 4;
@@ -165,7 +172,10 @@ struct TArray {
 
 template <typename T, uint32 Count>
 struct TInlineArray : TArray<T> {
-	TInlineArray() :TArray<T>(alloc_arena.to_alloc()) { this->init(Count); }
+	TInlineArray()
+		: alloc_arena(memory, (sizeof(T) * Count))
+		, TArray<T>(&alloc_arena)
+	{ this->init(Count); }
 
 	TInlineArray(std::initializer_list<T> init_list) : TInlineArray() {
 		for (const T &elem : init_list) {
@@ -173,12 +183,7 @@ struct TInlineArray : TArray<T> {
 		}
 	}
 
-	uint8 memory[(sizeof(T) * Count)];
-	Arena alloc_arena = {
-	    IAllocator{0},
-	    memory,
-	    (sizeof(T) * Count),
-	    0,
-	};
+	u8 memory[(sizeof(T) * Count)];
+	Arena alloc_arena;
 
 };

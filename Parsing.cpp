@@ -14,7 +14,7 @@ u64 parse_cid(const Str &s, u64 i, Str &out) {
 }
 
 Str parse_cid(Tape *tape, IAllocator &alloc) {
-    TArray<char> result(alloc);
+    TArray<char> result(&alloc);
 
     char c;
     while ((c = tape->read_char()) != EOF) {
@@ -33,4 +33,22 @@ Str parse_cid(Tape *tape, IAllocator &alloc) {
     } else {
         return Str(result.data, result.size);
     }
+}
+
+Str parse_string(struct Tape *tape, IAllocator &alloc, ProcCharClassIs *predicate) {
+    int32 i = 0;
+    char c;
+
+    TArray<char> result(&alloc);
+    while ((c = tape->read_char()) != EOF) {
+        if (predicate(c)) {
+            result.add(c);
+        } else {
+            break;
+        }
+    }
+
+    if (c != EOF)
+        tape->move(-1);
+    return Str(result.data, result.size);
 }

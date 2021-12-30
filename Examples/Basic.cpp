@@ -98,7 +98,7 @@ void example_arrays2(void) {
 
 // Example - Maps
 void example_maps(void) {
-    TMap<Str, int32> map(get_system_allocator(), 5);
+    TMap<Str, int32> map(*get_system_allocator(), 5);
 
     map.add(STATIC_STR("Mitch"),    45);
     map.add(STATIC_STR("Kenny"),    12);

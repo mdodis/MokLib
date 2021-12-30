@@ -53,7 +53,7 @@ void output_image_ppm(Import &import) {
 
     ImageConverter::Desc desc;
     desc.image = &import.image;
-    desc.alloc = &alloc;
+    desc.alloc = alloc;
     desc.data = import.data.buffer;
     Raw image32 = ImageConverter::to_truecolor_rgba32(&desc);
 

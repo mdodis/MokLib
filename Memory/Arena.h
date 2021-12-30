@@ -1,24 +1,40 @@
 #pragma once
-
 #include "Base.h"
+#include "Defer.h"
 
-struct Arena {
+struct Arena : IAllocator {
 	static constexpr u64 Default_Block_Size = MEGABYTES(1);
 	static constexpr u64 Remaining 			= ~0ull;
 
-	static Arena create(IAllocator base, u64 size = Default_Block_Size);
+	Arena() {}
+	constexpr Arena(umm data, u64 size)
+		: base(&Null_Allocator)
+		, memory(data)
+		, used(0)
+		, capacity(size)
+		, min_block_size(0) {}
+	Arena(IAllocator *base, u64 size = Default_Block_Size);
+
+	~Arena() {
+
+	}
+
+	virtual _inline PROC_MEMORY_RESERVE(reserve) override {
+	    return push(size);
+	}
+
+	virtual PROC_MEMORY_RESIZE(resize) override;
+	virtual PROC_MEMORY_RELEASE(release) override;
+	virtual PROC_MEMORY_RELEASE_BASE(release_base) override;
 
 	umm push(u64 size);
-	umm resize(umm ptr, u64 prev_size, u64 new_size);
-	void release(umm ptr);
-	void release_base();
 	IAllocator to_alloc();
 
 	bool stretch(u64 required_size);
 
 	umm get_block_data();
 
-	IAllocator base;
+	IAllocator *base;
 	umm memory;
 	u64 capacity, used;
 	u64 min_block_size;
@@ -27,8 +43,8 @@ struct Arena {
 };
 
 #define CREATE_SCOPED_ARENA(base, name, size) \
-	Arena name = Arena::create(base, (size)); \
-	ArenaScope name__##scope(&name);
+	Arena name = Arena(base, (size)); \
+	DEFER(name.release_base());
 
 #define CREATE_GLOBAL_ARENA(name, size) \
 	static uint8 memory_of__##name[(size)]; \
@@ -39,26 +55,9 @@ struct Arena {
 		0, \
 	};
 
-
 #define CREATE_INLINE_ARENA(name, size) \
 	static uint8 memory_of__##name[(size)]; \
-	Arena name = { \
-		Null_Allocator, \
-		memory_of__##name, \
-		(size), \
-		0, \
-	};
-
-struct ArenaScope {
-	Arena *arena;
-	ArenaScope(Arena *a) {
-		arena = a;
-	}
-
-	~ArenaScope() {
-		arena->release_base();
-	}
-};
+	Arena name(memory_of__##name, size);
 
 #define SAVE_ARENA(arena) ArenaSave MCONCAT(_arena_save, __LINE__) (arena)
 

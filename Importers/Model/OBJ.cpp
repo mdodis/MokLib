@@ -58,11 +58,11 @@ PROC_IMPORTER_LOAD(import_obj_load) {
 
     CREATE_SCOPED_ARENA(get_system_allocator(), temp_arena, Arena::Default_Block_Size);
 
-    TArray<Vec3> vertices(temp_arena.to_alloc());
-    TArray<Vec2> textures(temp_arena.to_alloc());
-    TArray<Vec3> normals(temp_arena.to_alloc());
-    TArray<OBJIndex> encoded_indices(temp_arena.to_alloc());
-    TArray<u32> indices(temp_arena.to_alloc());
+    TArray<Vec3> vertices(&temp_arena);
+    TArray<Vec2> textures(&temp_arena);
+    TArray<Vec3> normals(&temp_arena);
+    TArray<OBJIndex> encoded_indices(&temp_arena);
+    TArray<u32> indices(&temp_arena);
 
     TArray<OBJVertex> output_vertices(alloc);
 
@@ -72,9 +72,8 @@ PROC_IMPORTER_LOAD(import_obj_load) {
         eat_whitespace(&tape);
 
         CREATE_INLINE_ARENA(in_arena, 1024);
-        IAllocator in_alloc = in_arena.to_alloc();
 
-        Str declaration = parse_string(&tape, in_alloc);
+        Str declaration = parse_string(&tape, in_arena);
 
         u32 match_result = match_strings(declaration, OBJ_Declarations, OBJDeclaration::Count);
         if (match_result == OBJDeclaration::Count) {
@@ -168,14 +167,14 @@ PROC_IMPORTER_LOAD(import_obj_load) {
             case OBJDeclaration::UseMtl: {
                 eat_space(&tape);
 
-                Str material_name = parse_string(&tape, in_alloc);
+                Str material_name = parse_string(&tape, in_arena);
                 // DEBUG_PRINTF("UseMtl: %.*s", material_name.len, material_name.data);
             } break;
 
             case OBJDeclaration::SetSmoothing: {
                 eat_space(&tape);
 
-                Str is_on_str = parse_string(&tape, in_alloc);
+                Str is_on_str = parse_string(&tape, in_arena);
                 // DEBUG_PRINTF("Set smoothing: %.*s", is_on_str.len, is_on_str.data);
             } break;
 
@@ -186,12 +185,12 @@ PROC_IMPORTER_LOAD(import_obj_load) {
 
             case OBJDeclaration::MtlLib: {
                 eat_space(&tape);
-                Str filename = parse_string(&tape, in_alloc);
+                Str filename = parse_string(&tape, in_arena);
             } break;
 
             case OBJDeclaration::Object: {
                 eat_space(&tape);
-                Str object_name = parse_string(&tape, in_alloc);
+                Str object_name = parse_string(&tape, in_arena);
             } break;
 
             default: {
@@ -201,7 +200,7 @@ PROC_IMPORTER_LOAD(import_obj_load) {
     }
 
     u64 copy_size = indices.size * sizeof(indices[0]);
-    umm output_indices = alloc.reserve(alloc.context, copy_size);
+    umm output_indices = alloc->reserve(copy_size);
 
     memcpy(output_indices, indices.data, copy_size);
 

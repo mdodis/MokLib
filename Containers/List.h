@@ -13,9 +13,9 @@ struct TList {
 		Node* prev;
 	};
 
-	_inline TList(const IAllocator& allocator) {
+	_inline TList(IAllocator *allocator) {
 		alloc = allocator;
-		root = (Node*)allocator.reserve(allocator.context, sizeof(Node));
+		root = (Node*)alloc->reserve(sizeof(Node));
 		root->next = root;
 		root->prev = root;
 	}
@@ -38,7 +38,7 @@ struct TList {
 		root->prev = node;
 	}
 	
-	IAllocator alloc;
+	IAllocator *alloc;
 	Node *root;
 
 	/** Iterators */

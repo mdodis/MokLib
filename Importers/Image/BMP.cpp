@@ -100,7 +100,7 @@ struct BMPAttribs {
 
 #pragma pack(pop)
 
-#define PROC_IMPORTER_BMP_EXTRACT(name) bool name(FileHandle file_handle, IAllocator alloc, struct Import *result, const BMPFileHeader &file_header)
+#define PROC_IMPORTER_BMP_EXTRACT(name) bool name(FileHandle file_handle, IAllocator &alloc, struct Import *result, const BMPFileHeader &file_header)
 
 static PROC_IMPORTER_BMP_EXTRACT(extract_bmp_40);
 static PROC_IMPORTER_BMP_EXTRACT(extract_bmp_124);
@@ -109,7 +109,7 @@ static bool extract_bmp(FileHandle fh, IAllocator &alloc, BMPAttribs *attribs, s
 static bool read_bmp_indexed(FileHandle file_handle, IAllocator &alloc, BMPAttribs *attribs, struct Import *result);
 
 static bool read_bmp_raw(FileHandle file_handle, IAllocator &alloc, struct Import *result, uint32 offset) {
-    result->data.buffer = alloc.reserve(alloc.context, result->data.size);
+    result->data.buffer = alloc.reserve(result->data.size);
     int64 num_read = read_file(file_handle, result->data.buffer, result->data.size, offset);
     return (num_read == result->data.size);
 }
@@ -132,9 +132,9 @@ PROC_IMPORTER_LOAD(import_bmp_load) {
     }
 
     if (header_size == sizeof(BMPInfoHeader40)) {
-        return extract_bmp_40(file_handle, alloc, result, file_header);
+        return extract_bmp_40(file_handle, *alloc, result, file_header);
     } else if (header_size == sizeof(BMPInfoHeader124)) {
-        return extract_bmp_124(file_handle, alloc, result, file_header);
+        return extract_bmp_124(file_handle, *alloc, result, file_header);
     } else {
         return false;
     }
@@ -245,13 +245,13 @@ static bool read_bmp_indexed(FileHandle file_handle, IAllocator &alloc, BMPAttri
     result->image.is_flipped = false;
 
     // Output Data
-    uint32 *output = (uint32*)alloc.reserve(alloc.context, converted_size);
+    uint32 *output = (uint32*)alloc.reserve(converted_size);
     result->data.buffer = output;
     result->data.size = converted_size;
 
     // Color Table
     const uint32 color_table_size = color_table_count * sizeof(uint32);
-    uint32 *color_table = (uint32*)alloc.reserve(alloc.context, color_table_size);
+    uint32 *color_table = (uint32*)alloc.reserve(color_table_size);
     ASSERT(color_table);
 
     read_file(file_handle, color_table, color_table_size, attribs->table_offset);

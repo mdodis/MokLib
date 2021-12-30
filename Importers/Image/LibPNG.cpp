@@ -17,13 +17,13 @@ PROC_IMPORT_PNG_ERROR_HANDLER(import_png_user_error) {
 png_voidp import_png_malloc(png_structp ptr, png_alloc_size_t size) {
     IAllocator *alloc = (IAllocator*)png_get_mem_ptr(ptr);
     DEBUG_PRINTF("png alloc %zu", size);
-    return alloc->reserve(alloc->context, size);
+    return alloc->reserve(size);
     // return malloc(size);
 }
 
 void import_png_free(png_structp png_ptr, png_voidp ptr) {
     IAllocator *alloc = (IAllocator*)png_get_mem_ptr(png_ptr);
-    alloc->release(alloc->context, (umm)ptr);
+    alloc->release((umm)ptr);
 }
 
 void import_png_io_read(png_structp png_ptr, png_bytep data, png_size_t length) {
@@ -45,8 +45,9 @@ enum {
 
 PROC_IMPORTER_LOAD(import_png_load) {
 
-    CREATE_SCOPED_ARENA(get_system_allocator(), temp, MEGABYTES(1));
-    auto temp_alloc = temp.to_alloc();
+    // CREATE_SCOPED_ARENA(get_system_allocator(), temp, MEGABYTES(1));
+
+    Arena temp(get_system_allocator(), MEGABYTES(1));
 
     u8 signature[PngSignatureSize];
     if (read_file(file_handle, signature, PngSignatureSize, 0) != PngSignatureSize) {
@@ -61,7 +62,7 @@ PROC_IMPORTER_LOAD(import_png_load) {
     png_structp png_ptr = png_create_read_struct_2(
         PNG_LIBPNG_VER_STRING,
         (png_voidp)import_png_user_error, import_png_user_error, import_png_user_error,
-        (png_voidp)&temp_alloc, import_png_malloc, import_png_free);
+        (png_voidp)&temp, import_png_malloc, import_png_free);
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
@@ -122,7 +123,7 @@ PROC_IMPORTER_LOAD(import_png_load) {
         * result->image.height
         * ((bits_per_channel * num_channels) / 8);
 
-    result->data.buffer = alloc.reserve(alloc.context, result->data.size);
+    result->data.buffer = alloc->reserve(result->data.size);
     result->image.pitch = result->image.width * ((bits_per_channel * num_channels) / 8);
     result->image.bpp = num_channels * bits_per_channel;
 
@@ -137,6 +138,8 @@ PROC_IMPORTER_LOAD(import_png_load) {
     result->kind = ImportKind::Image;
 
     png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+
+    temp.release_base();
 
     return true;
 }
