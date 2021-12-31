@@ -11,6 +11,7 @@
 #pragma comment(lib, "windowscodecs.lib")
 #pragma comment(lib, "shlwapi.lib")
 
+// @bug: image is interpreted wrong, probably endianess pixel format issue
 PROC_IMPORTER_LOAD(import_wic_load) {
 
     HRESULT hr = CoInitialize(0);
