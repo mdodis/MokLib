@@ -40,7 +40,7 @@ typedef double      f64;
 /**
  * C Compatibility
  */
-#if OS_WINDOWS
+#if OS_MSWINDOWS
     #define EXPORT __declspec(dllexport)
     #define CEXPORT extern "C" EXPORT
 #endif

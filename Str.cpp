@@ -38,7 +38,7 @@ u64 Str::last_of(char c) const{
         }
     }
 
-    return -1;
+    return len;
 }
 
 u64 Str::first_of(char c, u64 start) const {
@@ -47,7 +47,7 @@ u64 Str::first_of(char c, u64 start) const {
             return i;
         }
     }
-    return -1;
+    return len;
 }
 
 u64 Str::last_of(const Str &s, u64 start) const {
@@ -74,7 +74,7 @@ u64 Str::last_of(const Str &s, u64 start) const {
 }
 
 u64 Str::first_of(const Str &s, u64 start) const {
-    if (s.len == 0) return -1;
+    if (s.len == 0) return len;
     
     u64 sindex = 0;
     u64 i;

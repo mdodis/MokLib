@@ -7,7 +7,7 @@
 
 CREATE_INLINE_ARENA(Print_Arena, 2048);
 
-#if OS_WINDOWS
+#if OS_MSWINDOWS
 #include "../WinInc.h"
 
 bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind kind) {

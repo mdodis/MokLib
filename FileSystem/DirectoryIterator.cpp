@@ -1,6 +1,6 @@
 #include "DirectoryIterator.h"
 
-#if OS_WINDOWS
+#if OS_MSWINDOWS
 #include "WinInc.h"
 
 static wchar_t Cached_Directory_Entry[1024];

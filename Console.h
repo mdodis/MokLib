@@ -37,7 +37,7 @@ namespace ConsoleColor {
  * Windows
  */
 
-#if OS_WINDOWS
+#if OS_MSWINDOWS
 namespace Console {
     enum Handle {
         Input  = -10,

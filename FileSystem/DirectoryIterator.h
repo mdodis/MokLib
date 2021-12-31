@@ -10,7 +10,7 @@ struct DirectoryIterator {
     Str directory;
     bool next_file(FileData *result);
     void *handle;
-#if OS_WINDOWS
+#if OS_MSWINDOWS
     bool has_first_file = false;
 #endif
 };

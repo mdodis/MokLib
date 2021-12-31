@@ -28,7 +28,7 @@ namespace FileMode {
 typedef u16 EFileMode;
 
 struct FileHandle {
-#if OS_WINDOWS
+#if OS_MSWINDOWS
     void *internal_handle;
 #elif OS_LINUX
     int internal_handle;

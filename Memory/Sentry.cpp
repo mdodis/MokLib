@@ -1,7 +1,7 @@
 #include "Sentry.h"
 #include "../Host.h"
 
-#if OS_WINDOWS
+#if OS_MSWINDOWS
 #include "../WinInc.h"
 
 PROC_MEMORY_RESERVE(Sentry::reserve) {

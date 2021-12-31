@@ -3,7 +3,7 @@
 #include "Str.h"
 #include "Time/Time.h"
 
-#if OS_WINDOWS
+#if OS_MSWINDOWS
 
 struct HModule__ {
     int unused;

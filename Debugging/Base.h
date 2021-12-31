@@ -16,7 +16,7 @@
 	#include <stdio.h>
 	#include <stdarg.h>
 
-	#if OS_WINDOWS
+	#if OS_MSWINDOWS
 		extern "C" __declspec(dllimport) void OutputDebugStringA(const char *lpOutputString);
 		#define DEBUG_PRINTF(fmt, ...) _dbg_printf(fmt, __VA_ARGS__)
 
@@ -39,7 +39,7 @@
 #endif
 
 #if MOK_DEBUG_BREAK
-	#if OS_WINDOWS
+	#if OS_MSWINDOWS
 		#define DEBUG_BREAK() __debugbreak()
 	#elif OS_LINUX
 		#include <signal.h>
@@ -50,7 +50,7 @@
 #endif
 
 #if MOK_ENABLE_ASSERT
-	#if OS_WINDOWS
+	#if OS_MSWINDOWS
 		#include <assert.h>  // Use Visual Studio assert window
 		#define ASSERT(expr) assert(expr)
 	#else

@@ -2,7 +2,7 @@
 #include "Debugging/Base.h"
 
 namespace MTime {
-#if OS_WINDOWS
+#if OS_MSWINDOWS
 #include "WinInc.h"
 
 static LARGE_INTEGER The_Counter;

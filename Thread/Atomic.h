@@ -2,7 +2,7 @@
 #include "Host.h"
 #include "Base.h"
 
-#if OS_WINDOWS
+#if OS_MSWINDOWS
 #include "WinInc.h"
 
 #define MEMORY_BARRIER() do { _ReadBarrier(); _WriteBarrier(); MemoryBarrier(); } while(0)

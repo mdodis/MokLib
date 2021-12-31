@@ -6,7 +6,7 @@
 #include <d3d11.h>
 #include <dxgiformat.h>
 
-#if !OS_WINDOWS
+#if !OS_MSWINDOWS
 #error "Direct3D.h is not meant for anything other windows!"
 #endif
 

@@ -1,7 +1,7 @@
 #include "Dll.h"
 #include "FileSystem/FileSystem.h"
 
-#if OS_WINDOWS
+#if OS_MSWINDOWS
 #include "WinInc.h"
 
 Dll load_dll(Str filename) {

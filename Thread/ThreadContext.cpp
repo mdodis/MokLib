@@ -2,7 +2,7 @@
 #include "../Host.h"
 #include "../Debugging/Base.h"
 
-#if OS_WINDOWS
+#if OS_MSWINDOWS
 #include "../WinInc.h"
 
 static uint32 Context_Index;

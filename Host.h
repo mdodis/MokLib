@@ -4,13 +4,13 @@
  * Operating System
  */
 #if defined(WIN32) || defined(_WIN32)
-    #define OS_WINDOWS 1
+    #define OS_MSWINDOWS 1
 #elif defined(__linux__)
     #define OS_LINUX 1
 #endif
 
-#ifndef OS_WINDOWS
-    #define OS_WINDOWS 0
+#ifndef OS_MSWINDOWS
+    #define OS_MSWINDOWS 0
 #endif
 
 #ifndef OS_LINUX

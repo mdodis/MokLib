@@ -11,7 +11,7 @@ namespace MTime {
 
     struct TimeSpec {
 
-        #if OS_WINDOWS
+        #if OS_MSWINDOWS
             uint64 time;
         #elif OS_LINUX
             timespec time;

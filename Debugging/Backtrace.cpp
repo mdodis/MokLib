@@ -3,7 +3,7 @@
 #include "Memory/Base.h"
 #include <stdlib.h>
 
-#if OS_WINDOWS
+#if OS_MSWINDOWS
 #include "WinInc.h"
 
 // DbgHelp.dll Structs
