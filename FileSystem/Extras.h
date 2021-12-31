@@ -23,3 +23,18 @@ static _inline bool write_file(FileHandle &handle, const Str &str) {
 
     return (!result) || (bytes_written != str.len);
 }
+
+static _inline Raw dump_file(FileHandle &handle, IAllocator &alloc) {
+    u64 file_size = get_file_size(handle);
+
+    umm file_data = alloc.reserve(file_size);
+    if (!file_data)
+        return Raw{0};
+
+    if (read_file(handle, file_data, file_size) != file_size) {
+        alloc.release(file_data);
+        return Raw{0};
+    }
+
+    return Raw { file_data, file_size };
+}

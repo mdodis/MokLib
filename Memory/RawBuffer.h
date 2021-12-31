@@ -6,6 +6,8 @@ struct Raw {
     void *buffer;
     /** Size of the buffer (in bytes) */
     u64 size;
+
+    _inline operator bool() const { return (buffer != 0) && (size != 0); }
 };
 
 struct RawTexture : public Raw {

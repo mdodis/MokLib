@@ -6,6 +6,7 @@
 #include "Time/Time.h"
 #include "Tape.h"
 #include "Console.h"
+#include "StringBuilder.h"
 
 enum class SymLinkKind {
     File,
