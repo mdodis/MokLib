@@ -68,7 +68,7 @@ PROC_IMPORTER_LOAD(import_wic_load) {
 
     hr = format_converter->Initialize(
         frame,
-        GUID_WICPixelFormat32bppBGRA,
+        GUID_WICPixelFormat32bppRGBA,
         WICBitmapDitherTypeNone,
         0,
         0,
