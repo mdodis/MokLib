@@ -22,8 +22,8 @@ int TestUnit::run() {
             : ConsoleColor::Red + ConsoleColor::Bold;
 
         Str status = test_case->result.passed
-            ? STATIC_STR("PASSED")
-            : STATIC_STR("FAILED");
+            ? LIT("PASSED")
+            : LIT("FAILED");
 
         PRINT("[");
         Console::set_color(Console::Output, color);

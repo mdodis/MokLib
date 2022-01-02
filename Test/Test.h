@@ -5,7 +5,7 @@
 #define DEFTEST_UNIT(name) \
     struct DEFTEST_UNIT_1(TestUnitDecl_, name) : public TestUnit { \
         Str get_name() override { \
-            return STATIC_STR(#name); \
+            return LIT(#name); \
         } \
     }; \
     DEFTEST_UNIT_1(TestUnitDecl_, name) DEFTEST_UNIT_1(TestUnit_, name)
@@ -20,7 +20,7 @@
             TEST_UNIT(unit).cases.add(this); \
         } \
         TestResult run() override; \
-        Str get_desc() override { return STATIC_STR(desc); }\
+        Str get_desc() override { return LIT(desc); }\
     }; \
     DEFTEST_CASE_1(TestCaseDecl_, name) DEFTEST_CASE_1(TestCase_, name)
 
@@ -30,11 +30,11 @@
 #define STR(s) #s
 #define CNCAT4(a,b,c,d) a b c STR(d)
 #define MPASSED()       (TestResult { true })
-#define MFAILED(desc)   (TestResult { false, STATIC_STR(desc)})
-#define MPASSIF(expr)   ((expr) ? TestResult{true}  : TestResult{false, STATIC_STR(CNCAT4("At: ",__FILE__,":",__LINE__))})
+#define MFAILED(desc)   (TestResult { false, LIT(desc)})
+#define MPASSIF(expr)   ((expr) ? TestResult{true}  : TestResult{false, LIT(CNCAT4("At: ",__FILE__,":",__LINE__))})
 #define MFAILIF(expr) \
     do { \
         if (expr) { \
-            return TestResult {false, STATIC_STR(CNCAT4("At: ",__FILE__,":",__LINE__))}; \
+            return TestResult {false, LIT(CNCAT4("At: ",__FILE__,":",__LINE__))}; \
         } \
     }while(0)

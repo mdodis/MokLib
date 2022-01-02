@@ -26,9 +26,9 @@ void ILog::print(TList<Str> &what, bool newline) {
     }
 
     if (newline) {
-        add_output(STATIC_STR("\n"));
+        add_output(LIT("\n"));
         if (print_to_file) {
-            Str s = STATIC_STR("\n");
+            Str s = LIT("\n");
             write_file(output_file, s.data, s.len, 0);
         }
     }

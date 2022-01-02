@@ -163,6 +163,5 @@ static _inline bool operator!=(const Str &left, const Str &right) {
     return !(left == right);
 }
 
-#define STATIC_STR(s) Str((s), ARRAY_COUNT(s) - 1, true)
 /** This is a hack since we can't tell string literals and cstrings apart */
 #define LIT(s) Str((s), ARRAY_COUNT(s) - 1, true)

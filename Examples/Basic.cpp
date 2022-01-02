@@ -11,7 +11,7 @@ void example_maps(void);        // Maps
 
 int main(int argc, char const *argv[])
 {
-    Str a = STATIC_STR("77Mitch Taylor77");
+    Str a = LIT("77Mitch Taylor77");
     a = a.chop_middle(2, 14);
 
     PRINTLN("Hello, " + a + "!");
@@ -29,11 +29,11 @@ void example_str(void) {
     // and nothing more
 
     // STATIC_STR is used for string literals, to avoid a strlen call.
-    Str a = STATIC_STR("1337hay hay hay hay hay7331");
+    Str a = LIT("1337hay hay hay hay hay7331");
 
     // Finding stuff!
-    int32 last_hay = a.last_of(STATIC_STR("hay"));
-    int32 first_hay = a.first_of(STATIC_STR("hay"));
+    int32 last_hay = a.last_of(LIT("hay"));
+    int32 first_hay = a.first_of(LIT("hay"));
 
     PRINTLN("Last hay:  " + last_hay);
     PRINTLN("First hay: " + first_hay);
@@ -100,13 +100,13 @@ void example_arrays2(void) {
 void example_maps(void) {
     TMap<Str, int32> map(*get_system_allocator(), 5);
 
-    map.add(STATIC_STR("Mitch"),    45);
-    map.add(STATIC_STR("Kenny"),    12);
-    map.add(STATIC_STR("Haley"),    25);
-    map.add(STATIC_STR("Michael"),  23);
-    map.add(STATIC_STR("Achilles"), 23);
+    map.add(LIT("Mitch"),    45);
+    map.add(LIT("Kenny"),    12);
+    map.add(LIT("Haley"),    25);
+    map.add(LIT("Michael"),  23);
+    map.add(LIT("Achilles"), 23);
 
-    ASSERT(map[STATIC_STR("Michael")] == 23);
+    ASSERT(map[LIT("Michael")] == 23);
 }
 
 

@@ -6,7 +6,7 @@ PROC_STRINGIFY(stringify_uint32) {
     uint32 num = *((uint32*)ptr);
 
     if (num == 0) {
-        output.append(STATIC_STR("0"));
+        output.append(LIT("0"));
         return;
     }
 
@@ -50,12 +50,12 @@ PROC_STRINGIFY(stringify_int32) {
     int32 num = *((int32*)ptr);
 
     if (num == 0) {
-        output.append(STATIC_STR("0"));
+        output.append(LIT("0"));
         return;
     }
 
     if (num < 0) {
-        output.append(STATIC_STR("-"));
+        output.append(LIT("-"));
         num = -num;
     }
 

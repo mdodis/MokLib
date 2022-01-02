@@ -84,13 +84,13 @@ void Backtrace::print(ILog *log) {
         }
 
         StringBuilder result = StringBuilder(get_system_allocator())
-            .add(STATIC_STR("At "))
+            .add(LIT("At "))
             .add(Str(line->FileName))
-            .add(STATIC_STR(" in "))
+            .add(LIT(" in "))
             .add(Str(((char*)&symbol->Name), symbol->NameLen))
-            .add(STATIC_STR("("))
+            .add(LIT("("))
             .add((int)line->LineNumber)
-            .add(STATIC_STR(")"));
+            .add(LIT(")"));
 
         log->print(result);
     }
