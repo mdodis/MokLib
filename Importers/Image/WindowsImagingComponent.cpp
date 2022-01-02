@@ -96,7 +96,7 @@ PROC_IMPORTER_LOAD(import_wic_load) {
     hr = format_converter->CopyPixels(
         0,
         width * 4,
-        result->data.size,
+        (UINT)result->data.size,
         (u8*)result->data.buffer);
 
     if (hr != S_OK) {

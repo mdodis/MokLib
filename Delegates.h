@@ -130,3 +130,81 @@ struct Delegate : DelegateBase {
     }
 
 };
+
+/**
+ * Handle to delegate (used for multicast delegates)
+ */
+struct DelegateHandle {
+    static u64 Current_Id;
+    u64 id;
+    constexpr static const u64 Invalid_Id = ~0ull;
+
+    constexpr DelegateHandle() noexcept
+        :id(Invalid_Id)
+        {}
+
+    explicit DelegateHandle(bool) noexcept
+        : id(get_new_id())
+        {}
+
+    ~DelegateHandle() noexcept = default;
+    DelegateHandle(const DelegateHandle &other) = default;
+
+    DelegateHandle(DelegateHandle &&other) noexcept
+        : id(other.id) {
+        other.reset();
+    }
+
+    DelegateHandle &operator=(DelegateHandle &&other) noexcept {
+        id = other.id;
+        other.reset();
+        return *this;
+    }
+
+    operator bool() const noexcept {
+        return id != Invalid_Id;
+    }
+
+    bool operator==(const DelegateHandle &other) const noexcept {
+        return id == other.id;
+    }
+
+    void reset() noexcept {
+        id = Invalid_Id;
+    }
+
+    static u64 get_new_id() {
+        u64 result = DelegateHandle::Current_Id++;
+        if (DelegateHandle::Current_Id == Invalid_Id) {
+            DelegateHandle::Current_Id = 0;
+        }
+        return result;
+    }
+};
+
+template <typename... Args>
+struct MulticastDelegate : DelegateBase {
+    using DelegateT = Delegate<void, Args...>;
+
+    struct DelegateHandlerPair {
+        DelegateHandle handle;
+        DelegateT callback;
+
+        DelegateHandlerPair() : handle(false) {}
+        DelegateHandlerPair(const DelegateHandle& handle, const DelegateT& callback)
+            : handle(handle)
+            , callback(callback)
+            {}
+        DelegateHandlerPair(const DelegateHandle& handle, DelegateT&& callback)
+            : handle(handle)
+            , callback(std::move(callback))
+            {}
+    };
+
+    template <typename T, typename... Args2>
+    using MemberProc = typename DelegateInternals::MemberProc<false, T, void, Args..., Args2...>::Type;
+
+    constexpr MulticastDelegate()
+        {}
+
+};
