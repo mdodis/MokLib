@@ -5,6 +5,8 @@
  * atrocity. Modern C++ - my grass.
  */
 #include "Base.h"
+#include "Containers/Array.h"
+#include "Memory/Base.h"
 #include <tuple>
 #include <type_traits>
 
@@ -185,6 +187,8 @@ struct DelegateHandle {
 template <typename... Args>
 struct MulticastDelegate : DelegateBase {
     using DelegateT = Delegate<void, Args...>;
+    template <typename T, typename... Args2>
+    using MemberProc = typename DelegateInternals::MemberProc<false, T, Args..., Args2...>::Type;
 
     struct DelegateHandlerPair {
         DelegateHandle handle;
@@ -201,9 +205,65 @@ struct MulticastDelegate : DelegateBase {
             {}
     };
 
-    template <typename T, typename... Args2>
-    using MemberProc = typename DelegateInternals::MemberProc<false, T, void, Args..., Args2...>::Type;
+    constexpr MulticastDelegate(IAllocator &alloc)
+        : locks(0)
+        , pairs(&alloc)
+        {}
+    MulticastDelegate(const MulticastDelegate &other) = default;
+    ~MulticastDelegate() = default;
 
+    MulticastDelegate &operator=(const MulticastDelegate &other) = default;
+    MulticastDelegate(MulticastDelegate &&other) noexcept
+        : pairs(std::move(other.pairs))
+        , locks(other.locks)
+        {}
+
+    MulticastDelegate &operator=(MulticastDelegate &&other) noexcept {
+        pairs = std::move(other.pairs);
+        locks = std::move(other.locks);
+        return *this;
+    }
+
+    DelegateHandle add(DelegateT &&handler) noexcept {
+        for (u64 i = 0; i < pairs.size; ++i) {
+            if (!pairs[i].handle) {
+                pairs[i] = DelegateHandlerPair(DelegateHandle(true), std::move(handler));
+                return pairs[i].handle;
+            }
+        }
+
+        pairs.add(DelegateHandle(true), std::move(handler));
+        return pairs.last()->handle;
+    }
+
+    template <typename T, typename... Args2>
+    DelegateHandle add_raw(T *object, MemberProc<T, Args2...> proc, Args2&&... args) {
+        return add(DelegateT::create_raw(object, proc, std::forward<Args2>(args)...));
+    }
+
+    void lock() {
+        locks++;
+    }
+
+    void unlock() {
+        ASSERT(locks > 0);
+        locks--;
+    }
+
+    void broadcast(Args... args) {
+        lock();
+
+        for (u64 i = 0; i < pairs.size; ++i) {
+            if (pairs[i].handle) {
+                pairs[i].callback.call(std::forward<Args>(args)...);
+            }
+        }
+
+        unlock();
+    }
+
+    u32 locks;
+    TArray<DelegateHandlerPair> pairs;
     constexpr MulticastDelegate()
         {}
 
