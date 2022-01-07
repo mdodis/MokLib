@@ -1,4 +1,5 @@
 #pragma once
+#include "Config.h"
 #include "Base.h"
 
 /**
@@ -6,7 +7,7 @@
  *
  * @todo: alignment
  */
-struct Pool : IAllocator {
+struct MOKLIB_API Pool : IAllocator {
 
     static Pool create(IAllocator *base, uint64 block_size, uint32 num_blocks);
 

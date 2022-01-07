@@ -1,4 +1,5 @@
 #pragma once
+#include "Config.h"
 #include "Base.h"
 #include "Str.h"
 #include "Time/Time.h"
@@ -11,7 +12,7 @@ struct HModule__ {
 
 typedef struct HModule__ *HModule;
 
-struct Dll {
+struct MOKLIB_API Dll {
     HModule handle;
     void *get_proc_address(const char *name);
 };
@@ -27,5 +28,5 @@ struct Dll {
 #error "No Dll support for this platform!"
 #endif
 
-Dll load_dll(Str filename);
-void unload_dll(Dll &dll);
+MOKLIB_API Dll load_dll(Str filename);
+MOKLIB_API void unload_dll(Dll &dll);

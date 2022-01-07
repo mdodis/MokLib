@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base.h"
+#include "Config.h"
 #include "Memory/Base.h"
 #include "Debugging/Base.h"
 #include "Memory/RawBuffer.h"
@@ -15,7 +16,7 @@
  *
  * @todo: Actual utf8 support (especially for .len)
  */
-struct Str {
+struct MOKLIB_API Str {
     Str() : data(0), len(0) {}
     Str(const char *cstr);
     constexpr Str(const char *str, u64 len, bool with_null_term = false)
@@ -158,7 +159,7 @@ struct Str {
     static const Str NullStr;
 };
 
-bool operator==(const Str &left, const Str &right);
+MOKLIB_API bool operator==(const Str &left, const Str &right);
 static _inline bool operator!=(const Str &left, const Str &right) {
     return !(left == right);
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "../Config.h"
 #include "../Base.h"
 #include "../Host.h"
 
@@ -9,7 +10,7 @@ namespace MTime {
         #include <time.h>
     #endif
 
-    struct TimeSpec {
+    struct MOKLIB_API TimeSpec {
 
         #if OS_MSWINDOWS
             uint64 time;
@@ -22,8 +23,7 @@ namespace MTime {
 
     };
     
-    TimeSpec operator-(const TimeSpec &lhs, const TimeSpec &rhs);
-    int compare_time(const TimeSpec &lhs, const TimeSpec &rhs);
-
-    TimeSpec now();
+    MOKLIB_API TimeSpec operator-(const TimeSpec &lhs, const TimeSpec &rhs);
+    MOKLIB_API int compare_time(const TimeSpec &lhs, const TimeSpec &rhs);
+    MOKLIB_API TimeSpec now();
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include "../Config.h"
 #include "../Memory/Base.h"
 #include "../Memory/Extras.h"
 #include <iterator>

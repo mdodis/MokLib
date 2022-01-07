@@ -1,4 +1,5 @@
 #pragma once
+#include "../Config.h"
 #include "../Base.h"
 
 /**
@@ -6,15 +7,13 @@
  */
 struct ThreadContextBase {
 
-    umm alloc(uint64 size);
+    MOKLIB_API umm alloc(uint64 size);
 
-    static void setup(void);
-
-    static void bootstrap_thread(uint64 size);
-
-    static void set_context(void *value);
-    static void *_get_context(void);
-    static void *get_context_index();
+    MOKLIB_API static void setup(void);
+    MOKLIB_API static void bootstrap_thread(uint64 size);
+    MOKLIB_API static void set_context(void *value);
+    MOKLIB_API static void *_get_context(void);
+    MOKLIB_API static void *get_context_index();
 
     template <typename T>
     static T *get(void) {

@@ -1,4 +1,5 @@
 #pragma once
+#include "../Config.h"
 #include "../Base.h"
 #include <math.h>
 #include <float.h>
@@ -9,7 +10,7 @@ constexpr float Max_Float = 3.402823466e+38F;
 
 #pragma pack(push, 1)
 
-struct Vec2i {
+struct MOKLIB_API Vec2i {
     union {
         struct {int x, y; };
     };
@@ -39,7 +40,7 @@ struct Vec2 {
 
 };
 
-struct Vec3 {
+struct MOKLIB_API Vec3 {
     union {
         float array[3];
         struct { float x, y, z; };
@@ -50,6 +51,10 @@ struct Vec3 {
     constexpr Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
     operator float* () const { return (float*)array; }
+
+    static constexpr Vec3 right()   { return Vec3(1, 0, 0); }
+    static constexpr Vec3 up()      { return Vec3(0, 1, 0); }
+    static constexpr Vec3 forward() { return Vec3(0, 0, 1); }
 };
 
 static _inline Vec3 operator+(const Vec3 &a, const Vec3 &b) {
@@ -86,11 +91,11 @@ static _inline Vec3 operator/(const Vec3 &v, float t) {
     };
 }
 
-
 struct Vec4 {
     union {
         float array[4];
         struct { float x, y, z, w; };
+        struct { Vec3 xyz; float _unused; };
     };
 
     Vec4() {}
@@ -143,9 +148,24 @@ struct Mat4 {
 
 #pragma pack(pop)
 
+static _inline Vec3 scale(const Vec3 &a, const Vec3 &b) {
+    return Vec3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
+static _inline Vec3 scale(const Vec3 &a, float b) {
+    return scale(a, Vec3(b));
+}
+
 static _inline float dot(const Vec2 &a, const Vec2 &b) {return (a.x * b.x + a.y * b.y);}
 static _inline float dot(const Vec3 &a, const Vec3 &b) {return (a.x * b.x + a.y * b.y + a.z * b.z);}
 static _inline float dot(const Vec4 &a, const Vec4 &b) {return (a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);}
+
+static _inline Vec3 cross(const Vec3 &a, const Vec3 &b) {
+    return Vec3(
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x);
+}
 
 static _inline float lensq(const Vec3 &v) {
     float l = dot(v, v);
@@ -219,6 +239,18 @@ static _inline Mat4 scale(Vec3 by) {
     };
 }
 
+static _inline Mat4 lookat(Vec3 forward, Vec3 up, Vec3 eye) {
+
+    Vec3 right = normalize(cross(up, forward));
+
+    return Mat4 {
+        right.x,    right.y,    right.z,    0.f,
+        up.x,       up.y,       up.z,       0.f,
+        forward.x,  forward.y,  forward.z,  0.f,
+        -eye.x,     -eye.y,     -eye.z,     1.f
+    };
+}
+
 static _inline Mat4 perspective(float fov, float aspect, float znear, float zfar) {
     const float th = tanf(fov / 2.f);
     return  Mat4 {
@@ -272,4 +304,40 @@ static _inline Vec2i absolute(const Vec2i &v) {
 static _inline f32 distance(const Vec2i &a, const Vec2i &b) {
     Vec2i diff = (b - a);
     return sqrtf(f32(diff.x * diff.x) + f32(diff.y * diff.y));
+}
+
+
+struct Quat {
+
+    Quat() : v(0) {}
+
+    Quat(const Vec3 &axis, float angle) {
+        const float s = sinf(angle * .5f);
+        v.xyz = scale(v.xyz, s);
+    }
+
+    union {
+        struct {float x, y, z, w; };
+        Vec4 v;
+    };
+};
+
+
+static _inline Quat operator*(const Quat &q1, const Quat &q2) {
+    Quat result;
+    result.x =  q1.x * q2.w + q1.y * q2.z - q1.z * q2.y + q1.w * q2.x;
+    result.y = -q1.x * q2.z + q1.y * q2.w + q1.z * q2.x + q1.w * q2.y;
+    result.z =  q1.x * q2.y - q1.y * q2.x + q1.z * q2.w + q1.w * q2.z;
+    result.w = -q1.x * q2.x - q1.y * q2.y - q1.z * q2.z + q1.w * q2.w;
+    return result;
+}
+
+static _inline Vec3 operator*(const Quat &q, const Vec3 &v) {
+    Vec3 u = q.v.xyz;
+    float s = q.w;
+
+    Vec3 result = scale(u, 2 * dot(u, v));
+    result = result + scale(v, s*s - dot(u, u));
+    result = result + scale(cross(u, v), 2*s);
+    return result;
 }

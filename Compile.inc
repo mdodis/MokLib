@@ -6,6 +6,8 @@
     #define MOK_INCLUDE_DLL 0
 #endif
 
+#define MOK_LIB_STATIC 1
+
 #include "Arguments.cpp"
 #include "Hashing.cpp"
 #include "Log.cpp"

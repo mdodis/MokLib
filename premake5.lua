@@ -2,9 +2,13 @@
 -- MokLib_IncludeConverters
 -- Library
 project "Lib"
-    kind "StaticLib"
+    kind "SharedLib"
     language "C++"
+
+    defines {"MOK_LIB_INTERNAL=1"}
+    filter {"platforms:Linux64"}
     pic "On"
+    filter {}
 
     files { 
         "*.h", "*.cpp",
@@ -28,6 +32,14 @@ project "Lib"
             "Converters/*.h", "Converters/*.cpp",
         }
     end
+
+    files {
+        "FileSystem/DirectoryIterator.h", "FileSystem/DirectoryIterator.cpp",
+    }
+
+    files {
+        "FileSystem/Dll.h", "FileSystem/Dll.cpp",
+    }
 
     DefaultSettings()
 

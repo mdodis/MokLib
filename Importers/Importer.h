@@ -1,4 +1,5 @@
 #pragma once
+#include "Config.h"
 #include "Base.h"
 #include "FileSystem/FileSystem.h"
 #include "Memory/Base.h"
@@ -16,7 +17,7 @@ struct IImporterRegistry {
     virtual bool load_file(Str filename, IAllocator *alloc, struct Import *result) = 0;
 };
 
-struct ImporterRegistry : public IImporterRegistry {
+struct MOKLIB_API ImporterRegistry : public IImporterRegistry {
 
     ImporterRegistry(IImporter *importers, u32 num_importers)
         :importers(importers), num_importers(num_importers) {}

@@ -4,6 +4,7 @@
  * a more concenient experience to the user (and myself), so we need this
  * atrocity. Modern C++ - my grass.
  */
+#include "Config.h"
 #include "Base.h"
 #include "Containers/Array.h"
 #include "Memory/Base.h"
@@ -137,7 +138,7 @@ struct Delegate : DelegateBase {
  * Handle to delegate (used for multicast delegates)
  */
 struct DelegateHandle {
-    static u64 Current_Id;
+    MOKLIB_API static u64 Current_Id;
     u64 id;
     constexpr static const u64 Invalid_Id = ~0ull;
 
@@ -160,6 +161,11 @@ struct DelegateHandle {
     DelegateHandle &operator=(DelegateHandle &&other) noexcept {
         id = other.id;
         other.reset();
+        return *this;
+    }
+
+    DelegateHandle &operator=(const DelegateHandle &other) noexcept {
+        id = other.id;
         return *this;
     }
 
@@ -188,7 +194,7 @@ template <typename... Args>
 struct MulticastDelegate : DelegateBase {
     using DelegateT = Delegate<void, Args...>;
     template <typename T, typename... Args2>
-    using MemberProc = typename DelegateInternals::MemberProc<false, T, Args..., Args2...>::Type;
+    using MemberProc = typename DelegateInternals::MemberProc<false, T, void, Args..., Args2...>::Type;
 
     struct DelegateHandlerPair {
         DelegateHandle handle;
@@ -203,6 +209,12 @@ struct MulticastDelegate : DelegateBase {
             : handle(handle)
             , callback(std::move(callback))
             {}
+
+        DelegateHandlerPair &operator=(const DelegateHandlerPair &other) noexcept {
+            handle = other.handle;
+            callback = other.callback;
+            return *this;
+        }
     };
 
     constexpr MulticastDelegate(IAllocator &alloc)
@@ -225,14 +237,15 @@ struct MulticastDelegate : DelegateBase {
     }
 
     DelegateHandle add(DelegateT &&handler) noexcept {
-        for (u64 i = 0; i < pairs.size; ++i) {
+        for (i32 i = 0; i < pairs.size; ++i) {
             if (!pairs[i].handle) {
                 pairs[i] = DelegateHandlerPair(DelegateHandle(true), std::move(handler));
                 return pairs[i].handle;
             }
         }
 
-        pairs.add(DelegateHandle(true), std::move(handler));
+        DelegateHandlerPair pair(DelegateHandle(true), std::move(handler));
+        pairs.add(pair);
         return pairs.last()->handle;
     }
 
@@ -253,7 +266,7 @@ struct MulticastDelegate : DelegateBase {
     void broadcast(Args... args) {
         lock();
 
-        for (u64 i = 0; i < pairs.size; ++i) {
+        for (i32 i = 0; i < pairs.size; ++i) {
             if (pairs[i].handle) {
                 pairs[i].callback.call(std::forward<Args>(args)...);
             }

@@ -41,8 +41,9 @@ typedef double      f64;
  * C Compatibility
  */
 #if OS_MSWINDOWS
-    #define EXPORT __declspec(dllexport)
-    #define CEXPORT extern "C" EXPORT
+    #define DLL_EXPORT __declspec(dllexport)
+    #define DLL_IMPORT __declspec(dllimport)
+    #define CEXPORT extern "C" DLL_EXPORT
 #endif
 
 #if OS_LINUX
@@ -77,3 +78,7 @@ namespace U64 {
         Min = 0
     };
 };
+
+#if COMPILER_MSVC
+    #pragma warning(disable : 4251)
+#endif

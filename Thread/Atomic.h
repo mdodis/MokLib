@@ -4,6 +4,7 @@
 
 #if OS_MSWINDOWS
 #include "WinInc.h"
+#include <intrin.h>
 
 #define MEMORY_BARRIER() do { _ReadBarrier(); _WriteBarrier(); MemoryBarrier(); } while(0)
 
@@ -24,6 +25,10 @@ _inline void *compare_and_swap_ptr(void *volatile *ptr, void *new_value, void *e
 }
 
 _inline int32 inc_and_fetch(volatile int32 *addend) {
+    return InterlockedIncrement((volatile LONG *)addend);
+}
+
+_inline u32 inc_and_fetch(volatile u32 *addend) {
     return InterlockedIncrement((volatile LONG *)addend);
 }
 

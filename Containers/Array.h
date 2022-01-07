@@ -1,4 +1,5 @@
 #pragma once
+#include "../Config.h"
 #include "../Memory/Base.h"
 #include "../Base.h"
 #include "../Debugging/Base.h"

@@ -1,8 +1,9 @@
 #pragma once
+#include "../Config.h"
 #include "Base.h"
 #include "Defer.h"
 
-struct Arena : IAllocator {
+struct MOKLIB_API Arena : IAllocator {
 	static constexpr u64 Default_Block_Size = MEGABYTES(1);
 	static constexpr u64 Remaining 			= ~0ull;
 
@@ -61,7 +62,7 @@ struct Arena : IAllocator {
 
 #define SAVE_ARENA(arena) ArenaSave MCONCAT(_arena_save, __LINE__) (arena)
 
-struct ArenaSave {
+struct MOKLIB_API ArenaSave {
 	Arena *arena;
 	u64 capacity, used, last_offset;
 	ArenaSave(Arena *a) {

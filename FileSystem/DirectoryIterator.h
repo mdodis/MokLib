@@ -1,4 +1,5 @@
 #pragma once
+#include "Config.h"
 #include "Str.h"
 #include "Host.h"
 
@@ -6,7 +7,7 @@ struct FileData {
     Str filename;
 };
 
-struct DirectoryIterator {
+struct MOKLIB_API DirectoryIterator {
     Str directory;
     bool next_file(FileData *result);
     void *handle;
@@ -15,4 +16,4 @@ struct DirectoryIterator {
 #endif
 };
 
-DirectoryIterator open_dir(Str filename);
+MOKLIB_API DirectoryIterator open_dir(Str filename);

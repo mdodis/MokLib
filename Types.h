@@ -1,4 +1,5 @@
 #pragma once
+#include "Config.h"
 #include "Base.h"
 #include "Memory/Base.h"
 #include "Str.h"
@@ -19,8 +20,8 @@ struct IType {
 
 
 // uint32
-PROC_STRINGIFY(stringify_uint32);
-PROC_DESTRINGIFY(destringify_uint32);
+MOKLIB_API PROC_STRINGIFY(stringify_uint32);
+MOKLIB_API PROC_DESTRINGIFY(destringify_uint32);
 static constexpr _inline IType type_of(const uint32 &i) {
 	return {
 		"uint32",
@@ -31,7 +32,7 @@ static constexpr _inline IType type_of(const uint32 &i) {
 
 
 // int32
-PROC_STRINGIFY(stringify_int32);
+MOKLIB_API PROC_STRINGIFY(stringify_int32);
 static constexpr _inline IType type_of(const int32& i) {
 	return {
 		"int32",
@@ -40,8 +41,8 @@ static constexpr _inline IType type_of(const int32& i) {
 }
 
 // float
-PROC_STRINGIFY(stringify_float);
-PROC_DESTRINGIFY(destringify_float);
+MOKLIB_API PROC_STRINGIFY(stringify_float);
+MOKLIB_API PROC_DESTRINGIFY(destringify_float);
 static constexpr _inline IType type_of(const float &f) {
 	return {
 		"float",

@@ -1,10 +1,11 @@
 #pragma once
+#include "Config.h"
 #include "Containers/List.h"
 #include "FileSystem/FileSystem.h"
 #include "Str.h"
 #include "StringBuilder.h"
 
-struct ILog {
+struct MOKLIB_API ILog {
 
     Str file;
 

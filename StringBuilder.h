@@ -1,4 +1,5 @@
 #pragma once
+#include "Config.h"
 #include "Containers/List.h"
 #include "Types.h"
 
@@ -33,11 +34,11 @@ struct StringBuilder {
 		return Str(b, sz);
 	}
 
-	TList<Str> to_list(void);
+	MOKLIB_API TList<Str> to_list(void);
 
 	_inline char *cstr() { return _cstr(true, 0); }
 
-	char *_cstr(bool with_null_term, u64 *out_size);
+	MOKLIB_API char *_cstr(bool with_null_term, u64 *out_size);
 
 	struct Node {
 		IType type;

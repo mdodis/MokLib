@@ -1,8 +1,8 @@
 #pragma once
-
+#include "Config.h"
 #include "Types.h"
 
-struct IArgument {
+struct MOKLIB_API IArgument {
     Str name;
     IType type;
     virtual umm get_data_ptr() = 0;
@@ -27,4 +27,4 @@ struct TArgument : public IArgument {
  * @todo: make this support a List<Str> since we're expecting argc, argv style
  * options in other operating systems
  */
-void parse_arguments(const Str &s, IArgument **args, int32 num_args);
+MOKLIB_API void parse_arguments(const Str &s, IArgument **args, int32 num_args);

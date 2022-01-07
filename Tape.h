@@ -1,4 +1,5 @@
 #pragma once
+#include "Config.h"
 #include "Containers/List.h"
 #include "Math/Base.h"
 #include "Memory/RawBuffer.h"
@@ -6,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-struct Tape {
+struct MOKLIB_API Tape {
     // Interface
     virtual u64  read(void *destination, u64 amount) = 0;
     virtual bool write(const void *src, u64 num_bytes) = 0;

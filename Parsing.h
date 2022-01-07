@@ -1,4 +1,5 @@
 #pragma once
+#include "Config.h"
 #include "Base.h"
 #include "Containers/Array.h"
 #include "Memory/Base.h"
@@ -125,7 +126,7 @@ static u32 match_strings(Str to, Str *strings, u32 num_strings) {
 }
 
 
-u64 parse_cid(const Str &s, u64 i, Str &out);
+MOKLIB_API u64 parse_cid(const Str &s, u64 i, Str &out);
 
 /**
  * Tape parsing
@@ -192,7 +193,7 @@ static u32 match_strings(struct Tape *tape, Str *strings, u32 num_strings) {
     return num_strings;
 }
 
-Str parse_string(
+MOKLIB_API Str parse_string(
     struct Tape *tape,
     IAllocator &alloc,
     ProcCharClassIs *predicate = isnt_whitespace);
@@ -255,4 +256,4 @@ static bool parse_num(struct Tape *tape, u32 &result) {
     return true;
 }
 
-Str parse_cid(struct Tape *tape, IAllocator &alloc);
+MOKLIB_API Str parse_cid(struct Tape *tape, IAllocator &alloc);
