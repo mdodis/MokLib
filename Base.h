@@ -82,3 +82,20 @@ namespace U64 {
 #if COMPILER_MSVC
     #pragma warning(disable : 4251)
 #endif
+
+
+/**
+ * Converts a class's member proc to an explicitly called
+ * proc.
+ *
+ * Beware: this does no checking whatsoever!
+ */
+template <typename Target, typename T, typename RetVal, typename... Args>
+Target *as_proc(RetVal(T::*member_proc)(Args...)) {
+    union {
+        RetVal(T::*pf)(Args...);
+        Target *p;
+    };
+    pf = member_proc;
+    return p;
+}

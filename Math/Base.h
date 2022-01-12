@@ -8,6 +8,39 @@ constexpr float Pi = 3.14159265359f;
 constexpr float To_Radians = 0.0174533f;
 constexpr float Max_Float = 3.402823466e+38F;
 
+template <typename T>
+static _inline T min(T a, T b) { return a < b ? a : b; }
+template <typename T>
+static _inline T max(T a, T b) { return a > b ? a : b; }
+
+template <typename T>
+static _inline T clamp(T x, T a, T b) {
+    return max(a, min(x, b));
+}
+
+template <typename T>
+static _inline constexpr T ipow(T x, int power) {
+    T result = x;
+    power--;
+    while (power > 0) {
+        result *= x;
+        power--;
+    }
+    return result;
+}
+
+static _inline i32 absolute(i32 v) {
+    return v > 0 ? v : -v;
+}
+
+template <typename T>
+static _inline constexpr T sq(T x) {
+    return x * x;
+}
+
+/**
+ * Vectors
+ */
 #pragma pack(push, 1)
 
 struct MOKLIB_API Vec2i {
@@ -126,17 +159,26 @@ struct Mat4 {
     };
 
     Mat4() {}
-    Mat4(float v) :Mat4(v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v) {} // hehe
-    Mat4(
-        float _a0, float _a1, float _a2, float _a3,
-        float _b0, float _b1, float _b2, float _b3,
-        float _c0, float _c1, float _c2, float _c3,
-        float _d0, float _d1, float _d2, float _d3) {
+    constexpr Mat4(float v) :Mat4(v,v,v,v,v,v,v,v,v,v,v,v,v,v,v,v) {} // hehe
+    constexpr Mat4(
+        float a0, float a1, float a2, float a3,
+        float b0, float b1, float b2, float b3,
+        float c0, float c1, float c2, float c3,
+        float d0, float d1, float d2, float d3)
+        :
+        a0(a0), a1(a1), a2(a2), a3(a3),
+        b0(b0), b1(b1), b2(b2), b3(b3),
+        c0(c0), c1(c1), c2(c2), c3(c3),
+        d0(d0), d1(d1), d2(d2), d3(d3)
+        {}
 
-        a0 = _a0; a1 = _a1; a2 = _a2; a3 = _a3;
-        b0 = _b0; b1 = _b1; b2 = _b2; b3 = _b3;
-        c0 = _c0; c1 = _c1; c2 = _c2; c3 = _c3;
-        d0 = _d0; d1 = _d1; d2 = _d2; d3 = _d3;
+    static constexpr const Mat4 identity() {
+        return Mat4 {
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        };
     }
 
     Vec4 &operator[](int i) { return rows[i]; }
@@ -230,6 +272,17 @@ static _inline Mat4 rotation_yaw(float angle) {
     };
 }
 
+static _inline Mat4 rotation(Vec3 u, float a) {
+    const float ct = cosf(a);
+    const float st = sinf(a);
+    return Mat4 {
+        ct + sq(u.x)*(1.f - ct),     u.x*u.y*(1.f - ct) - u.z*st, u.x*u.z*(1.f - ct) + u.y*st, 0.f,
+        u.y*u.x*(1.f - ct) + u.z*st, ct + sq(u.y)*(1.f - ct),     u.y*u.z*(1.f - ct) - u.x*st, 0.f,
+        u.z*u.x*(1.f - ct) - u.y*st, u.z*u.y*(1.f - ct) + u.x*st, ct + sq(u.z)*(1.f - ct),     0.f,
+        0.f,                         0.f,                         0.f,                         1.f
+    };
+}
+
 static _inline Mat4 scale(Vec3 by) {
     return Mat4 {
         by.x, 0,    0,    0,
@@ -262,27 +315,6 @@ static _inline Mat4 perspective(float fov, float aspect, float znear, float zfar
     };
 }
 
-template <typename T>
-static _inline T min(T a, T b) { return a < b ? a : b; }
-template <typename T>
-static _inline T max(T a, T b) { return a > b ? a : b; }
-
-template <typename T>
-static _inline T clamp(T x, T a, T b) {
-    return max(a, min(x, b));
-}
-
-template <typename T>
-static _inline constexpr T ipow(T x, int power) {
-    T result = x;
-    power--;
-    while (power > 0) {
-        result *= x;
-        power--;
-    }
-    return result;
-}
-
 static _inline Vec3 operator*(const Mat4 &m, const Vec3 &v) {
     Vec4 v4(v, 0);
 
@@ -291,10 +323,6 @@ static _inline Vec3 operator*(const Mat4 &m, const Vec3 &v) {
         dot(v4, m[1]),
         dot(v4, m[2]),
     };
-}
-
-static _inline i32 absolute(i32 v) {
-    return v > 0 ? v : -v;
 }
 
 static _inline Vec2i absolute(const Vec2i &v) {
