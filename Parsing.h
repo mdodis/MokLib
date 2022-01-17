@@ -97,6 +97,22 @@ static _inline char uppercase_of(char c) {
 }
 
 /**
+ * String Classification
+ */
+
+static _inline bool is_number(const Str &s) {
+    if (s.len == 0)
+        return false;
+
+    for (u32 i = 0; i < s.len; ++i) {
+        if (!is_digit(s[i]))
+            return false;
+    }
+
+    return true;
+}
+
+/**
  * Parsing functions
  */
 
