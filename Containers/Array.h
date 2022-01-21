@@ -24,6 +24,10 @@ struct TArray {
 		this->size = 0;
 	}
 
+	_inline TArray(std::initializer_list<T> init_list)
+		: TArray(get_system_allocator(), init_list)
+		{}
+
 	_inline TArray(IAllocator *alloc, std::initializer_list<T> init_list) : TArray(alloc) {
 		for (const T &elem : init_list) {
 			add(elem);

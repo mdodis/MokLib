@@ -22,6 +22,12 @@ struct TVariant {
 
     TVariant() :type_id(invalid()) {}
 
+    template <typename T>
+    T &operator=(T&& other) {
+        set(other);
+        return *(T*)data;
+    }
+
     template <typename T, typename... Args>
     void set(Args&&... args) {
         new (data) T(std::forward(args)...);
@@ -36,13 +42,15 @@ struct TVariant {
     }
 
     template <typename T, typename... Args>
-    T *get() {
+    T *get() const {
         if (type_id == typeid(T).hash_code()) {
             return (T*)data;
         } else {
             return 0;
         }
     }
+
+
 
     template <typename T, typename... Args>
     bool is() const {
