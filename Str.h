@@ -117,7 +117,7 @@ struct MOKLIB_API Str {
     /** Converts letter characters to upper-case in-place. */
     Str &to_upper();
 
-    Str clone(IAllocator &alloc);
+    Str clone(IAllocator &alloc) const;
 
     _inline char &operator[](u64 index) {
 #if MOK_STR_RANGE_CHECK

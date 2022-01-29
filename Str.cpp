@@ -146,7 +146,7 @@ Str &Str::to_upper() {
     return *this;
 }
 
-Str Str::clone(IAllocator &alloc) {
+Str Str::clone(IAllocator &alloc) const {
     umm dup_data = alloc.reserve(len);
     memcpy(dup_data, data, len);
     return Str((char*)dup_data, len);

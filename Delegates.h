@@ -38,6 +38,44 @@ struct IDelegate : IDelegateBase {
     virtual RetVal call(Args&&... args) = 0;
 };
 
+/**
+ * Static Delegate
+ */
+
+template <typename RetVal, typename... Args2>
+struct StaticDelegate;
+
+template <typename RetVal, typename... Args, typename... Args2>
+struct StaticDelegate<RetVal(Args...), Args2...> : public IDelegate<RetVal, Args...> {
+
+    using DelegateProc = RetVal(*)(Args..., Args2...);
+
+    StaticDelegate(DelegateProc proc, Args2&&... payload)
+        : proc(proc)
+        , payload(std::forward<Args2>(payload)...)
+        {}
+
+    StaticDelegate(DelegateProc proc, const std::tuple<Args2...>& payload)
+        : proc(proc)
+        , payload(payload)
+        {}
+
+    virtual RetVal call(Args&&... args) override {
+        return _call(std::forward<Args>(args)..., std::index_sequence_for<Args2...>());
+    }
+
+    template<std::size_t... Is>
+    RetVal _call(Args&&... args, std::index_sequence<Is...>) {
+        return proc(std::forward<Args>(args)..., std::get<Is>(payload)...);
+    }
+
+    DelegateProc proc;
+    std::tuple<Args2...> payload;
+};
+
+/**
+ * Raw Delegate
+ */
 template <bool IsConst, typename T, typename RetVal, typename... Args2>
 struct RawDelegate;
 
@@ -117,9 +155,21 @@ struct Delegate : DelegateBase {
         return handler;
     }
 
+    template <typename... Args2>
+    static Delegate create_static(RetVal(*proc)(Args..., Args2...), Args2... args) {
+        Delegate handler;
+        handler.bind<StaticDelegate<RetVal(Args...), Args2...>>(proc, std::forward<Args2>(args)...);
+        return handler;
+    }
+
     template <typename T, typename... Args2>
     void bind_raw(T *object, MemberProc<T, Args2...> proc, Args2&&... args) {
         *this = create_raw<T, Args2...>(object, proc, std::forward<Args2>(args)...);
+    }
+
+    template <typename... Args2>
+    void bind_static(RetVal(*proc)(Args..., Args2...), Args2&&... args) {
+        *this = create_static<Args2...>(proc, std::forward<Args2>(args)...);
     }
 
     template <typename T, typename... Args3>
@@ -252,6 +302,11 @@ struct MulticastDelegate : DelegateBase {
     template <typename T, typename... Args2>
     DelegateHandle add_raw(T *object, MemberProc<T, Args2...> proc, Args2&&... args) {
         return add(DelegateT::create_raw(object, proc, std::forward<Args2>(args)...));
+    }
+
+    template <typename... Args2>
+    DelegateHandle add_static(void(*proc)(Args..., Args2...), Args2&&... args) {
+        return add(DelegateT::create_static(proc, std::forward<Args2>(args)...));
     }
 
     void lock() {
