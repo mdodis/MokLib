@@ -1,5 +1,6 @@
 #pragma once
 #include "FileSystem.h"
+#include "Memory/Base.h"
 #include "StringBuilder.h"
 
 static _inline bool write_file(FileHandle &handle, TList<Str> what) {
@@ -37,4 +38,9 @@ static _inline Raw dump_file(FileHandle &handle, IAllocator &alloc) {
     }
 
     return Raw { file_data, file_size };
+}
+
+static _inline Raw dump_file(Str filename, IAllocator &alloc = *get_system_allocator()) {
+    FileHandle handle = open_file(filename, FileMode::Read);
+    return dump_file(handle, alloc);
 }

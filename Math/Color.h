@@ -7,4 +7,7 @@
 
 namespace Color {
     static Vec4 Black = RGBA(0, 0, 0, 1);
+    static Vec4 Red   = RGBA(1, 0 ,0, 1);
+    static Vec4 Green = RGBA(0, 1 ,0, 1);
+    static Vec4 Blue  = RGBA(0, 0 ,1, 1);
 }

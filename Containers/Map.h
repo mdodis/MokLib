@@ -32,9 +32,23 @@ struct TMap {
         ASSERT(values);
     }
 
-    bool contains(const TKey &key) {
+    Bin *get_bin(const TKey &key) {
         uint32 h = hash_of(key, Hash_Seed) % num_bins;
-        return false;
+
+        if (!values[h].used)
+            return 0;
+
+        Bin *next = &values[h];
+        while ((next != 0) && (next->key != key)) {
+            next = values[h].next;
+        }
+
+        return next;
+    }
+
+    bool contains(const TKey &key) {
+        Bin *bin = get_bin(key);
+        return bin != 0;
     }
 
     void add(const TKey &key, const TValue &value) {
@@ -70,17 +84,10 @@ struct TMap {
     }
 
     TValue &at(const TKey &key) {
-        uint32 h = hash_of(key, Hash_Seed) % num_bins;
+        Bin *bin = get_bin(key);
+        ASSERT(bin);
 
-        ASSERT(values[h].used);
-
-        Bin *next = &values[h];
-        while ((next != 0) && (next->key != key)) {
-            next = values[h].next;
-        }
-
-        ASSERT(next != 0);
-        return next->val;
+        return bin->val;
     }
 
     TValue &operator[](const TKey &key) {

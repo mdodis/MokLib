@@ -28,7 +28,8 @@ GL_ALL_PROCS
 
 namespace GLProfileFlag {
     enum : i32 {
-        CoreProfile = 1 << 0,
+        CoreProfile   = 1 << 0,
+        CompatProfile = 1 << 1,
     };
 };
 typedef i32 EGLProfileFlags;
@@ -74,20 +75,21 @@ static struct {
 
     const char *extensions;
     enum : i32 {
-        ContextMajorVersionARB   = 0x2091,
-        ContextMinorVersionARB   = 0x2092,
-        ContextProfileMaskARB    = 0x9126,
-        ContextCoreProfileBitARB = 0x00000001,
-        DrawToWindowARB          = 0x2001,
-        AccelerationARB          = 0x2003,
-        SupportOpenGLARB         = 0x2010,
-        DoubleBufferARB          = 0x2011,
-        PixelTypeARB             = 0x2013,
-        ColorBitsARB             = 0x2014,
-        DepthBitsARB             = 0x2022,
-        StencilBitsARB           = 0x2023,
-        FullAccelerationARB      = 0x2027,
-        TypeRGBAARB              = 0x202B,
+        ContextMajorVersionARB     = 0x2091,
+        ContextMinorVersionARB     = 0x2092,
+        ContextProfileMaskARB      = 0x9126,
+        ContextCoreProfileBitARB   = 0x00000001,
+        ContextCompatProfileBitARB = 0x00000002,
+        DrawToWindowARB            = 0x2001,
+        AccelerationARB            = 0x2003,
+        SupportOpenGLARB           = 0x2010,
+        DoubleBufferARB            = 0x2011,
+        PixelTypeARB               = 0x2013,
+        ColorBitsARB               = 0x2014,
+        DepthBitsARB               = 0x2022,
+        StencilBitsARB             = 0x2023,
+        FullAccelerationARB        = 0x2027,
+        TypeRGBAARB                = 0x202B,
     };
 
     bool is_extension_supported(const char *extension) {
@@ -231,6 +233,7 @@ bool create_gl_context(GLContextCreationFormatDesc *desc) {
 
     i32 profile_flags = 0;
     if (desc->profile_flags & GLProfileFlag::CoreProfile) profile_flags |= WGL.ContextCoreProfileBitARB;
+    if (desc->profile_flags & GLProfileFlag::CompatProfile) profile_flags |= WGL.ContextCompatProfileBitARB;
 
     i32 gl_attribs[] = {
         WGL.ContextMajorVersionARB, desc->major_version,

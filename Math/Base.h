@@ -73,13 +73,35 @@ struct Vec2 {
 
 };
 
+static _inline Vec2 operator+(const Vec2 &a, const Vec2 &b) {
+    return Vec2 {
+        a.x + b.x,
+        a.y + b.y,
+    };
+}
+
+
+static _inline Vec2 operator-(const Vec2 &a, const Vec2 &b) {
+    return Vec2 {
+        a.x - b.x,
+        a.y - b.y,
+    };
+}
+
+static _inline Vec2 operator*(const Vec2 &v, float t) {
+    return Vec2 {
+        v.x * t,
+        v.y * t,
+    };
+}
+
 struct MOKLIB_API Vec3 {
     union {
-        float array[3];
         struct { float x, y, z; };
+        float array[3];
     };
 
-    Vec3() {}
+    Vec3() : x(0), y(0), z(0) {}
     constexpr Vec3(float v) : x(v), y(v), z(v) {}
     constexpr Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
@@ -148,14 +170,14 @@ struct Vec4 {
 
 struct Mat4 {
     union {
-        float array[4][4];
-        Vec4 rows[4];
         struct {
             float a0, a1, a2, a3;
             float b0, b1, b2, b3;
             float c0, c1, c2, c3;
             float d0, d1, d2, d3;
         };
+        float array[4][4];
+        Vec4 rows[4];
     };
 
     Mat4() {}
@@ -172,13 +194,13 @@ struct Mat4 {
         d0(d0), d1(d1), d2(d2), d3(d3)
         {}
 
-    static constexpr const Mat4 identity() {
-        return Mat4 {
+    static constexpr Mat4 identity() {
+        return Mat4 (
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1
-        };
+        );
     }
 
     Vec4 &operator[](int i) { return rows[i]; }
