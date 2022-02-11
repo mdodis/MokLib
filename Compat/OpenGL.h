@@ -54,7 +54,7 @@ void gl_swap_buffers(void *window_handle);
 
 #endif // MOK_COMPAT_OPENGL_H
 
-#if !defined(MOK_COMPAT_OPENGL_IMPLEMENTATION)
+#if defined(MOK_COMPAT_OPENGL_IMPLEMENTATION)
 #if OS_MSWINDOWS
 
 #define PROC_WGL_CREATE_CONTEXT_ATTRIBS_ARB(name)   HGLRC name(HDC dc, HGLRC share_context, const i32 *attrib_list)

@@ -70,6 +70,7 @@ typedef double      f64;
 #define UNUSED(x) ((void)(x))
 
 #define MCONCAT(x, y) x##y
+#define MCONCAT2(x, y, z) x##y##z
 #define MSTR(x) #x
 
 namespace U64 {

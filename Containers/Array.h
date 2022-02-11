@@ -47,6 +47,12 @@ struct TArray {
 		return size - 1;
 	}
 
+	void add_range(T *elems, u32 num_elems) {
+		for (u32 i = 0; i < num_elems; ++i) {
+			add(elems[i]);
+		}
+	}
+
 	T *add() {
 		if (!data) {
 			if (!init(Init_Capacity)) return 0;

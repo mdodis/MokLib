@@ -110,27 +110,66 @@ struct RawDelegate<IsConst, T, RetVal(Args...), Args2...> : public IDelegate<Ret
     }
 };
 
+/**
+ * Lambda Delegate
+ */
+template <typename TLambda, typename RetVal, typename... Args>
+struct LambdaDelegate;
+
+template <typename TLambda, typename RetVal, typename... Args, typename... Args2>
+struct LambdaDelegate<TLambda, RetVal(Args...), Args2...> : IDelegate<RetVal, Args...> {
+
+    TLambda lambda;
+    std::tuple<Args2...> payload;
+
+    explicit LambdaDelegate(TLambda&& lambda, Args2&&... payload)
+        : lambda(std::forward<TLambda>(lambda))
+        , payload(std::forward<Args2>(payload)...)
+        {}
+
+    explicit LambdaDelegate(const TLambda &lambda, const std::tuple<Args2...> &payload)
+        : lambda(lambda)
+        , payload(payload)
+        {}
+
+    virtual RetVal call(Args&&... args) override {
+        return _call(std::forward<Args>(args)..., std::index_sequence_for<Args2...>());
+    }
+
+    template <std::size_t... Is>
+    RetVal _call(Args&&... args, std::index_sequence<Is...>) {
+        return (RetVal)((lambda)(std::forward<Args>(args)..., std::get<Is>(payload)...));
+    }
+
+};
+
+
 struct DelegateBase {
 
     u8 buffer[MOK_MAX_DELEGATE_INLINE_SIZE];
+    bool is_bound = false;
 
     DelegateBase() {}
 
     DelegateBase(const DelegateBase &other) {
         memcpy(buffer, other.buffer, MOK_MAX_DELEGATE_INLINE_SIZE);
+        is_bound = other.is_bound;
     }
 
     DelegateBase(DelegateBase &&other) {
         memcpy(buffer, other.buffer, MOK_MAX_DELEGATE_INLINE_SIZE);
+        is_bound = other.is_bound;
     }
 
     DelegateBase &operator=(const DelegateBase &other) {
         memcpy(buffer, other.buffer, MOK_MAX_DELEGATE_INLINE_SIZE);
+        is_bound = other.is_bound;
         return *this;
     }
 
     DelegateBase &operator=(DelegateBase &&other) {
         memcpy(buffer, other.buffer, MOK_MAX_DELEGATE_INLINE_SIZE);
+        is_bound = other.is_bound;
         return *this;
     }
 
@@ -162,6 +201,13 @@ struct Delegate : DelegateBase {
         return handler;
     }
 
+    template <typename TLambda, typename... Args2>
+    static Delegate create_lambda(TLambda&& lambda, Args2... args) {
+        Delegate handler;
+        handler.bind<LambdaDelegate<TLambda, RetVal(Args...), Args2...>>(std::forward<TLambda>(lambda), std::forward<Args2>(args)...);
+        return handler;
+    }
+
     template <typename T, typename... Args2>
     void bind_raw(T *object, MemberProc<T, Args2...> proc, Args2&&... args) {
         *this = create_raw<T, Args2...>(object, proc, std::forward<Args2>(args)...);
@@ -172,9 +218,14 @@ struct Delegate : DelegateBase {
         *this = create_static<Args2...>(proc, std::forward<Args2>(args)...);
     }
 
+    template <typename TLambda, typename... Args2>
+    void bind_lambda(TLambda&& lambda, Args2&&... args) {
+        *this = create_lambda(std::forward<TLambda>(lambda), std::forward<Args2>(args)...);
+    }
+
     template <typename T, typename... Args3>
     void bind(Args3&&...args) {
-
+        is_bound = true;
         new (buffer) T(std::forward<Args3>(args)...);
     }
 

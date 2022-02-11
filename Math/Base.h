@@ -71,6 +71,10 @@ struct Vec2 {
         y = (float)other.y;
     }
 
+    Vec2 operator-() const {
+        return Vec2 { -x, -y };
+    }
+
 };
 
 static _inline Vec2 operator+(const Vec2 &a, const Vec2 &b) {
@@ -390,4 +394,8 @@ static _inline Vec3 operator*(const Quat &q, const Vec3 &v) {
     result = result + scale(v, s*s - dot(u, u));
     result = result + scale(cross(u, v), 2*s);
     return result;
+}
+
+static _inline float remap(float value, float from1, float to1, float from2, float to2) {
+    return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
 }

@@ -19,6 +19,22 @@ struct Recti {
 
 };
 
+struct Rectf {
+    Vec2 pos;
+    Vec2 size;
+
+    Rectf() : Rectf(0,0,0,0) {}
+    Rectf(f32 x, f32 y, f32 w, f32 h) {
+        pos = {x, y};
+        size = {w ,h};
+    }
+
+    _inline Vec2 top_left()  { return { pos.x, pos.y }; }
+    _inline Vec2 top_right() { return { pos.x + size.x, pos.y }; }
+    _inline Vec2 bot_left()  { return { pos.x, pos.y + size.y }; }
+    _inline Vec2 bot_right() { return { pos.x + size.x, pos.y + size.y }; }
+};
+
 struct Sphere {
     Vec3 center;
     float radius;

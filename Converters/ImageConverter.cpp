@@ -12,11 +12,11 @@ struct _ConversionConstants {
 
 static void get_conversion_constants(ImageConverter::Desc *desc, _ConversionConstants *result);
 
-Raw ImageConverter::to_truecolor_rgba32(Desc *desc) {
+bool ImageConverter::to_truecolor_rgba32(Desc *desc, Tape *output) {
     const uint32 width  = (uint32)desc->image->width;
     const uint32 height = (uint32)desc->image->height;
     uint32 final_image_size = width * height * sizeof(uint32);
-    umm destination = desc->alloc->reserve(final_image_size);
+
 
     umm row = (umm)desc->data;
     const uint32 column_size = desc->image->bpp / 8;
@@ -48,22 +48,25 @@ Raw ImageConverter::to_truecolor_rgba32(Desc *desc) {
             blue_value  = (uint32) (nblue  * 255.f);
             alpha_value = (uint32) (nalpha * 255.f);
 
-            *(((uint32*)destination) + width * y + x) =
+            u32 offset = (width * y + x) * sizeof(u32);
+
+            u32 value =
                 red_value   <<  0 |
                 green_value <<  8 |
                 blue_value  << 16 |
                 alpha_value << 24;
 
+            // *(((uint32*)destination) + width * y + x) =
+            //     value;
+
+            output->write(&value, sizeof(value));
 
             column += column_size;
         }
 
     }
 
-    return Raw {
-        destination,
-        final_image_size
-    };
+    return true;
 }
 
 static void get_conversion_constants(ImageConverter::Desc *desc, _ConversionConstants *result) {
@@ -83,3 +86,18 @@ static void get_conversion_constants(ImageConverter::Desc *desc, _ConversionCons
     result->counts[3] = bit_count(result->masks[3]);
 }
 
+Raw ImageConverter::to_truecolor_rgba32(Desc *desc) {
+    const uint32 width  = (uint32)desc->image->width;
+    const uint32 height = (uint32)desc->image->height;
+    uint32 final_image_size = width * height * sizeof(uint32);
+    umm destination = desc->alloc->reserve(final_image_size);
+
+    RawTape tape(Raw {
+        destination,
+        final_image_size
+    });
+
+    ImageConverter::to_truecolor_rgba32(desc, &tape);
+
+    return tape.raw;
+}
