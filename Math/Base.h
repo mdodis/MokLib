@@ -75,6 +75,11 @@ struct Vec2 {
         return Vec2 { -x, -y };
     }
 
+    Vec2 operator+=(const Vec2 &other) {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
 };
 
 static _inline Vec2 operator+(const Vec2 &a, const Vec2 &b) {
