@@ -103,7 +103,7 @@ u64 get_file_size(const FileHandle &handle) {
     return GetFileSize((HANDLE)handle.internal_handle, 0);
 }
 
-MTime::TimeSpec get_file_time(const Str &file_path) {
+TimeSpec get_file_time(const Str &file_path) {
     ASSERT(file_path.has_null_term);
 
     HANDLE file_handle = CreateFileA((char*)file_path.data,  0, FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
@@ -117,7 +117,7 @@ MTime::TimeSpec get_file_time(const Str &file_path) {
     ULARGE_INTEGER time_int;
     time_int.HighPart = time.dwHighDateTime;
     time_int.LowPart = time.dwLowDateTime;
-    return MTime::TimeSpec{ time_int.QuadPart };
+    return TimeSpec{ time_int.QuadPart };
 }
 
 u64 read_file(FileHandle &handle, void *destination, u64 bytes_to_read, u64 offset) {
@@ -296,7 +296,7 @@ u64 get_file_size(const FileHandle &handle) {
     return (u64)statinfo.st_size;
 }
 
-MTime::TimeSpec get_file_time(const Str &file_path) {
+TimeSpec get_file_time(const Str &file_path) {
     // @todo: need to find a better way to temp convert
     // to null term strings
     ASSERT(file_path.has_null_term);
@@ -304,7 +304,7 @@ MTime::TimeSpec get_file_time(const Str &file_path) {
     struct stat stat_result;
     stat((char*)file_path.data, &stat_result);
 
-    return MTime::TimeSpec{stat_result.st_mtim};
+    return TimeSpec{stat_result.st_mtim};
 }
 
 

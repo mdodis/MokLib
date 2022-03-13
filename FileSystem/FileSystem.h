@@ -41,7 +41,7 @@ struct MOKLIB_API FileHandle {
 MOKLIB_API bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind kind);
 MOKLIB_API FileHandle open_file(const Str &file_path,EFileMode mode);
 MOKLIB_API u64 get_file_size(const FileHandle &handle);
-MOKLIB_API MTime::TimeSpec get_file_time(const Str &file_path);
+MOKLIB_API TimeSpec get_file_time(const Str &file_path);
 MOKLIB_API u64 read_file(FileHandle &handle, void *destination, u64 bytes_to_read, uint64 offset = 0);
 // @todo: make this use an offset instead of a tape like interface
 MOKLIB_API bool write_file(FileHandle &handle, const void *src, u64 bytes_to_write, u64 *bytes_written, u64 offset = 0);

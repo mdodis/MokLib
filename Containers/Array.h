@@ -115,7 +115,7 @@ struct TArray {
 			return 0;
 	}
 
-	_inline bool is_index_valid(int32 i) {
+	_inline bool is_index_valid(int32 i) const {
 		return (i >= 0) && (i < size);
 	}
 

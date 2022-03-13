@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include "Config.h"
 
 #if OS_MSWINDOWS
 #include "Compat/Win32.h"
@@ -14,4 +15,5 @@ struct ThreadHandle {
 
 typedef PROC_THREAD(ProcThread);
 
-ThreadHandle create_thread(ProcThread *thread_proc, void *proc_data);
+MOKLIB_API ThreadHandle create_thread(ProcThread *thread_proc, void *proc_data);
+MOKLIB_API void sleep_ms(u32 milliseconds);

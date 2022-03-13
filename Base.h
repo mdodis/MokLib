@@ -80,6 +80,13 @@ namespace U64 {
     };
 };
 
+namespace I32 {
+    enum {
+        Max = 0x7FFFFFFF,
+        Min = 0x80000000
+    };
+};
+
 #if COMPILER_MSVC
     #pragma warning(disable : 4251)
 #endif

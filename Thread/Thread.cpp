@@ -20,4 +20,8 @@ ThreadHandle create_thread(ProcThread *thread_proc, void *proc_data) {
     }
 }
 
+void sleep_ms(u32 milliseconds) {
+    Sleep(milliseconds);
+}
+
 #endif

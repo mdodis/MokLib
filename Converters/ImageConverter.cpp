@@ -5,12 +5,14 @@
 #include <string.h>
 
 struct _ConversionConstants {
-    u32 masks[4];
-    i32 shifts[4];
-    u32 counts[4];
+    u32 m[4];   // Masks
+    i32 s[4];   // Shifts
+    u32 c[4];   // Counts
 };
 
-static void get_conversion_constants(ImageConverter::Desc *desc, _ConversionConstants *result);
+static void get_conversion_constants(
+    ImageConverter::Desc *desc,
+    _ConversionConstants *result);
 
 bool ImageConverter::to_truecolor_rgba32(Desc *desc, Tape *output) {
     const uint32 width  = (uint32)desc->image->width;
@@ -26,22 +28,25 @@ bool ImageConverter::to_truecolor_rgba32(Desc *desc, Tape *output) {
 
     for (uint32 y = 0; y < height; ++y) {
 
-        const umm row = umm(desc->data) + desc->image->pitch * (desc->image->is_flipped ? height - 1 - y : y);
+        const umm row = umm(desc->data) +
+            desc->image->pitch *
+            (desc->image->is_flipped ? height - 1 - y : y);
         umm column = row;
         for (uint32 x = 0; x < width; ++x) {
 
-            uint32 buffer = 0; // assuming highest size for component would be a word
+            // assuming highest size for component would be a word
+            uint32 buffer = 0;
             memcpy(&buffer, column, column_size);
 
-            uint32 red_value   = ((buffer & constants.masks[0]) >> constants.shifts[0]);
-            uint32 green_value = ((buffer & constants.masks[1]) >> constants.shifts[1]);
-            uint32 blue_value  = ((buffer & constants.masks[2]) >> constants.shifts[2]);
-            uint32 alpha_value = ((buffer & constants.masks[3]) >> constants.shifts[3]);
+            uint32 red_value   = ((buffer & constants.m[0]) >> constants.s[0]);
+            uint32 green_value = ((buffer & constants.m[1]) >> constants.s[1]);
+            uint32 blue_value  = ((buffer & constants.m[2]) >> constants.s[2]);
+            uint32 alpha_value = ((buffer & constants.m[3]) >> constants.s[3]);
 
-            float nred   = (float(red_value)   / float(ipow(2, constants.counts[0]) - 1));
-            float ngreen = (float(green_value) / float(ipow(2, constants.counts[1]) - 1));
-            float nblue  = (float(blue_value)  / float(ipow(2, constants.counts[2]) - 1));
-            float nalpha = (float(alpha_value) / float(ipow(2, constants.counts[3]) - 1));
+            f32 nred   = (f32(red_value)   / f32(ipow(2, constants.c[0]) - 1));
+            f32 ngreen = (f32(green_value) / f32(ipow(2, constants.c[1]) - 1));
+            f32 nblue  = (f32(blue_value)  / f32(ipow(2, constants.c[2]) - 1));
+            f32 nalpha = (f32(alpha_value) / f32(ipow(2, constants.c[3]) - 1));
 
             red_value   = (uint32) (nred   * 255.f);
             green_value = (uint32) (ngreen * 255.f);
@@ -69,21 +74,24 @@ bool ImageConverter::to_truecolor_rgba32(Desc *desc, Tape *output) {
     return true;
 }
 
-static void get_conversion_constants(ImageConverter::Desc *desc, _ConversionConstants *result) {
-    result->masks[0] = PixelFormat::mask_of(desc->image->format, 0);
-    result->masks[1] = PixelFormat::mask_of(desc->image->format, 1);
-    result->masks[2] = PixelFormat::mask_of(desc->image->format, 2);
-    result->masks[3] = PixelFormat::mask_of(desc->image->format, 3);
+static void get_conversion_constants(
+    ImageConverter::Desc *desc,
+    _ConversionConstants *result)
+{
+    result->m[0] = PixelFormat::mask_of(desc->image->format, 0);
+    result->m[1] = PixelFormat::mask_of(desc->image->format, 1);
+    result->m[2] = PixelFormat::mask_of(desc->image->format, 2);
+    result->m[3] = PixelFormat::mask_of(desc->image->format, 3);
 
-    result->shifts[0] = bit_scan(result->masks[0]);
-    result->shifts[1] = bit_scan(result->masks[1]);
-    result->shifts[2] = bit_scan(result->masks[2]);
-    result->shifts[3] = bit_scan(result->masks[3]);
+    result->s[0] = bit_scan(result->m[0]);
+    result->s[1] = bit_scan(result->m[1]);
+    result->s[2] = bit_scan(result->m[2]);
+    result->s[3] = bit_scan(result->m[3]);
 
-    result->counts[0] = bit_count(result->masks[0]);
-    result->counts[1] = bit_count(result->masks[1]);
-    result->counts[2] = bit_count(result->masks[2]);
-    result->counts[3] = bit_count(result->masks[3]);
+    result->c[0] = bit_count(result->m[0]);
+    result->c[1] = bit_count(result->m[1]);
+    result->c[2] = bit_count(result->m[2]);
+    result->c[3] = bit_count(result->m[3]);
 }
 
 Raw ImageConverter::to_truecolor_rgba32(Desc *desc) {

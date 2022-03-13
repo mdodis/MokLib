@@ -1,14 +1,12 @@
 #include "Time.h"
 #include "Debugging/Base.h"
 
-namespace MTime {
 #if OS_MSWINDOWS
 #include "WinInc.h"
 
 static LARGE_INTEGER The_Counter;
 
-TimeSpec now() {
-
+TimeSpec now_time() {
     TimeSpec result;
     ASSERT(QueryPerformanceCounter((LARGE_INTEGER*)&result.time));
     return result;
@@ -54,7 +52,7 @@ int compare_time(const TimeSpec &lhs, const TimeSpec &rhs) {
 
 #elif OS_LINUX
 
-TimeSpec now() {
+TimeSpec now_time() {
     struct timespec result;
     clock_gettime(CLOCK_MONOTONIC, &result);
 
@@ -107,5 +105,3 @@ int compare_time(const TimeSpec &lhs, const TimeSpec &rhs) {
 
 #else
 #endif
-
-}

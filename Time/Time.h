@@ -3,27 +3,28 @@
 #include "../Base.h"
 #include "../Host.h"
 
-namespace MTime {
+#if OS_LINUX
+    #include <stddef.h>
+    #include <time.h>
+#endif
 
-    #if OS_LINUX
-        #include <stddef.h>
-        #include <time.h>
+struct MOKLIB_API TimeSpec {
+
+    #if OS_MSWINDOWS
+        uint64 time;
+    #elif OS_LINUX
+        timespec time;
     #endif
 
-    struct MOKLIB_API TimeSpec {
+    uint64 to_ms(void);
+    float to_s(void);
 
-        #if OS_MSWINDOWS
-            uint64 time;
-        #elif OS_LINUX
-            timespec time;
-        #endif
-
-        uint64 to_ms(void);
-        float to_s(void);
-
-    };
-    
-    MOKLIB_API TimeSpec operator-(const TimeSpec &lhs, const TimeSpec &rhs);
-    MOKLIB_API int compare_time(const TimeSpec &lhs, const TimeSpec &rhs);
-    MOKLIB_API TimeSpec now();
 };
+
+MOKLIB_API TimeSpec operator-(const TimeSpec &lhs, const TimeSpec &rhs);
+MOKLIB_API int compare_time(const TimeSpec &lhs, const TimeSpec &rhs);
+MOKLIB_API TimeSpec now_time();
+
+static _inline u32 secs_to_msecs(f32 seconds) {
+    return u32(seconds / 1000.f);
+}

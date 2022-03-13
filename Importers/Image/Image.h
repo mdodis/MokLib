@@ -1,6 +1,6 @@
 #pragma once
 #include "Base.h"
-#include "Math/Base.h"
+#include "Math/CG.h"
 #include "Debugging/Base.h"
 
 namespace PixelFormat {

@@ -1,6 +1,6 @@
 #include "Hashing.h"
 
-u64 murmur_hash2(const void *key, u64 len, uint32 seed) {
+constexpr u64 murmur_hash2(const void *key, u64 len, uint32 seed) {
     // 'm' and 'r' are mixing constants generated offline.
     // They're not really 'magic', they just happen to work well.
 

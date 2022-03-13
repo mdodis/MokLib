@@ -6,6 +6,7 @@
 #define RGB(r, g, b) Vec3{(r), (g), (b)}
 
 namespace Color {
+    static Vec4 White = RGBA(1, 1, 1, 1);
     static Vec4 Black = RGBA(0, 0, 0, 1);
     static Vec4 Red   = RGBA(1, 0 ,0, 1);
     static Vec4 Green = RGBA(0, 1 ,0, 1);
