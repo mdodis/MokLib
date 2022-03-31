@@ -387,3 +387,38 @@ struct MulticastDelegate : DelegateBase {
         {}
 
 };
+
+#define FORWARD_DELEGATE_RAW(signature, delegate_type, delegate, ret) \
+    template <typename T, typename... Args2>         \
+    signature (                                      \
+        T *object,                                   \
+        delegate_type::MemberProc<T, Args2...> proc, \
+        Args2&&... args)                             \
+    {                                                \
+        delegate.bind_raw(                           \
+            object, proc,                            \
+            std::forward<Args2>(args)...);           \
+        ret                                          \
+    }
+
+#define FORWARD_DELEGATE_TEMPLATE() template <typename T, typename... Args2>
+
+#define FORWARD_DELEGATE_RAW_SIG(delegate_type)                            \
+    T *object, delegate_type::MemberProc<T, Args2...> proc, Args2&&... args
+
+#define FORWARD_DELEGATE_RAW_BOD(delegate) \
+    delegate.bind_raw(object, proc, std::forward<Args2>(args)...)
+
+#define FORWARD_DELEGATE_EXTRA_RAW(signature, delegate_type, delegate, ret, ...) \
+    template <typename T, typename... Args2>         \
+    signature (                                      \
+        __VA_ARGS__,                                 \
+        T *object,                                   \
+        delegate_type::MemberProc<T, Args2...> proc, \
+        Args2&&... args)                             \
+    {                                                \
+        delegate.bind_raw(                           \
+            object, proc,                            \
+            std::forward<Args2>(args)...);           \
+        ret                                          \
+    }

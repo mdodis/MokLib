@@ -80,6 +80,13 @@ namespace U64 {
     };
 };
 
+namespace U32 {
+    enum {
+        Max = ~0ul,
+        Min = 0
+    };
+};
+
 namespace I32 {
     enum {
         Max = 0x7FFFFFFF,

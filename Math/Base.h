@@ -45,6 +45,11 @@ static _inline double exponent(double x) {
 
 template <typename T>
 static _inline constexpr T ipow(T x, int power) {
+
+    if (power <= 0) {
+        return 1;
+    }
+
     T result = x;
     power--;
     while (power > 0) {

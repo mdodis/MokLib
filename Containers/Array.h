@@ -198,3 +198,58 @@ struct TInlineArray : TArray<T> {
 	Arena alloc_arena;
 
 };
+
+template <typename T, u32 Count>
+struct TArr {
+	T elements[Count];
+
+	constexpr TArr(const std::initializer_list<T> init_list) {
+		u32 c = 0;
+		for (const T &elem : init_list) {
+			elements[c++] = elem;
+		}
+	}
+
+	T &operator[](i32 index) {
+		ASSERT((index >= 0) && (index < Count));
+		return elements[index];
+	}
+
+	operator T*() {
+		return elements;
+	}
+
+	/** Iterators */
+	struct Iterator {
+		using iterator_category = std::forward_iterator_tag;
+		using difference_type   = std::ptrdiff_t;
+		using Val = T;
+		using Ptr = T*;
+		using Ref = T&;
+
+		Iterator(T *data, int32 curr_index) : data(data), curr_index(curr_index) {}
+
+		Ref operator*()  const { return data[curr_index]; }
+		Ptr operator->() const { return data + curr_index; }
+
+		Iterator &operator++() {
+			curr_index++;
+			return *this;
+		}
+
+		friend bool operator==(const Iterator &a, const Iterator &b) {
+			return a.curr_index == b.curr_index;
+		}
+
+		friend bool operator!=(const Iterator &a, const Iterator &b) {
+			return a.curr_index != b.curr_index;
+		}
+
+	private:
+		T *data;
+		int32 curr_index;
+	};
+
+	Iterator begin() const { return Iterator(elements, 0); }
+	Iterator end()   const { return Iterator(elements, Count); }
+};

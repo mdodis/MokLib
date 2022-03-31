@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include "CG.h"
 #include "Types.h"
 #include "Parsing.h"
 

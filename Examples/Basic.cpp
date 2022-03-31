@@ -1,13 +1,16 @@
+#define MOK_LIB_STATIC 1
 #include "Containers/Array.h"
 #include "Containers/Map.h"
 #include "Log.h"
 #include "Memory/Base.h"
 #include "Str.h"
+#include "Containers/Bitset.h"
 
 void example_str(void);         // Strings
 void example_arrays(void);      // Arrays 1
 void example_arrays2(void);     // Arrays 2
 void example_maps(void);        // Maps
+void example_bitsets(void);     // Bitsets
 
 int main(int argc, char const *argv[])
 {
@@ -19,6 +22,7 @@ int main(int argc, char const *argv[])
     example_str();
     example_arrays();
     example_maps();
+    example_bitsets();
 
     return 0;
 }
@@ -109,5 +113,10 @@ void example_maps(void) {
     ASSERT(map[LIT("Michael")] == 23);
 }
 
+void example_bitsets(void) {
+    Bitset<32> a = 32;
+
+    PRINTLN("Bitset: " + a.to_integral());
+}
 
 #include "Compile.inc"
