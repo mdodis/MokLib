@@ -7,9 +7,19 @@
 #include <iterator>
 #include <cstddef>
 #include <initializer_list>
+#include "ArrayIterator.h"
 
 template <typename T>
 struct TArray {
+
+	using FwdIter = SliceIterator<T>;
+	using RevIter = SliceIterator<T, false>;
+
+	T *data;
+	IAllocator *alloc;
+	int32 capacity, size;
+
+	static constexpr int32 Init_Capacity = 4;
 
 	_inline TArray(void) {
 		this->data = 0;
@@ -139,46 +149,10 @@ struct TArray {
 		return -1;
 	}
 
-	T *data;
-	IAllocator *alloc;
-	int32 capacity, size;
-
-	static constexpr int32 Init_Capacity = 4;
-
-
-	/** Iterators */
-	struct Iterator {
-		using iterator_category = std::forward_iterator_tag;
-		using difference_type   = std::ptrdiff_t;
-		using Val = T;
-		using Ptr = T*;
-		using Ref = T&;
-
-		Iterator(T *data, int32 curr_index) : data(data), curr_index(curr_index) {}
-
-		Ref operator*()  const { return data[curr_index]; }
-		Ptr operator->() const { return data + curr_index; }
-
-		Iterator &operator++() {
-			curr_index++;
-			return *this;
-		}
-
-		friend bool operator==(const Iterator &a, const Iterator &b) {
-			return a.curr_index == b.curr_index;
-		}
-
-		friend bool operator!=(const Iterator &a, const Iterator &b) {
-			return a.curr_index != b.curr_index;
-		}
-
-	private:
-		T *data;
-		int32 curr_index;
-	};
-
-	Iterator begin() const { return Iterator(data, 0); }
-	Iterator end()   const { return Iterator(data, size); }
+	FwdIter begin() const { return FwdIter(data, 0); }
+	FwdIter end()   const { return FwdIter(data, size); }
+	RevIter rbegin() const { return RevIter(data, size - 1); }
+	RevIter rend()   const { return RevIter(data, -1); }
 };
 
 template <typename T, uint32 Count>
@@ -201,6 +175,9 @@ struct TInlineArray : TArray<T> {
 
 template <typename T, u32 Count>
 struct TArr {
+
+	using FwdIter = SliceIterator<T>;
+
 	T elements[Count];
 
 	constexpr TArr(const std::initializer_list<T> init_list) {
@@ -219,37 +196,6 @@ struct TArr {
 		return elements;
 	}
 
-	/** Iterators */
-	struct Iterator {
-		using iterator_category = std::forward_iterator_tag;
-		using difference_type   = std::ptrdiff_t;
-		using Val = T;
-		using Ptr = T*;
-		using Ref = T&;
-
-		Iterator(T *data, int32 curr_index) : data(data), curr_index(curr_index) {}
-
-		Ref operator*()  const { return data[curr_index]; }
-		Ptr operator->() const { return data + curr_index; }
-
-		Iterator &operator++() {
-			curr_index++;
-			return *this;
-		}
-
-		friend bool operator==(const Iterator &a, const Iterator &b) {
-			return a.curr_index == b.curr_index;
-		}
-
-		friend bool operator!=(const Iterator &a, const Iterator &b) {
-			return a.curr_index != b.curr_index;
-		}
-
-	private:
-		T *data;
-		int32 curr_index;
-	};
-
-	Iterator begin() const { return Iterator(elements, 0); }
-	Iterator end()   const { return Iterator(elements, Count); }
+	FwdIter begin() const { return FwdIter((T*)elements, 0); }
+	FwdIter end()   const { return FwdIter((T*)elements, Count); }
 };

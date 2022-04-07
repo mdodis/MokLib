@@ -16,10 +16,6 @@ PROC_IMPORTER_LOAD(import_wic_load) {
 
     HRESULT hr = CoInitialize(0);
 
-    if (hr != S_OK) {
-        return false;
-    }
-
     IWICImagingFactory *imaging_factory;
     hr = CoCreateInstance(
         CLSID_WICImagingFactory,

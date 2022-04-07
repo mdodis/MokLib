@@ -14,9 +14,12 @@ struct FSMState {
 };
 
 struct FSMTransition {
+    using UpdateDelegate = Delegate<void, float>;
+
     u32 from_state;
     u32 to_state;
-    typedef Delegate<void, float> UpdateDelegate;
+    f32 time;
+    bool can_reverse;
     UpdateDelegate on_update;
 
     FSMTransition()
@@ -26,9 +29,10 @@ struct FSMTransition {
 
     FORWARD_DELEGATE_TEMPLATE()
     constexpr FSMTransition(
-        u32 from, u32 to,
+        u32 from, u32 to, f32 duration,
         FORWARD_DELEGATE_RAW_SIG(UpdateDelegate))
     {
+        time = duration;
         from_state = from;
         to_state = to;
         FORWARD_DELEGATE_RAW_BOD(on_update);
@@ -43,22 +47,44 @@ struct TFSM {
 
     float current_time = 0.f;
     u32 current_state = 0, target_state = 0;
-    FSMTransition *current_transition;
+    FSMTransition *current_transition = 0;
 
     void change_to(u32 state) {
         target_state = state;
 
         current_transition = 0;
-        // for (FSMTransition &transition : transitions) {
-        //     if (transition.from_state == current_state) {
-        //         current_transition = &transition;
-        //         break;
-        //     }
-        // }
+        for (FSMTransition &transition : transitions) {
+            if ((transition.from_state == current_state) &&
+                (transition.to_state == target_state))
+            {
+                current_transition = &transition;
+                break;
+            }
+        }
 
         if (!current_transition) {
             current_state = target_state;
             states[current_state].on_enter.call();
+        } else {
+            current_time = 0.f;
+            current_transition->on_update.call(0.f);
         }
+    }
+
+    void update(f32 dt) {
+        if (!current_transition)
+            return;
+
+        current_time += dt;
+
+        if (current_time < current_transition->time) {
+            current_transition->on_update.call(
+                current_time / current_transition->time);
+        } else {
+            current_state = target_state;
+            states[current_state].on_enter.call();
+            current_transition = 0;
+        }
+
     }
 };

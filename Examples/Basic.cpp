@@ -98,6 +98,12 @@ void example_arrays2(void) {
         PRINTLN("  " + elem + ",");
     }
     PRINTLN("}");
+
+    PRINTLN("In reverse order:");
+
+    for (const i32 &elem : reverse(the_struct.inline_array)) {
+        PRINTLN("  " + elem + ",");
+    }
 }
 
 // Example - Maps
