@@ -16,10 +16,10 @@ struct StringBuilder {
 
 	template <typename T>
 	StringBuilder &add(const T &item) {
-		Node new_node;
-		new_node.type = type_of(item);
-		new_node.ptr = (umm)&item;
-		list.append(new_node);
+		// Node new_node;
+		// new_node.type = type_of(item);
+		// new_node.ptr = (umm)&item;
+		// list.append(new_node);
 		return *this;
 	}
 
@@ -41,7 +41,6 @@ struct StringBuilder {
 	MOKLIB_API char *_cstr(bool with_null_term, u64 *out_size);
 
 	struct Node {
-		IType type;
 		umm ptr;
 	};
 

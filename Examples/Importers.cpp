@@ -1,3 +1,4 @@
+#define MOK_LIB_STATIC 1
 #include "Log.h"
 #include "Math/Base.h"
 #include "Math/Types.h"

@@ -8,7 +8,7 @@
 CREATE_INLINE_ARENA(Print_Arena, 2048);
 
 #if OS_MSWINDOWS
-#include "../WinInc.h"
+#include "Compat/Win32Internal.inc"
 
 bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind kind) {
 
@@ -184,6 +184,14 @@ bool create_dir(const Str &pathname) {
     return CreateDirectoryA(dirname, 0);
 }
 
+Str get_cwd(IAllocator &alloc) {
+    static thread_local wchar_t buf[MAX_PATH];
+    DWORD num_chars = GetCurrentDirectoryW(MAX_PATH, buf);
+
+    return wstr_to_multibyte(buf, num_chars, alloc);
+}
+
+
 u64 StreamTape::read(void *destination, u64 amount) {
     DWORD bytes_read;
     BOOL success = ReadFile(
@@ -242,7 +250,6 @@ void StreamTape::move(i64 offset) {
         &high_distance,
         FILE_CURRENT);
 }
-
 
 #elif OS_LINUX
 #include <unistd.h>

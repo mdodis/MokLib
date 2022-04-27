@@ -126,7 +126,22 @@ struct RawTape : public SizedTape {
         }
 
         u64 offset = min(current_offset, size - current_offset);
-        memcpy(raw.buffer, src, amount);
+        memcpy((umm)raw.buffer + current_offset, src, amount);
+        current_offset += amount;
         return true;
     }
+};
+
+
+struct MeasureTape : public Tape {
+    u64 num_written = 0;
+
+    // Interface
+    virtual u64 read(void *destination, u64 amount) override { return 0; }
+    virtual bool write(const void *src, u64 num_bytes) override {
+        num_written += num_bytes;
+        return true;
+    }
+    virtual bool end() override { return false; }
+    virtual void move(i64 offset) {}
 };

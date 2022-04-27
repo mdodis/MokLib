@@ -51,6 +51,9 @@ MOKLIB_API void close_file(const FileHandle &file);
 
 MOKLIB_API bool create_dir(const Str &pathname);
 
+/** Get current working directory */
+MOKLIB_API Str get_cwd(IAllocator &alloc);
+
 template <typename T>
 bool read_struct(FileHandle &handle, T *destination, uint64 offset = 0) {
     return read_file(handle, destination, sizeof(T), offset) == sizeof(T);

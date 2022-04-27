@@ -1,7 +1,11 @@
 #include "Arguments.h"
 #include "Parsing.h"
 
-static i32 find_matching_argument_index(IArgument **args, int32 num_args, const Str &id) {
+static i32 find_matching_argument_index(
+    IArgument **args,
+    i32 num_args,
+    const Str &id)
+{
     for (i32 i = 0; i < num_args; ++i) {
         if (args[i]->name == id) {
             return i;
@@ -30,12 +34,15 @@ void parse_arguments(const Str &s, IArgument **args, int32 num_args) {
 
                 i++;
 
-                i = eat_whitespace(s, i);   // Eat whitespace until we get to the value
+                // Eat whitespace until we get to the value
+                i = eat_whitespace(s, i);
 
-                umm data_ptr = args[arg_index]->get_data_ptr();
                 Str input_str = s.chop_left(i - 1);
-                u64 num_read = args[arg_index]->type.destringify(data_ptr, input_str);
-                i += num_read;
+                RawTape t(Raw{input_str.data, input_str.len});
+                if (!args[arg_index]->parse_argument(&t)) {
+                    break;
+                }
+                i += t.current_offset;
             }
 
         } else {

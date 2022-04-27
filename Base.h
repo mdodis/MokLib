@@ -28,6 +28,7 @@ typedef int64_t     i64;
 typedef float       f32;
 typedef double      f64;
 
+typedef char*       CStr;
 
 #if COMPILER_MSVC
     #define _inline __forceinline
@@ -97,7 +98,6 @@ namespace I32 {
 #if COMPILER_MSVC
     #pragma warning(disable : 4251)
 #endif
-
 
 /**
  * Converts a class's member proc to an explicitly called

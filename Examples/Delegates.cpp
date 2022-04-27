@@ -1,3 +1,4 @@
+#define MOK_LIB_STATIC 1
 #include "Delegates.h"
 #include "FileSystem/FileSystem.h"
 

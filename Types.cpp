@@ -1,86 +1,176 @@
 #include "Types.h"
 #include "Parsing.h"
+#include "Defer.h"
 
-// uint32
-PROC_STRINGIFY(stringify_uint32) {
-    uint32 num = *((uint32*)ptr);
+PROC_PARSE_IMPL(Str) {
+    // @todo: At some point, for some reason I don't quite see now, we'll need
+    // to support escape characters, but for now, we'll resort to a simple
+    // substring of "This Part" that excludes the quotes
+    IAllocator *alloc = get_system_allocator();
+    AllocTape output(*alloc);
 
-    if (num == 0) {
-        output.append(LIT("0"));
+    char c = tape->read_char();
+
+    if (c != '\'') {
+        tape->move(-1);
+        alloc->release(output.ptr);
+        return false;
+    }
+
+    c = tape->read_char();
+
+    while (c != '\'') {
+        output.write(&c, 1);
+        c = tape->read_char();
+
+        if ((c == EOF) || is_newline(c)) {
+            tape->move(-1);
+            alloc->release(output.ptr);
+            tape->move(-i64(output.wr_offset));
+            return false;
+        }
+    }
+
+    result = Str((char*)output.ptr, output.wr_offset);
+    return true;
+}
+
+PROC_FMT_IMPL(u64) {
+    constexpr u64 max_digits = 20ull;
+    thread_local char digits[max_digits + 1];
+    u32 i = max_digits;
+
+    if (type == 0) {
+        tape->write_str(LIT("0"));
         return;
     }
 
-    const u8 max_digits = 10;
-
-    char *buffer = (char*)allocator.reserve(max_digits + 1);
-    // memset(buffer, 0, 10);
-    u8 i = max_digits;
+    u64 num = type;
 
     while (num != 0) {
-        uint8 digit = num % 10;
+        u8 digit = num % 10;
 
-        buffer[i] = '0' + digit;
+        digits[i] = '0' + digit;
 
         num = num / 10;
         --i;
     }
 
-    output.append(Str(buffer + i + 1, max_digits - i));
+    tape->write_str(Str(digits + i + 1, max_digits - i));
 }
 
-PROC_DESTRINGIFY(destringify_uint32) {
-    uint32 result = 0;
 
-    u64 i = 0;
-    while ((i < input.len) && is_digit(input[i])) {
+PROC_PARSE_IMPL(u64) {
+    result = 0;
+
+    char c = tape->read_char();
+    DEFER(tape->move(-1););
+
+    if (!is_digit(c)) {
+        return false;
+    }
+
+    do {
         result *= 10;
-        result += input[i] - '0';
-        i++;
-    }
+        result += c - '0';
+        c = tape->read_char();
+    } while(is_digit(c));
 
-    if (i == 0)
-        return 0;
-
-    *((uint32*)ptr) = result;
-    return i;
+    return true;
 }
 
-// int32
-PROC_STRINGIFY(stringify_int32) {
-    int32 num = *((int32*)ptr);
-
-    if (num == 0) {
-        output.append(LIT("0"));
-        return;
-    }
+PROC_FMT_IMPL(i64) {
+    i64 num = type;
 
     if (num < 0) {
-        output.append(LIT("-"));
+        tape->write_str("-");
         num = -num;
     }
 
-    uint32 unum = num;
-    stringify_uint32((umm)&unum, output, allocator);
+    u64 unum = (u64)num;
+    fmt<u64>(tape, unum);
 }
 
-// float
-PROC_STRINGIFY(stringify_float) {
-    float f = *((float*)ptr);
-    char *buffer = (char*)allocator.reserve(16);
+PROC_PARSE_IMPL(i64) {
+    char c = tape->read_char();
 
-    snprintf(buffer, 16, "%f", f);
+    bool parsed_symbol = false;
+    bool negate = false;
 
-    output.append(Str(buffer));
+    switch (c) {
+        case '+':
+        case '-': {
+            negate = c == '-';
+            parsed_symbol = true;
+        } break;
+
+        default: {} break;
+    }
+
+    u64 result_u64;
+    if (!parse<u64>(tape, result_u64)) {
+        if (parsed_symbol)
+            tape->move(-1);
+        return false;
+    }
+
+    result = ((i64)result_u64) * (negate ? -1 : +1);
+    return true;
 }
 
-PROC_DESTRINGIFY(destringify_float) {
+PROC_FMT_IMPL(f64) {
+    constexpr u32 max_digits = 16;
+    thread_local char buffer[_CVTBUFSIZE];
 
-    const char *start = (const char *)input.data;
-    char *end = 0;
-    float result = strtof(start, &end);
+    _gcvt_s(buffer, _CVTBUFSIZE, type, max_digits);
 
-    *((float*)ptr) = result;
+    Str s(buffer);
 
-    return (int32)(end - start);
+    tape->write_str(s);
+}
 
+PROC_PARSE_IMPL(f64) {
+    i32 back_amount = 0u;
+    bool decimal_point = false;
+    char c = tape->read_char();
+
+    char buffer[32];
+    i32 i = 0;
+
+    switch (c) {
+        case '+':
+        case '-': {
+            buffer[i++] = c;
+            c = tape->read_char();
+            back_amount++;
+        } break;
+
+        default: {} break;
+    }
+
+    DEFER(tape->move(-1));
+
+    if (!(is_digit(c) || c == '.')) {
+        tape->move(-back_amount);
+        return false;
+    }
+
+    do {
+
+        if (c == '.') {
+            if (decimal_point) {
+                tape->move(-back_amount);
+                tape->move(-i);
+                return false;
+            } else {
+                decimal_point = true;
+            }
+        }
+
+        buffer[i++] = c;
+        c = tape->read_char();
+    } while (is_digit(c) || (c == '.'));
+
+    result = strtof(buffer, 0);
+    return true;
 }

@@ -1,24 +1,25 @@
 #pragma once
 #include "Config.h"
 #include "Types.h"
+#include "Containers/Slice.h"
 
 struct MOKLIB_API IArgument {
     Str name;
-    IType type;
-    virtual umm get_data_ptr() = 0;
+    virtual bool parse_argument(Tape *tape) = 0;
 };
 
 template <typename T>
 struct TArgument : public IArgument {
+    T data;
 
     constexpr TArgument(Str name, T default_value) {
         this->name = name;
-        this->type = type_of(default_value);
         this->data = default_value;
     }
 
-    virtual umm get_data_ptr() override  { return (umm)&data; }
-    T data;
+    bool parse_argument(Tape *tape) override {
+        return parse<T>(tape, data);
+    }
 };
 
 /**
@@ -28,3 +29,13 @@ struct TArgument : public IArgument {
  * options in other operating systems
  */
 MOKLIB_API void parse_arguments(const Str &s, IArgument **args, int32 num_args);
+
+static _inline void parse_arguments(
+    const Slice<Str> &strings,
+    IArgument **args,
+    u32 num_args)
+{
+    for (const Str &s : strings) {
+        parse_arguments(s, args, (i32)num_args);
+    }
+}

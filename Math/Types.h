@@ -1,80 +1,40 @@
 #pragma once
 #include "Base.h"
 #include "CG.h"
-#include "Types.h"
+#include "../Types.h"
 #include "Parsing.h"
+#include "StringFormat.h"
 
-static PROC_STRINGIFY(stringify_vec2);
-static PROC_DESTRINGIFY(destringify_vec2);
-static constexpr _inline IType type_of(const Vec2 &v) {
-    return IType {
-        "Vec2",
-        stringify_vec2,
-        destringify_vec2,
-    };
-}
+PROC_FMT_INL(Vec2) { format(tape, LIT("[$,$]"),type.x, type.y); }
+PROC_FMT_INL(Vec3) { format(tape, LIT("[$,$,$]"),type.x, type.y, type.z); }
+PROC_PARSE_INL(Vec2) {
 
-static PROC_STRINGIFY(stringify_vec2) {
-    Vec2 *v = (Vec2*)ptr;
+    i64 total_move_back = 0;
 
-    output.append(LIT("["));
+    if (!tape->peek_char('['))
+        goto PARSE_VEC2_ERROR;
 
-    stringify_float((umm)&v->x, output, allocator);
-    output.append(LIT(","));
-    stringify_float((umm)&v->y, output, allocator);
+    total_move_back++;
 
-    output.append(LIT("]"));
-}
+    if (!parse<f32>(tape, result.x))
+        goto PARSE_VEC2_ERROR;
 
-static PROC_DESTRINGIFY(destringify_vec2) {
-    Vec2 result;
-    u64 i = 0;
+    total_move_back += eat_whitespace(tape);
 
-    if (input[i] != '[')
-        return 0;
-    i++;
+    if (!tape->peek_char(','))
+        goto PARSE_VEC2_ERROR;
 
-    i += destringify_float((umm)&result.x, input.chop_left(i - 1));
+    total_move_back += eat_whitespace(tape);
 
-    i = eat_whitespace(input, i);
+    if (!parse<f32>(tape, result.y))
+        goto PARSE_VEC2_ERROR;
 
-    if (input[i] != ',')
-        return 0;
-    i++;
+    if (!tape->peek_char(']'))
+        goto PARSE_VEC2_ERROR;
 
-    i += destringify_float((umm)&result.y, input.chop_left(i - 1));
+    return true;
 
-    i = eat_whitespace(input, i);
-
-    if (input[i] != ']')
-        return 0;
-    i++;
-
-    *((Vec2*)ptr) = result;
-
-    return i;
-}
-
-// Vec3
-static PROC_STRINGIFY(stringify_vec3);
-static constexpr _inline IType type_of(const Vec3 &v) {
-    return IType {
-        "Vec3",
-        stringify_vec3,
-        0
-    };
-}
-
-static PROC_STRINGIFY(stringify_vec3) {
-    Vec3 *v = (Vec3*)ptr;
-
-    output.append(LIT("["));
-
-    stringify_float((umm)&v->x, output, allocator);
-    output.append(LIT(","));
-    stringify_float((umm)&v->y, output, allocator);
-    output.append(LIT(","));
-    stringify_float((umm)&v->z, output, allocator);
-
-    output.append(LIT("]"));
+PARSE_VEC2_ERROR:
+    tape->move(-total_move_back);
+    return false;
 }

@@ -22,6 +22,7 @@
 #include "Memory/Sentry.cpp"
 #include "Thread/ThreadContext.cpp"
 #include "Time/Time.cpp"
+#include "Thread/Thread.cpp"
 #include "Types.cpp"
 
 #if MOK_INCLUDE_DLL

@@ -1,3 +1,4 @@
+#define MOK_LIB_STATIC 1
 #include "Base.h"
 #include "Log.h"
 #include "Memory/Arena.h"

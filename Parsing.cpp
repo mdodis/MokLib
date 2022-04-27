@@ -1,4 +1,5 @@
 #include "Parsing.h"
+#include "Math/Base.h"
 
 u64 parse_cid(const Str &s, u64 i, Str &out) {
     const char *begin = &s[i++];
@@ -6,6 +7,8 @@ u64 parse_cid(const Str &s, u64 i, Str &out) {
     while (i < s.len && is_valid_cid(s[i])) {
         i++;
     }
+
+    i = min(i, s.len - 1);
 
     const char *end = &s[i];
 

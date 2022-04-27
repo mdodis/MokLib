@@ -1,3 +1,4 @@
+#define MOK_LIB_STATIC 1
 #include "Console.h"
 #include "Test/Test.h"
 

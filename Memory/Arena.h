@@ -72,6 +72,10 @@ struct MOKLIB_API ArenaSave {
 		last_offset = arena->last_offset;
 	}
 
+	ArenaSave(Arena &a)
+		: ArenaSave(&a)
+		{}
+
 	~ArenaSave() {
 		arena->capacity    = capacity;
 		arena->used        = used;

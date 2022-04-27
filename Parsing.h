@@ -147,14 +147,17 @@ MOKLIB_API u64 parse_cid(const Str &s, u64 i, Str &out);
 /**
  * Tape parsing
  */
-static void eat_whitespace(struct Tape *tape) {
+static u32 eat_whitespace(struct Tape *tape) {
     char c = tape->read_char();
+    u32 num_whitespace = 0;
     while ((c != EOF) && (is_whitespace(c))) {
+        num_whitespace++;
         c = tape->read_char();
     }
 
     if (c != EOF)
         tape->move(-1);
+    return num_whitespace;
 }
 
 static void eat_line(struct Tape *tape) {

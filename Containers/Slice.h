@@ -1,19 +1,25 @@
 #pragma once
 #include "Base.h"
+#include "Array.h"
 
 template <typename T>
 struct Slice {
     T *ptr;
     u32 count;
 
+    constexpr Slice()
+        : ptr(0)
+        , count(0)
+        {}
+
     constexpr Slice(T *ptr, u32 count)
         : ptr(ptr)
         , count(count)
         {}
 
-    constexpr Slice(TArray<T> &array)
-        : ptr(array.data)
-        , count(array.size)
+    constexpr Slice(TArray<T> &array, u32 start = 0)
+        : ptr(array.data + start)
+        , count(array.size - start)
         {}
 
     T &operator[](i32 index) {
