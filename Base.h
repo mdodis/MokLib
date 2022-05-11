@@ -73,6 +73,9 @@ typedef char*       CStr;
 #define MCONCAT(x, y) x##y
 #define MCONCAT2(x, y, z) x##y##z
 #define MSTR(x) #x
+#define MLITSTR(x) LIT(#x)
+
+#define OFFSET_OF(type, element) ((size_t)&(((type *)0)->element))
 
 namespace U64 {
     enum {
@@ -114,3 +117,8 @@ Target *as_proc(RetVal(T::*member_proc)(Args...)) {
     pf = member_proc;
     return p;
 }
+
+#define IS_A(what, T) (dynamic_cast<T*>(what) != 0)
+
+template <typename T>
+static _inline T &as(void *ptr) { return *((T*)ptr); }

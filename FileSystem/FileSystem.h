@@ -7,7 +7,6 @@
 #include "Time/Time.h"
 #include "Tape.h"
 #include "Console.h"
-#include "StringBuilder.h"
 
 enum class SymLinkKind {
     File,
@@ -23,6 +22,7 @@ namespace FileMode {
         CreateAlways    = 1 << 4,
         NoBuffering     = 1 << 5,
         Append          = 1 << 6,
+        /** Opens the file if it exists, otherwise creates it */
         OpenAlways      = 1 << 7,
     };
 }
@@ -54,6 +54,15 @@ MOKLIB_API bool create_dir(const Str &pathname);
 /** Get current working directory */
 MOKLIB_API Str get_cwd(IAllocator &alloc);
 
+MOKLIB_API bool is_dir(const Str &path);
+
+/** Returns the path of the currently executing process */
+MOKLIB_API Str get_base_path(IAllocator &alloc);
+
+/** Resolves path to absolute */
+MOKLIB_API Str to_absolute_path(Str relative, IAllocator &alloc);
+
+
 template <typename T>
 bool read_struct(FileHandle &handle, T *destination, uint64 offset = 0) {
     return read_file(handle, destination, sizeof(T), offset) == sizeof(T);
@@ -74,6 +83,7 @@ struct MOKLIB_API StreamTape : public Tape {
 struct FileTape : public SizedTape {
     FileHandle file;
 
+    FileTape() {}
     FileTape(FileHandle file) : file(file) {
         current_offset = 0;
         size = get_file_size(file);
@@ -93,21 +103,4 @@ struct FileTape : public SizedTape {
     }
 };
 
-
 MOKLIB_API StreamTape get_stream(Console::Handle kind);
-MOKLIB_API extern Arena Print_Arena;
-
-#define PRINT(what) do { \
-        SAVE_ARENA(&Print_Arena); \
-        _print(Console::Output, (StringBuilder(&Print_Arena) + what).to_list()); \
-    } while (0)
-
-#define PRINTLN(what) PRINT(what + "\n")
-
-static _inline void _print(Console::Handle to, const TList<Str> &list) {
-    auto stream = get_stream(to);
-
-    for (const Str &str : list) {
-        stream.write_str(str);
-    }
-}

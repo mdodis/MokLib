@@ -191,6 +191,53 @@ Str get_cwd(IAllocator &alloc) {
     return wstr_to_multibyte(buf, num_chars, alloc);
 }
 
+bool is_dir(const Str &path) {
+    IAllocator &alloc = *get_system_allocator();
+
+    wchar_t *wpath = multibyte_to_wstr(path, 0, alloc);
+    DEFER(alloc.release((umm)wpath););
+
+    DWORD attribs = GetFileAttributesW(wpath);
+
+    return (attribs != INVALID_FILE_ATTRIBUTES)
+        && (attribs & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+// @todo: account for this horrible API allocate wchar_t using TArray since path
+// names can be larger than MAX_PATH
+Str get_base_path(IAllocator &alloc) {
+    wchar_t *ptr = (wchar_t*)alloc.reserve(MAX_PATH * sizeof(wchar_t));
+    DEFER(alloc.release((umm)ptr));
+
+    DWORD num_chars = GetModuleFileNameW(0, ptr, MAX_PATH);
+
+    Str result = wstr_to_multibyte(ptr, num_chars, alloc);
+
+    return result.chop_right_last_of(LIT("\\"));
+}
+
+Str to_absolute_path(Str relative, IAllocator &alloc) {
+    u32 wrelative_len;
+    wchar_t *wrelative = multibyte_to_wstr(relative, &wrelative_len, alloc);
+    DEFER(alloc.release(wrelative));
+
+    u32 wabsolute_len = GetFullPathNameW(
+        wrelative,
+        0, 0, 0);
+
+    wchar_t *wptr = alloc.reserve<wchar_t>(wabsolute_len);
+    DEFER(alloc.release(wptr));
+
+    GetFullPathNameW(
+        wrelative,
+        wabsolute_len,
+        wptr,
+        0);
+
+    return wstr_to_multibyte(wptr, wabsolute_len, alloc);
+}
+
+
 
 u64 StreamTape::read(void *destination, u64 amount) {
     DWORD bytes_read;

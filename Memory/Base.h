@@ -1,5 +1,6 @@
 #pragma once
 #include "../Base.h"
+#include "../Config.h"
 #include <stdlib.h>
 
 #define PROC_MEMORY_RESERVE(name)       umm name(uint64 size)
@@ -7,11 +8,18 @@
 #define PROC_MEMORY_RELEASE(name)       void name(umm ptr)
 #define PROC_MEMORY_RELEASE_BASE(name)  void name()
 
-struct IAllocator {
+struct MOKLIB_API IAllocator {
     virtual PROC_MEMORY_RESERVE(reserve) = 0;
     virtual PROC_MEMORY_RESIZE(resize) = 0;
     virtual PROC_MEMORY_RELEASE(release) = 0;
     virtual PROC_MEMORY_RELEASE_BASE(release_base) = 0;
+
+    template <typename T>
+    _inline T *reserve(u64 count) {
+        return (T*)reserve(count * sizeof(T));
+    }
+
+    _inline void release(void *ptr) { release((umm)ptr); }
 };
 
 struct SystemAllocator : IAllocator {

@@ -27,6 +27,13 @@ struct Slice {
         return ptr[index];
     }
 
+    T *last() const {
+        if (count > 0)
+            return ((T*)ptr) + (count - 1);
+        else
+            return 0;
+    }
+
     SliceIterator<T> begin() const { return SliceIterator<T>(ptr, 0); }
     SliceIterator<T> end()   const { return SliceIterator<T>(ptr, count); }
 

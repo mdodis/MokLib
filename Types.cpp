@@ -1,8 +1,9 @@
 #include "Types.h"
 #include "Parsing.h"
 #include "Defer.h"
+#include <stdio.h>
 
-PROC_PARSE_IMPL(Str) {
+bool parse_quoted_string(Tape *tape, Str &result) {
     // @todo: At some point, for some reason I don't quite see now, we'll need
     // to support escape characters, but for now, we'll resort to a simple
     // substring of "This Part" that excludes the quotes
@@ -30,6 +31,33 @@ PROC_PARSE_IMPL(Str) {
             return false;
         }
     }
+
+    result = Str((char*)output.ptr, output.wr_offset);
+    return true;
+}
+
+PROC_PARSE_IMPL(Str) {
+
+
+    char c = tape->read_char();
+    if (c == '\'') {
+        tape->move(-1);
+        return parse_quoted_string(tape, result);
+    } else if (!is_valid_cid(c)) {
+        tape->move(-1);
+        return false;
+    }
+
+    IAllocator *alloc = get_system_allocator();
+    AllocTape output(*alloc);
+
+    do {
+        output.write(&c, 1);
+        c = tape->read_char();
+    } while (is_valid_cid(c));
+
+    if (c != EOF)
+        tape->move(-1);
 
     result = Str((char*)output.ptr, output.wr_offset);
     return true;
@@ -119,10 +147,10 @@ PROC_PARSE_IMPL(i64) {
 }
 
 PROC_FMT_IMPL(f64) {
-    constexpr u32 max_digits = 16;
-    thread_local char buffer[_CVTBUFSIZE];
+    constexpr u32 buffer_size = 16;
+    thread_local char buffer[buffer_size];
 
-    _gcvt_s(buffer, _CVTBUFSIZE, type, max_digits);
+    snprintf(buffer, buffer_size, "%f", type);
 
     Str s(buffer);
 

@@ -57,6 +57,7 @@ PROC_FMT_INL(Str)  { tape->write_str(type); }
 PROC_FMT(u64);
 PROC_FMT(i64);
 PROC_FMT(f64);
+PROC_FMT_INL(bool) { tape->write_str(type ? LIT("true") : LIT("false")); }
 PROC_PARSE(Str);
 PROC_PARSE(u64);
 PROC_PARSE(i64);

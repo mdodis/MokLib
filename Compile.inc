@@ -13,7 +13,6 @@
 #include "Log.cpp"
 #include "Parsing.cpp"
 #include "Str.cpp"
-#include "StringBuilder.cpp"
 #include "FileSystem/FileSystem.cpp"
 #include "FileSystem/DirectoryIterator.cpp"
 #include "Importers/Importer.cpp"
@@ -24,6 +23,7 @@
 #include "Time/Time.cpp"
 #include "Thread/Thread.cpp"
 #include "Types.cpp"
+#include "Reflection.cpp"
 
 #if MOK_INCLUDE_DLL
     #include "FileSystem/Dll.cpp"

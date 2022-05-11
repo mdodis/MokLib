@@ -44,5 +44,90 @@ static _inline Str format(
     RawTape output(Raw{ptr, size});
     format(&output, fmt_str, first, rest...);
 
-    return Str((CStr)ptr, size);
+    return Str((CStr)ptr, size, fmt_str[fmt_str.len - 1] == '\0');
+}
+
+/**
+ * Format string with escaped characters
+ */
+struct StrFormatter {
+    Str *str;
+    IAllocator *alloc;
+    StrFormatter(Str &str, IAllocator *alloc)
+        : str(&str)
+        , alloc(alloc)
+        {}
+};
+
+PROC_FMT_INL(StrFormatter) {
+    Str &str = *type.str;
+    tape->write_char('\"');
+    for (u32 i = 0; i < str.len; ++i) {
+
+        switch (str[i]) {
+
+            case '\\': tape->write_str(LIT(R"(\\)")); break;
+            case '\"': tape->write_str(LIT(R"(\")")); break;
+            case '\t': tape->write_str(LIT(R"(\t)")); break;
+            case '\r': tape->write_str(LIT(R"(\r)")); break;
+            case '\f': tape->write_str(LIT(R"(\f)")); break;
+            case '\n': tape->write_str(LIT(R"(\n)")); break;
+            case '\b': tape->write_str(LIT(R"(\b)")); break;
+
+            default: {
+                tape->write_char(str[i]);
+            } break;
+        }
+    }
+    tape->write_char('\"');
+}
+
+PROC_PARSE_INL(StrFormatter) {
+    ParseTape pt(tape);
+    TArray<char> array(result.alloc);
+
+    char c = pt.read_char();
+
+    if (c != '\"') {
+        goto PARSE_FAIL;
+    }
+    c = pt.read_char();
+
+    while ((c != '\"') && c != EOF) {
+
+        if (c == '\\') {
+            char escape = pt.read_char();
+
+            switch (escape) {
+                case '\\': array.add('\\'); break;
+                case '\"': array.add('\"'); break;
+                case 't':  array.add('\t');  break;
+                case 'r':  array.add('\r');  break;
+                case 'f':  array.add('\f');  break;
+                case 'n':  array.add('\n');  break;
+                case 'b':  array.add('\b');  break;
+
+                default: {
+                    array.add(c);
+                    array.add(escape);
+                } break;
+            }
+
+        } else {
+            array.add(c);
+        }
+
+        c = pt.read_char();
+    }
+
+    if (c == EOF) {
+        goto PARSE_FAIL;
+    }
+
+    *result.str = Str((char*)array.data, array.size);
+    return true;
+
+PARSE_FAIL:
+    pt.restore();
+    return false;
 }
