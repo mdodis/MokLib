@@ -47,13 +47,62 @@ static _inline Str format(
     return Str((CStr)ptr, size, fmt_str[fmt_str.len - 1] == '\0');
 }
 
+namespace FmtPolicy {
+    enum : u32 {
+        WithQuotes = 0x0000,
+    };
+
+    typedef u32 Type;
+}
+
+template <FmtPolicy::Type Policy>
+struct TFmtStr {
+    Str *s;
+    TFmtStr(Str &str)
+        : s(&str)
+        {}
+    void _format(Tape *tape) const {
+
+        if constexpr (Policy & FmtPolicy::WithQuotes) {
+            tape->write_char('\"');
+        }
+
+        Str &str = *s;
+        for (u32 i = 0; i < str.len; ++i) {
+
+            switch (str[i]) {
+
+                case '\\': tape->write_str(LIT(R"(\\)")); break;
+                case '\"': tape->write_str(LIT(R"(\")")); break;
+                case '\t': tape->write_str(LIT(R"(\t)")); break;
+                case '\r': tape->write_str(LIT(R"(\r)")); break;
+                case '\f': tape->write_str(LIT(R"(\f)")); break;
+                case '\n': tape->write_str(LIT(R"(\n)")); break;
+                case '\b': tape->write_str(LIT(R"(\b)")); break;
+
+                default: {
+                    tape->write_char(str[i]);
+                } break;
+            }
+        }
+
+        if constexpr (Policy & FmtPolicy::WithQuotes) {
+            tape->write_char('\"');
+        }
+    }
+};
+
+PROC_FMT_INL(TFmtStr<false>) {
+    type._format(tape);
+}
+
 /**
  * Format string with escaped characters
  */
 struct StrFormatter {
     Str *str;
     IAllocator *alloc;
-    StrFormatter(Str &str, IAllocator *alloc)
+    StrFormatter(Str &str, IAllocator *alloc = 0)
         : str(&str)
         , alloc(alloc)
         {}

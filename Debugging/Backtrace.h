@@ -1,6 +1,6 @@
 #pragma once
-#include "Log.h"
+#include "Tape.h"
 
 namespace Backtrace {
-    void print(ILog *log);
+    void print(Tape *tape);
 };

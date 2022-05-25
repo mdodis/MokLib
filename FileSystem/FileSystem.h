@@ -62,6 +62,11 @@ MOKLIB_API Str get_base_path(IAllocator &alloc);
 /** Resolves path to absolute */
 MOKLIB_API Str to_absolute_path(Str relative, IAllocator &alloc);
 
+MOKLIB_API Str directory_of(Str file_path);
+
+static _inline FileHandle open_file_write(Str path) {
+    return open_file(path, FileMode::Write | FileMode::CreateAlways);
+}
 
 template <typename T>
 bool read_struct(FileHandle &handle, T *destination, uint64 offset = 0) {
@@ -80,13 +85,20 @@ struct MOKLIB_API StreamTape : public Tape {
     virtual void move(i64 offset) override;
 };
 
-struct FileTape : public SizedTape {
+template <bool AutoClose>
+struct TFileTape : public SizedTape {
     FileHandle file;
 
-    FileTape() {}
-    FileTape(FileHandle file) : file(file) {
+    TFileTape() {}
+    TFileTape(FileHandle file) : file(file) {
         current_offset = 0;
         size = get_file_size(file);
+    }
+
+    ~TFileTape() {
+        if constexpr (AutoClose) {
+            close_file(file);
+        }
     }
 
     u64 read(void *destination, u64 amount) override {
@@ -103,4 +115,10 @@ struct FileTape : public SizedTape {
     }
 };
 
+typedef TFileTape<false> FileTape;
+
 MOKLIB_API StreamTape get_stream(Console::Handle kind);
+
+static _inline TFileTape<true> open_write_tape(const Str &path) {
+    return TFileTape<true>(open_file_write(path));
+}

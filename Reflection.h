@@ -1,9 +1,12 @@
 #pragma once
+#include "Config.h"
 #include "Base.h"
 #include "Str.h"
 #include "Containers/Slice.h"
 #include "Containers/Array.h"
 #include "Tape.h"
+#include "Filesystem/Filesystem.h"
+#include "StringFormat.h"
 
 /**
  * Describes the abstract type class of a type. Used for (de)serialization
@@ -24,7 +27,7 @@ enum class TypeClass {
  * Encapsulates everything that a generic object or struct descriptor should do
  * for serialization purposes.
  */
-struct IDescriptor {
+struct MOKLIB_API IDescriptor {
     u64 offset;
     Str name;
     TypeClass type_class;
@@ -153,8 +156,22 @@ constexpr static _inline IDescriptor *descriptor_of(T *what) {
  * Inline use only.
  * @param  T  The type descriptor
  */
-#define DEFINE_DESCRIPTOR_OF(T)                                    \
-    MCONCAT(T,Descriptor) MCONCAT2(T,_,Descriptor);                \
+#define DEFINE_DESCRIPTOR_OF(T)                     \
+    MCONCAT(T,Descriptor) MCONCAT2(T,_,Descriptor); \
+
+/**
+ * Declare the descriptor object of the type
+ * @param  T  The type descriptor
+ */
+#define DECLARE_DESCRIPTOR_OF(T)                                   \
+    extern MCONCAT(T,Descriptor) MCONCAT2(T,_,Descriptor);         \
+    template <>                                                    \
+    constexpr static _inline IDescriptor *descriptor_of(T *what) { \
+        return &MCONCAT2(T,_,Descriptor);                          \
+    }
+
+#define DEFINE_DESCRIPTOR_OF_INL(T)                                \
+    static MCONCAT(T,Descriptor) MCONCAT2(T,_,Descriptor);         \
     template <>                                                    \
     constexpr static _inline IDescriptor *descriptor_of(T *what) { \
         return &MCONCAT2(T,_,Descriptor);                          \
@@ -212,6 +229,13 @@ typedef PROC_DESERIALIZE(ProcDeserialize);
 DEFINE_PRIMITIVE_DESCRIPTOR(f32)
 DEFINE_PRIMITIVE_DESCRIPTOR(i32)
 
+static StrDescriptor Str_Descriptor = {0, Str::NullStr};
+template <>
+static _inline constexpr IDescriptor *descriptor_of(Str *what) {
+    return &Str_Descriptor;
+}
+
+
 /** Stores the object as well as the target path of the serialized instance */
 template <typename T>
 struct SerializedObject {
@@ -239,6 +263,10 @@ struct SerializedObject {
         , allocator(0)
     {
         descriptor = descriptor_of(((T*)0));
+    }
+
+    T *operator->() {
+        return &object;
     }
 
     void load() {

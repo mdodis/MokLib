@@ -55,21 +55,36 @@ constexpr _inline IDescriptor *descriptor_of(FloatStruct *what) {
     return &Float_Struct_Descriptor;
 }
 
-int main(int argc, char *argv[]) {
-    Str file(argv[1]);
+static void float_struct(Str file);
+static void advanced_struct(Str file);
 
+int main(int argc, char *argv[]) {
+    float_struct(Str(argv[1]));
+
+    advanced_struct(Str(argv[2]));
+}
+
+static void float_struct(Str file) {
     auto fh = open_file(file, FileMode::Read | FileMode::OpenAlways);
     DEFER(close_file(fh));
-
     FileTape ft(fh);
 
     FloatStruct fs;
-
     StreamTape out = get_stream(Console::Output);
 
     json_input(&ft, *get_system_allocator(), &fs);
     json_output_pretty(&out, descriptor_of(&fs), (umm)&fs);
 }
+
+static void advanced_struct(Str file) {
+    auto fh = open_file(file, FileMode::Read | FileMode::OpenAlways);
+    DEFER(close_file(fh));
+    FileTape ft(fh);
+
+    StreamTape out = get_stream(Console::Output);
+
+}
+
 
 #include "Compile.inc"
 #include "Importers/Object/JSON.cpp"

@@ -47,7 +47,7 @@ static ProcWin32SymFromAddr         *sym_from_addr;
 static ProcWin32SymGetLineFromAddr  *sym_get_line_from_addr;
 static void **stack;
 
-void Backtrace::print(ILog *log) {
+void Backtrace::print(Tape *tape) {
     stack = (void**)malloc(1024 * sizeof(*stack));
 
     // Load Dbghelp.dll
@@ -83,16 +83,16 @@ void Backtrace::print(ILog *log) {
             break;
         }
 
-        StringBuilder result = StringBuilder(get_system_allocator())
-            .add(LIT("At "))
-            .add(Str(line->FileName))
-            .add(LIT(" in "))
-            .add(Str(((char*)&symbol->Name), symbol->NameLen))
-            .add(LIT("("))
-            .add((int)line->LineNumber)
-            .add(LIT(")"));
-
-        log->print(result);
+        // StringBuilder result = StringBuilder(get_system_allocator())
+        //     .add(LIT("At "))
+        //     .add(Str(line->FileName))
+        //     .add(LIT(" in "))
+        //     .add(Str(((char*)&symbol->Name), symbol->NameLen))
+        //     .add(LIT("("))
+        //     .add((int)line->LineNumber)
+        //     .add(LIT(")"));
+        //
+        // log->print(result);
     }
 }
 

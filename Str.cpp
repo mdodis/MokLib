@@ -32,7 +32,7 @@ bool Str::split(u64 at, Str *left, Str *right) const {
 }
 
 u64 Str::last_of(char c) const{
-    for (u64 i = len - 1; i >= 0; --i) {
+    for (u64 i = len - 1; i > 0; --i) {
         if (data[i] == c) {
             return i;
         }

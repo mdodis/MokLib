@@ -40,3 +40,8 @@ struct Slice {
     SliceIterator<T, false> rbegin() const { return SliceIterator<T, false>(ptr, 0); }
     SliceIterator<T, false> rend()   const { return SliceIterator<T, false>(ptr, count); }
 };
+
+template <typename T>
+Slice<T> slice(TArray<T> &array, u32 start) {
+    return Slice<T>(array, start);
+}

@@ -5,6 +5,21 @@
 #include "Time/Time.h"
 #include <sys/types.h>
 
+Str directory_of(Str file_path) {
+    u64 last_separator = file_path.last_of('/');
+    if (last_separator == file_path.len) {
+        last_separator = file_path.last_of('\\');
+    }
+
+    if (last_separator == file_path.len)
+        return Str::NullStr;
+
+    return file_path.chop_right(last_separator == 0
+        ? last_separator
+        : last_separator - 1);
+}
+
+
 CREATE_INLINE_ARENA(Print_Arena, 2048);
 
 #if OS_MSWINDOWS
@@ -181,7 +196,12 @@ bool create_dir(const Str &pathname) {
         dirname = buf;
     }
 
-    return CreateDirectoryA(dirname, 0);
+    if (!CreateDirectoryA(dirname, 0)) {
+        DWORD h = GetLastError();
+        DEBUG_PRINTF("CreateDirectoryA failed with %d", h);
+        return false;
+    }
+    return true;
 }
 
 Str get_cwd(IAllocator &alloc) {
