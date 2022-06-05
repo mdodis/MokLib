@@ -226,6 +226,16 @@ constexpr static _inline IDescriptor *descriptor_of(T *what) {
 typedef PROC_SERIALIZE(ProcSerialize);
 typedef PROC_DESERIALIZE(ProcDeserialize);
 
+template <typename T>
+void serialize(Tape *in, T &object, ProcSerialize *proc) {
+    proc(in, descriptor_of<T>(object), (umm)&object);
+}
+
+template <typename T>
+void deserialize(Tape *in, IAllocator &alloc, T &object, ProcDeserialize *proc) {
+    proc(in, alloc, descriptor_of<T>(&object), (umm)&object);
+}
+
 DEFINE_PRIMITIVE_DESCRIPTOR(f32)
 DEFINE_PRIMITIVE_DESCRIPTOR(i32)
 

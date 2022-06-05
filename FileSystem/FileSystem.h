@@ -7,6 +7,7 @@
 #include "Time/Time.h"
 #include "Tape.h"
 #include "Console.h"
+#include "Error.h"
 
 enum class SymLinkKind {
     File,
@@ -28,6 +29,14 @@ namespace FileMode {
 }
 typedef u16 EFileMode;
 
+namespace FileAttributes {
+    enum Type : u32 {
+        Directory,
+        File
+    };
+};
+typedef u32 EFileAttributes;
+
 struct MOKLIB_API FileHandle {
 #if OS_MSWINDOWS
     void *internal_handle;
@@ -38,16 +47,19 @@ struct MOKLIB_API FileHandle {
 };
 #define IS_VALID_FILE(f) ((f).internal_handle != 0)
 
+MOKLIB_API TEnum<IOError> copy_file(Str source, Str destination);
 MOKLIB_API bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind kind);
-MOKLIB_API FileHandle open_file(const Str &file_path,EFileMode mode);
-MOKLIB_API u64 get_file_size(const FileHandle &handle);
 MOKLIB_API TimeSpec get_file_time(const Str &file_path);
+
+MOKLIB_API FileHandle open_file(const Str &file_path,EFileMode mode);
+MOKLIB_API void close_file(const FileHandle &file);
+MOKLIB_API u64 get_file_size(const FileHandle &handle);
+
 MOKLIB_API u64 read_file(FileHandle &handle, void *destination, u64 bytes_to_read, uint64 offset = 0);
 // @todo: make this use an offset instead of a tape like interface
 MOKLIB_API bool write_file(FileHandle &handle, const void *src, u64 bytes_to_write, u64 *bytes_written, u64 offset = 0);
 
 MOKLIB_API void flush_file_buffers(FileHandle &handle);
-MOKLIB_API void close_file(const FileHandle &file);
 
 MOKLIB_API bool create_dir(const Str &pathname);
 
@@ -66,6 +78,10 @@ MOKLIB_API Str directory_of(Str file_path);
 
 static _inline FileHandle open_file_write(Str path) {
     return open_file(path, FileMode::Write | FileMode::CreateAlways);
+}
+
+static _inline FileHandle open_file_read(Str path) {
+    return open_file(path, FileMode::Read | FileMode::OpenAlways);
 }
 
 template <typename T>
@@ -121,4 +137,8 @@ MOKLIB_API StreamTape get_stream(Console::Handle kind);
 
 static _inline TFileTape<true> open_write_tape(const Str &path) {
     return TFileTape<true>(open_file_write(path));
+}
+
+static _inline TFileTape<true> open_read_tape(const Str &path) {
+    return TFileTape<true>(open_file_read(path));
 }

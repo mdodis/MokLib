@@ -25,6 +25,24 @@ CREATE_INLINE_ARENA(Print_Arena, 2048);
 #if OS_MSWINDOWS
 #include "Compat/Win32Internal.inc"
 
+TEnum<IOError> copy_file(Str source, Str destination) {
+    IAllocator *alloc = get_system_allocator();
+
+    u32 wsource_len;
+    wchar_t *wsource = multibyte_to_wstr(source, &wsource_len, *alloc);
+    DEFER(alloc->release(wsource));
+
+    u32 wdest_len;
+    wchar_t *wdest = multibyte_to_wstr(destination, &wdest_len, *alloc);
+    DEFER(alloc->release(wdest));
+
+    if (!CopyFileW(wsource, wdest, FALSE)) {
+        return to_io_error(GetLastError());
+    }
+
+    return IOError::None;
+}
+
 bool create_symlink(const Str &symlink_path, const Str &target_path, SymLinkKind kind) {
 
     static wchar_t Sym_Link_PathW[1024];

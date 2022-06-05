@@ -21,6 +21,7 @@ project "Lib"
         "FileSystem/DirectoryIterator.h", "FileSystem/DirectoryIterator.cpp",
         "FileSystem/Dll.h", "FileSystem/Dll.cpp",
         "Reflection.h", "Reflection.cpp",
+        "Error.h"
     }
 
     includedirs { "." }

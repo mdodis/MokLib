@@ -135,8 +135,6 @@ static bool parse_value(Tape *in, IAllocator &alloc, DescPair pair) {
 }
 
 static bool parse_number(Tape *in, IAllocator &alloc, DescPair pair) {
-    float result;
-
     if (IS_A(pair.desc, PrimitiveDescriptor<f32>)) {
         return parse<f32>(in, (*(float*)pair.ptr));
     }

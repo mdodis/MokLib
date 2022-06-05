@@ -2,6 +2,7 @@
 
 #if OS_MSWINDOWS
 #include "WinInc.h"
+#include "Compat/Win32FileSystem.h"
 
 static wchar_t Cached_Directory_Entry[1024];
 
@@ -51,6 +52,8 @@ bool DirectoryIterator::next_file(FileData *result) {
         0, 0);
 
     result->filename = Str((char*)Filename_Cache, num_bytes - 1, true);
+    auto win32_attribs = (Win32FileAttributes::Type)dataw.dwFileAttributes;
+    result->attributes = win32_file_attribs_to_file_attribs(win32_attribs);
     return true;
 }
 

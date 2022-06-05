@@ -1,4 +1,5 @@
 #include "../WinInc.h"
+#include "Error.h"
 
 /**
  * Convert wide string to UTF8 string
@@ -92,4 +93,34 @@ static _inline wchar_t *multibyte_to_wstr(
     wstr[len] = 0;
 
     return wstr;
+}
+
+static _inline void output_debug_string(umm src, u64 bytes) {
+    constexpr u64 buffer_size = 255;
+    char buf[buffer_size + 1];
+    u64 running_byte_count = 0;
+
+    while (running_byte_count < bytes) {
+
+
+        const u64 amount_to_copy = (running_byte_count + buffer_size) < bytes
+            ? buffer_size
+            : bytes - running_byte_count;
+
+        memcpy(buf, src + running_byte_count, amount_to_copy);
+
+        buf[amount_to_copy] = 0;
+        OutputDebugStringA(buf);
+
+        running_byte_count += amount_to_copy;
+    }
+}
+
+static _inline IOError to_io_error(DWORD error_code) {
+    switch (error_code) {
+        case ERROR_SUCCESS:         return IOError::None;
+        case ERROR_FILE_NOT_FOUND:  return IOError::FileNotFound;
+        case ERROR_MOD_NOT_FOUND:   return IOError::UnresolvedModuleDependencies;
+        default:                    return IOError::Unrecognized;
+    }
 }

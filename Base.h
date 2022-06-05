@@ -78,21 +78,21 @@ typedef char*       CStr;
 #define OFFSET_OF(type, element) ((size_t)&(((type *)0)->element))
 
 namespace U64 {
-    enum {
+    enum : u64 {
         Max = ~0ull,
         Min = 0
     };
 };
 
 namespace U32 {
-    enum {
+    enum  : u32 {
         Max = ~0ul,
         Min = 0
     };
 };
 
 namespace I32 {
-    enum {
+    enum : i32 {
         Max = 0x7FFFFFFF,
         Min = 0x80000000
     };

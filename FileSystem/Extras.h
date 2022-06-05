@@ -7,7 +7,8 @@ static _inline bool write_file(FileHandle &handle, TList<Str> what) {
     for (const Str &str : what) {
 
         u64 bytes_written;
-        if (!write_file(handle, str.data, str.len, &bytes_written) || (bytes_written != str.len)) {
+        if (!write_file(handle, str.data, str.len, &bytes_written)
+            || (bytes_written != str.len)) {
             return false;
         }
     }
@@ -36,7 +37,10 @@ static _inline Raw dump_file(FileHandle &handle, IAllocator &alloc) {
     return Raw { file_data, file_size };
 }
 
-static _inline Raw dump_file(Str filename, IAllocator &alloc = *get_system_allocator()) {
+static _inline Raw dump_file(
+    Str filename,
+    IAllocator &alloc = *get_system_allocator())
+{
     FileHandle handle = open_file(filename, FileMode::Read);
     return dump_file(handle, alloc);
 }

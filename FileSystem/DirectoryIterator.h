@@ -1,10 +1,12 @@
 #pragma once
 #include "Config.h"
+#include "FileSystem.h"
 #include "Str.h"
 #include "Host.h"
 
 struct FileData {
     Str filename;
+    EFileAttributes attributes;
 };
 
 struct MOKLIB_API DirectoryIterator {
