@@ -1,5 +1,6 @@
 #include "../WinInc.h"
 #include "Error.h"
+#include "Traits.h"
 
 /**
  * Convert wide string to UTF8 string
@@ -45,12 +46,13 @@ static _inline u32 multibyte_to_wstr(
     wchar_t *destination,
     u32 destination_len)
 {
+    ASSERT(string.len < NumProps<u64>::max);
 
     return (u32) MultiByteToWideChar(
         CP_UTF8,
         MB_ERR_INVALID_CHARS,
         string.data,
-        string.len,
+        (int)string.len,
         destination,
         destination_len);
 }
@@ -67,12 +69,14 @@ static _inline wchar_t *multibyte_to_wstr(
     u32 *out_len,
     IAllocator &alloc)
 {
+    ASSERT(string.len < NumProps<u64>::max);
+
     u32 len;
     len = MultiByteToWideChar(
         CP_UTF8,
         MB_ERR_INVALID_CHARS,
         string.data,
-        string.len,
+        (int)string.len,
         0,
         0);
 
@@ -83,7 +87,7 @@ static _inline wchar_t *multibyte_to_wstr(
         CP_UTF8,
         MB_ERR_INVALID_CHARS,
         string.data,
-        string.len,
+        (int)string.len,
         wstr,
         len);
 

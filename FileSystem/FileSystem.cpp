@@ -287,9 +287,9 @@ u64 StreamTape::read(void *destination, u64 amount) {
         0);
 
     if (success && (bytes_read == 0)) {
-        return U64::Max;
+        return NumProps<u64>::max;
     } else if (!success) {
-        return U64::Max;
+        return NumProps<u64>::max;
     } else {
         return bytes_read;
     }

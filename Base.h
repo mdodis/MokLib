@@ -77,27 +77,6 @@ typedef char*       CStr;
 
 #define OFFSET_OF(type, element) ((size_t)&(((type *)0)->element))
 
-namespace U64 {
-    enum : u64 {
-        Max = ~0ull,
-        Min = 0
-    };
-};
-
-namespace U32 {
-    enum  : u32 {
-        Max = ~0ul,
-        Min = 0
-    };
-};
-
-namespace I32 {
-    enum : i32 {
-        Max = 0x7FFFFFFF,
-        Min = 0x80000000
-    };
-};
-
 #if COMPILER_MSVC
     #pragma warning(disable : 4251)
 #endif

@@ -17,9 +17,9 @@ struct TArray {
 
 	T *data;
 	IAllocator *alloc;
-	int32 capacity, size;
+	u64 capacity, size;
 
-	static constexpr int32 Init_Capacity = 4;
+	static constexpr u64 Init_Capacity = 4;
 
 	_inline TArray(void) {
 		this->data = 0;
@@ -44,7 +44,7 @@ struct TArray {
 		}
 	}
 
-	int32 add(const T &item) {
+	u64 add(const T &item) {
 		if (!data) {
 			if (!init(Init_Capacity)) return -1;
 		}
@@ -57,8 +57,8 @@ struct TArray {
 		return size - 1;
 	}
 
-	void add_range(T *elems, u32 num_elems) {
-		for (u32 i = 0; i < num_elems; ++i) {
+	void add_range(T *elems, u64 num_elems) {
+		for (u64 i = 0; i < num_elems; ++i) {
 			add(elems[i]);
 		}
 	}
@@ -77,7 +77,7 @@ struct TArray {
 		return &data[size - 1];
 	}
 
-	void del(int32 index, bool keep_order = false) {
+	void del(u64 index, bool keep_order = false) {
 		if (!is_index_valid(index))
 			return;
 
@@ -99,7 +99,7 @@ struct TArray {
 		alloc->release((umm)data);
 	}
 
-	bool init(int32 amount) {
+	bool init(u64 amount) {
 		data = (T*)alloc->reserve(amount * sizeof(T));
 		if (!data) {
 			return false;
@@ -125,28 +125,28 @@ struct TArray {
 			return 0;
 	}
 
-	_inline bool is_index_valid(int32 i) const {
+	_inline bool is_index_valid(u64 i) const {
 		return (i >= 0) && (i < size);
 	}
 
-	_inline T &operator[](int32 idx) {
+	_inline T &operator[](u64 idx) {
 		ASSERT(is_index_valid(idx));
 		return data[idx];
 	}
 
-	_inline const T &operator[](int32 idx) const {
+	_inline const T &operator[](u64 idx) const {
 		ASSERT(is_index_valid(idx));
 		return data[idx];
 	}
 
-	i32 index_of(const T &query) const {
-		for (i32 i = 0; i < size; ++i) {
+	u64 index_of(const T &query) const {
+		for (u64 i = 0; i < size; ++i) {
 			if (query == data[i]) {
 				return i;
 			}
 		}
 
-		return -1;
+		return NumProps<u64>::max;
 	}
 
 	FwdIter begin() const { return FwdIter(data, 0); }

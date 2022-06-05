@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "Containers/Array.h"
+#include "Traits.h"
 
 struct MOKLIB_API Tape {
     // Interface
@@ -105,7 +106,7 @@ struct RawTape : public SizedTape {
 
     u64 read(void *destination, u64 amount) override {
         if (current_offset == size) {
-            return U64::Max;
+            return NumProps<u64>::max;
         }
 
         u64 offset = current_offset;

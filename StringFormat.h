@@ -49,7 +49,12 @@ static _inline Str format(
 
 namespace FmtPolicy {
     enum : u32 {
-        WithQuotes = 0x0000,
+        WithoutQuotes   = 0x00000000,
+        WithQuotes      = 0x00000001,
+    };
+
+    enum : u32 {
+        Quotes = 0x00000001,
     };
 
     typedef u32 Type;
@@ -63,7 +68,7 @@ struct TFmtStr {
         {}
     void _format(Tape *tape) const {
 
-        if constexpr (Policy & FmtPolicy::WithQuotes) {
+        if constexpr (Policy & FmtPolicy::Quotes) {
             tape->write_char('\"');
         }
 
@@ -86,13 +91,14 @@ struct TFmtStr {
             }
         }
 
-        if constexpr (Policy & FmtPolicy::WithQuotes) {
+        if constexpr (Policy & FmtPolicy::Quotes) {
             tape->write_char('\"');
         }
     }
 };
 
-PROC_FMT_INL(TFmtStr<false>) {
+template <FmtPolicy::Type Policy>
+static _inline void fmt(Tape *tape, const TFmtStr<Policy> &type) {
     type._format(tape);
 }
 

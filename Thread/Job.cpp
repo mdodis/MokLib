@@ -57,7 +57,7 @@ void JobQueue::init(IAllocator &alloc, u32 max_entries) {
 
 void JobQueue::add_job(ProcJob *job, void *data) {
 
-    u32 new_next_write_entry = (new_next_write_entry + 1) % num_entries;
+    u32 new_next_write_entry = (next_write_entry + 1) % num_entries;
     ASSERT(new_next_write_entry != next_read_entry);
 
     JobQueue::Entry *entry = entries + next_write_entry;

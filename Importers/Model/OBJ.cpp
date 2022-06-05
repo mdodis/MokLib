@@ -5,6 +5,7 @@
 #include "Memory/Base.h"
 #include "Parsing.h"
 #include "Memory/Arena.h"
+#include "Traits.h"
 
 namespace OBJDeclaration {
     enum Type {
@@ -147,8 +148,8 @@ PROC_IMPORTER_LOAD(import_obj_load) {
 
 
                 for (i32 i = 0; i < 6; ++i) {
-                    i32 index_of = encoded_indices.index_of(faces[i]);
-                    if (index_of == -1) {
+                    u64 index_of = encoded_indices.index_of(faces[i]);
+                    if (index_of == NumProps<u64>::max) {
                         index_of = encoded_indices.add(faces[i]);
 
                         OBJVertex vertex;
@@ -159,7 +160,9 @@ PROC_IMPORTER_LOAD(import_obj_load) {
                         output_vertices.add(vertex);
                     }
 
-                    indices.add(index_of);
+                    // @todo: Maybe we should remove this limitiation...
+                    ASSERT(index_of <= NumProps<u32>::max);
+                    indices.add((u32)index_of);
                 }
 
             } break;
@@ -204,8 +207,9 @@ PROC_IMPORTER_LOAD(import_obj_load) {
 
     memcpy(output_indices, indices.data, copy_size);
 
-    result->model.num_vertices = output_vertices.size;
-    result->model.num_indices  = indices.size;
+    // @todo: u32 vs u64 here
+    result->model.num_vertices = (u32)output_vertices.size;
+    result->model.num_indices  = (u32)indices.size;
     result->model.vertices     = (umm)output_vertices.data;
     result->model.indices      = output_indices;
     result->kind = ImportKind::Model;

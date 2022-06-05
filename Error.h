@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include "Traits.h"
 
 enum class IOError : u32 {
     None = 0,
@@ -7,7 +8,7 @@ enum class IOError : u32 {
     FileNotFound,
     /** Only Shows in load_dll. The Module's dependencies could not be resolved */
     UnresolvedModuleDependencies,
-    Unrecognized = U32::Max,
+    Unrecognized = NumProps<u32>::max,
 };
 
 template<typename T>

@@ -1,11 +1,9 @@
 project "Lib"
     kind "SharedLib"
     language "C++"
-    targetdir(IntBinDir)
-    objdir(IntObjDir)
+    InternalSettings()
 
     defines {"MOK_LIB_INTERNAL=1"}
-
 
     files {
         "*.h", "*.cpp",
@@ -28,6 +26,5 @@ project "Lib"
 
     filter {"platforms:Linux64"}
         pic "On"
-    InternalSettings()
 
     filter {}

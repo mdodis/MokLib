@@ -1,10 +1,10 @@
 #pragma once
-
 #include "Base.h"
 #include "Config.h"
 #include "Memory/Base.h"
 #include "Debugging/Base.h"
 #include "Memory/RawBuffer.h"
+#include "Traits.h"
 
 #ifndef MOK_STR_RANGE_CHECK
     #define MOK_STR_RANGE_CHECK 1
@@ -153,7 +153,7 @@ struct MOKLIB_API Str {
     u64 len;
     bool has_null_term = false;
 
-    static constexpr u64 StartEnd = U64::Max;
+    static constexpr u64 StartEnd = NumProps<u64>::max;
     static const Str New_Line;
     static char Null;
     static const Str NullStr;
