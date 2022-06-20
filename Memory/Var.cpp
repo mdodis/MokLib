@@ -1,5 +1,5 @@
 #include "Var.h"
-#include "Debugging/Base.h"
+#include "Debugging/Assertions.h"
 
 struct FreeBlockInfo {
     FreeBlockInfo *next, *prev;

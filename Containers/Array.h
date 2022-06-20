@@ -2,7 +2,7 @@
 #include "../Config.h"
 #include "../Memory/Base.h"
 #include "../Base.h"
-#include "../Debugging/Base.h"
+#include "../Debugging/Assertions.h"
 #include "Memory/Arena.h"
 #include <iterator>
 #include <cstddef>

@@ -44,3 +44,15 @@ static _inline Raw dump_file(
     FileHandle handle = open_file(filename, FileMode::Read);
     return dump_file(handle, alloc);
 }
+
+
+static _inline void print(Str fmt_str) {
+    auto tape = get_stream(Console::Output);
+    tape.write_str(fmt_str);
+}
+
+template <typename First, typename... Rest>
+static _inline void print(Str fmt_str, const First &first, const Rest&... rest) {
+    auto tape = get_stream(Console::Output);
+    format(&tape, fmt_str, first, rest...);
+}

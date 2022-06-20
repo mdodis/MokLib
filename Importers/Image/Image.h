@@ -1,7 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "Math/CG.h"
-#include "Debugging/Base.h"
+#include "Debugging/Assertions.h"
 
 namespace PixelFormat {
     enum Type {

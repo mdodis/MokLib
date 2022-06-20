@@ -1,5 +1,6 @@
 #include "Dll.h"
 #include "FileSystem/FileSystem.h"
+#include "Debugging/Assertions.h"
 
 #if OS_MSWINDOWS
 #include "WinInc.h"

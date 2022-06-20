@@ -1,6 +1,7 @@
 #include "TimerQueue.h"
 #include "Thread/Atomic.h"
 #include "Math/Base.h"
+#include "Debugging/Assertions.h"
 
 static i32 find_timer_by_id(const TArray<TimerQueue::Timer> &timers, u32 id);
 static void check_timers(TimerQueue *queue, TimeSpec now);

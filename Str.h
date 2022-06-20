@@ -5,6 +5,7 @@
 #include "Debugging/Base.h"
 #include "Memory/RawBuffer.h"
 #include "Traits.h"
+#include "Debugging/Assertions.h"
 
 #ifndef MOK_STR_RANGE_CHECK
     #define MOK_STR_RANGE_CHECK 1

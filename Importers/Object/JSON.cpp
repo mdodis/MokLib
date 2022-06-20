@@ -34,7 +34,13 @@ static bool parse_string(Tape *in, IAllocator &alloc, DescPair pair);
 static bool parse_array(Tape *in, IAllocator &alloc, DescPair pair);
 
 PROC_DESERIALIZE(json_deserialize) {
-    parse_object(in, alloc, DescPair{desc, ptr});
+
+    // @todo: Check first if we're parsing an object or an array instead of
+    // doing this.
+    if (parse_object(in, alloc, DescPair{ desc, ptr })) {
+        return;
+    }
+    parse_array(in, alloc, DescPair{ desc, ptr });
 }
 
 static bool parse_object(Tape *in, IAllocator &alloc, DescPair pair) {

@@ -74,8 +74,10 @@ typedef char*       CStr;
 #define MCONCAT2(x, y, z) x##y##z
 #define MSTR(x) #x
 #define MLITSTR(x) LIT(#x)
-
 #define OFFSET_OF(type, element) ((size_t)&(((type *)0)->element))
+
+#define CONTAINER_OF(ptr, type, member) \
+    (type*)(((umm)ptr) - ((u64)OFFSET_OF(type,member)))
 
 #if COMPILER_MSVC
     #pragma warning(disable : 4251)

@@ -1,6 +1,7 @@
 #include "../WinInc.h"
 #include "Error.h"
 #include "Traits.h"
+#include "Debugging/Assertions.h"
 
 /**
  * Convert wide string to UTF8 string

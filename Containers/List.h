@@ -4,6 +4,7 @@
 #include "../Memory/Extras.h"
 #include <iterator>
 #include <cstddef>
+#include "../Debugging/Assertions.h"
 
 template <typename T>
 struct TList {
@@ -81,3 +82,48 @@ struct TList {
         (iterator) && iterator != (list)->root; \
         iterator = iterator->next)
 
+
+struct ListNode {
+	ListNode *next;
+	ListNode *prev;
+};
+
+static _inline bool is_list_node_empty(ListNode *node) {
+	return (node == node->next) && (node == node->prev);
+}
+
+static _inline void make_list_node(ListNode *node) {
+	node->next = node;
+	node->prev = node;
+}
+
+static _inline void _list_add(ListNode *entry, ListNode *prev, ListNode *next) {
+	ASSERT(is_list_node_empty(entry));
+	next->prev = entry;
+	entry->next = next;
+	entry->prev = prev;
+	prev->next = entry;
+}
+
+static _inline ListNode *__list_remove(ListNode *prev, ListNode *next) {
+	next->prev = prev;
+	prev->next = next;
+	return prev;
+}
+
+static _inline ListNode *list_node_remove(ListNode *entry) {
+	return __list_remove(entry->prev, entry->next);
+}
+
+static _inline void append_list_node(ListNode *source, ListNode *destination) {
+	_list_add(source, destination->prev, destination);
+}
+
+static _inline void prepend_list_node(ListNode *source, ListNode *destination) {
+	_list_add(source, destination, destination->next);
+}
+
+#define FOR_EACH_NODE(head, it) for (	\
+	(it) = (head)->next;                \
+	(it) != (head);                     \
+	it = (it)->next)

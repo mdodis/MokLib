@@ -1,5 +1,5 @@
 #include "Time.h"
-#include "Debugging/Base.h"
+#include "Debugging/Assertions.h"
 
 #if OS_MSWINDOWS
 #include "WinInc.h"

@@ -3,6 +3,7 @@
 #include "Base.h"
 #include "Console.h"
 #include "Time/Time.h"
+#include "Debugging/Assertions.h"
 #include <sys/types.h>
 
 Str directory_of(Str file_path) {

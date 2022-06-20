@@ -1,6 +1,6 @@
 #include "ThreadContext.h"
 #include "../Host.h"
-#include "../Debugging/Base.h"
+#include "Debugging/Assertions.h"
 
 #if OS_MSWINDOWS
 #include "../WinInc.h"

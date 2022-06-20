@@ -19,6 +19,7 @@ project "Lib"
         "FileSystem/DirectoryIterator.h", "FileSystem/DirectoryIterator.cpp",
         "FileSystem/Dll.h", "FileSystem/Dll.cpp",
         "Reflection.h", "Reflection.cpp",
+        "Test/**.h", "Test/**.cpp",
         "Error.h"
     }
 
@@ -28,3 +29,16 @@ project "Lib"
         pic "On"
 
     filter {}
+
+project "TestLib"
+    kind "ConsoleApp"
+    language "C++"
+    InternalSettings()
+
+    files {
+        "Tests/**.h", "Tests/**.cpp"
+    }
+
+    filter {}
+    includedirs {LibDir}
+    links {"Lib"}
