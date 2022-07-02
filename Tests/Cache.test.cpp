@@ -1,7 +1,7 @@
 #include "Tests.h"
 #include "Memory/Cache.h"
 
-TEST_CASE(CacheTestUnit, "Initialized, Single Allocation, Allocates") {
+TEST_CASE("Lib/Cache", "Initialized, Single Allocation, Allocates") {
 
 	Cache cache(System_Allocator);
 	umm ptr = cache.get(1, 1024);

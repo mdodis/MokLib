@@ -102,19 +102,17 @@ FileHandle open_file(const Str &file_path, EFileMode mode) {
     DWORD access_flags = 0;
     if (mode & FileMode::Read)      access_flags |= GENERIC_READ;
     if (mode & FileMode::Write)     access_flags |= GENERIC_WRITE;
-    if (mode & FileMode::Append)    access_flags |= FILE_APPEND_DATA;
 
     DWORD share_mode = 0;
     if (mode & FileMode::ShareRead)  share_mode |= FILE_SHARE_READ;
     if (mode & FileMode::ShareWrite) share_mode |= FILE_SHARE_WRITE;
 
     DWORD creation = 0;
-    if      (mode & FileMode::CreateAlways) creation |= CREATE_ALWAYS;
-    else if (mode & FileMode::OpenAlways)   creation |= OPEN_ALWAYS;
+    if (mode & FileMode::Truncate) creation = CREATE_ALWAYS;
     else creation = OPEN_EXISTING;
 
     DWORD attribs = FILE_ATTRIBUTE_NORMAL;
-    if (mode & FileMode::NoBuffering) attribs |= FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH;
+    // if (mode & FileMode::NoBuffering) attribs |= FILE_FLAG_NO_BUFFERING | FILE_FLAG_WRITE_THROUGH;
 
     HANDLE result = CreateFileW(file_pathw,
         access_flags,

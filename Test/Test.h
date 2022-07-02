@@ -2,30 +2,20 @@
 #include "Str.h"
 #include "StringFormat.h"
 
-#define DEFTEST_UNIT(name)                                     \
-    struct MCONCAT(TestUnitDecl_, name) : public TestUnit {    \
-        Str get_name() override {                              \
-            return LIT(#name);                                 \
-        }                                                      \
-    };                                                         \
-    extern MCONCAT(TestUnitDecl_,name) MCONCAT(TestUnit_,name)
+#define TEST_CASE_UNIQUE_NAME_IMPL() MJOIN3(UID,__LINE__,__COUNTER__)
+#define TEST_CASE_UNIQUE_NAME() TEST_CASE_UNIQUE_NAME_IMPL()
 
-#define IMPL_TEST_UNIT(name) MCONCAT(TestUnitDecl_,name) MCONCAT(TestUnit_,name)
-#define TEST_UNIT(name) MCONCAT(TestUnit_,name)
+#define TEST_CASE_IMPL(id, tname, tunit)          \
+    static TestResult MJOIN2(TestCaseProc_,id)(); \
+    static TestCase MJOIN2(TestCase_,id) = {      \
+        LIT(tname),                               \
+        LIT(tunit),                               \
+        MJOIN2(TestCaseProc_,id),                 \
+    };                                            \
+    TestResult MJOIN2(TestCaseProc_,id)()
 
-#define TEST_CASE_NAME(unit) MCONCAT(unit,TestCaseDecl_)__LINE__
-
-#define TEST_CASE(unit, desc)                           \
-    struct TEST_CASE_NAME(unit) : public TestCase {     \
-        TEST_CASE_NAME(unit) () {                       \
-            TEST_UNIT(unit).add(this);                  \
-        }                                               \
-        TestResult run() override;                      \
-        Str get_desc() override { return LIT(desc); }   \
-    };                                                  \
-    TEST_CASE_NAME(unit) MCONCAT2(unit,TestCase_,name); \
-    TestResult TEST_CASE_NAME(unit)::run()
-
+#define TEST_CASE(unit, name) \
+    TEST_CASE_IMPL(TEST_CASE_UNIQUE_NAME(), name, unit)
 
 #define STR(s) #s
 #define CNCAT4(a,b,c,d) a b c STR(d)

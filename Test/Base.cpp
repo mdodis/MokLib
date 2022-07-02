@@ -3,44 +3,46 @@
 #include "Console.h"
 #include "Str.h"
 #include "FileSystem/Extras.h"
+#include "Memory/Extras.h"
 
-int TestUnit::run() {
+static TestRunner *Test_Runner = 0;
 
-    Console::set_color(Console::Output, ConsoleColor::Yellow + ConsoleColor::Bold);
-    print(LIT("Running Unit: $\n"), get_name());
-    Console::set_color(Console::Output);
+TestCase::TestCase(Str name, Str unit, ProcTest proc)
+    : name(name)
+    , unit(unit)
+    , proc(proc)
+{
+    get_test_runner()->add_test(*this);
+}
 
-    for (TestCase *test_case : (*cases)) {
-        test_case->result = test_case->run();
-    }
+int TestRunner::run() {
 
-    bool successful = true;
-
-    for (TestCase *test_case : (*cases)) {
-
-        ConsoleColor::Style color = test_case->result.passed
-            ? ConsoleColor::Green
-            : ConsoleColor::Red + ConsoleColor::Bold;
-
-        Str status = test_case->result.passed
-            ? LIT("PASSED")
-            : LIT("FAILED");
-
-        print(LIT("["));
-        Console::set_color(Console::Output, color);
-        print(status);
+    for (TestCase &test_case : test_cases) {
+        Console::set_color(Console::Output, ConsoleColor::Yellow);
+        print(LIT("Running '$'/'$' ... "), test_case.unit, test_case.name);
         Console::set_color(Console::Output);
-        print(LIT("]"));
 
-        print(LIT(": '$'\n"), test_case->get_desc());
-        if (!test_case->result.passed) {
-            Console::set_color(Console::Output, ConsoleColor::White + ConsoleColor::Underline);
-            print(LIT("          $"), test_case->result.reason);
+        test_case.result = test_case.proc();
+
+        if (test_case.result.passed) {
+            Console::set_color(Console::Output, ConsoleColor::Green);
+            print(LIT("Passed"));
+            Console::set_color(Console::Output);
+        } else {
+            Console::set_color(Console::Output, ConsoleColor::Red + ConsoleColor::Bold);
+            print(LIT("Failed\n\t$"), test_case.result.reason);
             Console::set_color(Console::Output);
         }
-
-        successful = successful && test_case->result.passed;
+        print(LIT("\n"));
     }
 
-    return successful;
+    return 0;
+}
+
+TestRunner *get_test_runner() {
+    if (Test_Runner == 0) {
+        Test_Runner = alloc<TestRunner>(System_Allocator, System_Allocator);
+    }
+
+    return Test_Runner;
 }

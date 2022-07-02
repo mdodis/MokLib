@@ -85,8 +85,8 @@ CacheBlock *Cache::create_contiguous_block(u64 size) {
 
     for (u64 i = 1; i < blocks.size; ++i) {
         CacheBlock *block = blocks[i];
-        list_node_remove(block->node);
-        list_node_remove(block->free_node);
+        // list_node_remove(block->node);
+        // list_node_remove(block->free_node);
     }
 
     return 0;

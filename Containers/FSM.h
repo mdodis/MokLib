@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Delegates.h"
 #include "Containers/Array.h"
+#include "Traits.h"
 
 /**
  * A Finite state machine template
@@ -23,8 +24,8 @@ struct FSMTransition {
     UpdateDelegate on_update;
 
     FSMTransition()
-        : from_state(U32::Max)
-        , to_state(U32::Max)
+        : from_state(NumProps<u32>::max)
+        , to_state(NumProps<u32>::max)
         {}
 
     FORWARD_DELEGATE_TEMPLATE()

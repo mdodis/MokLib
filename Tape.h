@@ -228,6 +228,11 @@ struct SliceTape : SizedTape {
 
         u64 num_read = 0;
         while (num_read < amount) {
+
+            if (current_index == strings.count) {
+                return 0;
+            }
+
             u64 want_to_read = amount - num_read;
             u64 remaining = strings[current_index].len - current_start_offset;
 
@@ -236,7 +241,7 @@ struct SliceTape : SizedTape {
                 want_to_read);
 
             memcpy(
-                destination,
+                (umm)destination + num_read,
                 strings[current_index].data + current_start_offset,
                 bytes_to_read);
             num_read += bytes_to_read;

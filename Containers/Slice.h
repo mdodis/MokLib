@@ -43,6 +43,14 @@ struct Slice {
 };
 
 template <typename T>
-Slice<T> slice(TArray<T> &array, u32 start) {
-    return Slice<T>(array, start);
+Slice<T> slice(TArray<T> &arr, u32 start) {
+    return Slice<T>(arr, start);
+}
+
+template <typename T, u32 Count>
+Slice<T> slice(TArr<T, Count> &arr, u32 start = 0) {
+    umm start_ptr = ((umm)arr.elements);
+    start_ptr += sizeof(T) * start;
+    u32 count = Count - start;
+    return Slice<T>((T*)start_ptr, count);
 }

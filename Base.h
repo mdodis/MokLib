@@ -73,7 +73,14 @@ typedef char*       CStr;
 
 #define MCONCAT(x, y) x##y
 #define MCONCAT2(x, y, z) x##y##z
-#define MSTR(x) #x
+
+#define _MJOIN2(x, y) x##y
+#define MJOIN2(x, y) _MJOIN2(x, y)
+#define _MJOIN3(x, y, z) x##y##z
+#define MJOIN3(x, y, z) _MJOIN3(x, y, z)
+
+#define _MSTR(x) #x
+#define MSTR(x) _MSTR(x)
 #define MLITSTR(x) LIT(#x)
 #define OFFSET_OF(type, element) ((size_t)&(((type *)0)->element))
 
