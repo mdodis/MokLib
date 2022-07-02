@@ -1,6 +1,7 @@
 #include "Backtrace.h"
 #include "Host.h"
 #include "Memory/Base.h"
+#include "StringFormat.h"
 #include <stdlib.h>
 
 #if OS_MSWINDOWS
@@ -47,7 +48,7 @@ static ProcWin32SymFromAddr         *sym_from_addr;
 static ProcWin32SymGetLineFromAddr  *sym_get_line_from_addr;
 static void **stack;
 
-void Backtrace::print(Tape *tape) {
+void print_backtrace(Tape *tape) {
     stack = (void**)malloc(1024 * sizeof(*stack));
 
     // Load Dbghelp.dll
@@ -96,4 +97,32 @@ void Backtrace::print(Tape *tape) {
     }
 }
 
+#elif OS_LINUX
+#include <execinfo.h>
+#include "FileSystem/FileSystem.h"
+
+void print_backtrace(Tape *tape) {
+
+    StreamTape st;
+    if (tape == 0) {
+        st = get_stream(Console::Error);
+        tape = &st;
+    }
+
+    constexpr int num_traces = 16;
+    void *traces[num_traces];
+    int size = backtrace(traces, num_traces);
+
+    char **symbols = backtrace_symbols(traces, size);
+
+    for (int i = 0; i < size; ++i) {
+        Str s(symbols[i]);
+
+        format(tape, LIT("At: $\n"), s);
+    }
+}
+
+#else
+
+#warning "No Backtrace for this platform!"
 #endif

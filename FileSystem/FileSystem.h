@@ -14,17 +14,23 @@ enum class SymLinkKind {
     Folder
 };
 
+/**
+ * New Attributes
+ * 0: Read
+ * 1: Write
+ * 2: ShareReads
+ * 3: ShareWrites
+ * 4: Create / Open (i.e. Truncate / Open)
+ */
+
 namespace FileMode {
     enum Type : u16 {
         Read            = 1 << 0,
         Write           = 1 << 1,
         ShareRead       = 1 << 2,
         ShareWrite      = 1 << 3,
-        CreateAlways    = 1 << 4,
-        NoBuffering     = 1 << 5,
-        Append          = 1 << 6,
-        /** Opens the file if it exists, otherwise creates it */
-        OpenAlways      = 1 << 7,
+        /** Truncates the file if it exists */
+        Truncate        = 1 << 4,
     };
 }
 typedef u16 EFileMode;
@@ -66,22 +72,33 @@ MOKLIB_API bool create_dir(const Str &pathname);
 /** Get current working directory */
 MOKLIB_API Str get_cwd(IAllocator &alloc);
 
+/**
+ * Checks whether the file designated by @path is a directory
+ * @param  path The path. Must be null terminated
+ * @return      True if the file is valid and a directory
+ */
 MOKLIB_API bool is_dir(const Str &path);
 
 /** Returns the path of the currently executing process */
 MOKLIB_API Str get_base_path(IAllocator &alloc);
 
-/** Resolves path to absolute */
+/**
+ * Converts a relative path to an absolute, canonicalized path. Resolves
+ * symbolic links
+ * @param  relative The relative path. Must be null terminated
+ * @param  alloc    Allocator for the absolute path
+ * @return          The absolute path, owned by @alloc.
+ */
 MOKLIB_API Str to_absolute_path(Str relative, IAllocator &alloc);
 
 MOKLIB_API Str directory_of(Str file_path);
 
 static _inline FileHandle open_file_write(Str path) {
-    return open_file(path, FileMode::Write | FileMode::CreateAlways);
+    return open_file(path, FileMode::Write | FileMode::Truncate);
 }
 
 static _inline FileHandle open_file_read(Str path) {
-    return open_file(path, FileMode::Read | FileMode::OpenAlways);
+    return open_file(path, FileMode::Read);
 }
 
 template <typename T>
@@ -117,8 +134,16 @@ struct TFileTape : public SizedTape {
         }
     }
 
+    void move_to_end() {
+        move(get_file_size(file));
+    }
+
     u64 read(void *destination, u64 amount) override {
+        // @todo: u64 reads
         int64 num_read = read_file(file, destination, amount, current_offset);
+        if (num_read < 0) {
+            return 0;
+        }
         current_offset += num_read;
         return num_read;
     }

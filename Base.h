@@ -48,7 +48,8 @@ typedef char*       CStr;
 #endif
 
 #if OS_LINUX
-
+    #define DLL_EXPORT
+    #define DLL_IMPORT
     #define CEXPORT extern "C"
 #endif
 

@@ -2,14 +2,8 @@
 #include "Base.h"
 #include "Config.h"
 #include "Memory/Base.h"
-#include "Debugging/Base.h"
 #include "Memory/RawBuffer.h"
 #include "Traits.h"
-#include "Debugging/Assertions.h"
-
-#ifndef MOK_STR_RANGE_CHECK
-    #define MOK_STR_RANGE_CHECK 1
-#endif
 
 /**
  * An immutable utf8 string, that allocates NO memory, and thus doesn't
@@ -121,29 +115,19 @@ struct MOKLIB_API Str {
     Str clone(IAllocator &alloc) const;
 
     _inline char &operator[](u64 index) {
-#if MOK_STR_RANGE_CHECK
         if (index < len) {
             return *((char*)(data) + index);
         } else {
-            ASSERT(false);
             return Str::Null;
         }
-#else
-        return data[len];
-#endif
     }
 
     _inline const char &operator[](u64 index) const {
-#if MOK_STR_RANGE_CHECK
         if (index < len) {
             return *((const char*)(data)+index);
         } else {
-            ASSERT(false);
             return Str::Null;
         }
-#else
-        return data[len];
-#endif
     }
 
     _inline operator Raw() const {

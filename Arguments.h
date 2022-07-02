@@ -39,3 +39,5 @@ static _inline void parse_arguments(
         parse_arguments(s, args, (i32)num_args);
     }
 }
+
+// MOKLIB_API void parse_args(const Slice<Str> &argv, Slice<IArgument*> args);

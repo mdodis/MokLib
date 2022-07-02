@@ -5,6 +5,8 @@
 #include "Time/Time.h"
 #include "Debugging/Assertions.h"
 #include <sys/types.h>
+#include "Traits.h"
+#include "Math/Base.h"
 
 Str directory_of(Str file_path) {
     u64 last_separator = file_path.last_of('/');
@@ -342,6 +344,7 @@ void StreamTape::move(i64 offset) {
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <limits.h>
 
 FileHandle open_file(const Str &file_path, EFileMode mode) {
     static char path[1024];
@@ -350,10 +353,19 @@ FileHandle open_file(const Str &file_path, EFileMode mode) {
 
     int access_flags = 0;
 
-    if (mode & FileMode::Read)      access_flags |= S_IRUSR;
-    if (mode & FileMode::Write)     access_flags |= S_IWUSR;
+    if ((mode & FileMode::Write) && (mode & FileMode::Read)) {
+        access_flags |= O_RDWR;
+    } else if (mode & FileMode::Write) {
+        access_flags |= O_WRONLY;
+    } else if (mode & FileMode::Read) {
+        access_flags |= O_RDONLY;
+    }
 
-    int fd = open(path, access_flags);
+    if (mode & FileMode::Truncate) {
+        truncate(path, 0);
+    }
+
+    int fd = open(path, access_flags, 0664);
     if (fd == -1) {
         return FileHandle { 0 };
     }
@@ -364,14 +376,31 @@ FileHandle open_file(const Str &file_path, EFileMode mode) {
     return result;
 }
 
-u64 read_file(FileHandle &handle, void *destination, u32 bytes_to_read, uint64 offset) {
-    int fd = handle.internal_handle;
-    return pread(fd, destination, bytes_to_read, offset);
+static void seek_file(int fd, u64 off) {
+    lseek(fd, 0, SEEK_SET);
+    while (off != 0) {
+        off_t soff = min((off_t)off, NumProps<off_t>::max);
+        lseek(fd, soff, SEEK_CUR);
+
+        off -= soff;
+    }
 }
 
-bool write_file(FileHandle &handle, const void *src, u32 bytes_to_write, u64 *bytes_written, u64 offset) {
+u64 read_file(FileHandle &handle, void *destination, u64 bytes_to_read, u64 offset) {
     int fd = handle.internal_handle;
-    i64 result = pwrite(fd, src, bytes_to_write, 0);
+    seek_file(fd, offset);
+    return read(fd, destination, bytes_to_read);
+}
+
+bool write_file(FileHandle &handle, const void *src, u64 bytes_to_write, u64 *bytes_written, u64 offset) {
+    // @todo off_t is signed integer, use better offsets
+    int fd = handle.internal_handle;
+
+    // Seek to start
+    seek_file(fd, offset);
+
+    i64 result = write(fd, src, bytes_to_write);
+
     if (result < 0) {
         *bytes_written = 0;
         return false;
@@ -400,7 +429,6 @@ TimeSpec get_file_time(const Str &file_path) {
     return TimeSpec{stat_result.st_mtim};
 }
 
-
 void close_file(const FileHandle &file) {
     int fd = file.internal_handle;
     close(fd);
@@ -421,6 +449,75 @@ bool create_dir(const Str &pathname) {
     return mkdir(dirname, S_IFDIR) == 0;
 }
 
+Str get_base_path(IAllocator &alloc) {
+
+    umm ptr = alloc.reserve(PATH_MAX);
+    ssize_t len = readlink("/proc/self/exe", (char*)ptr, PATH_MAX);
+    Str result((char*)ptr, len);
+
+    return result.chop_right_last_of(LIT("/"));
+}
+
+Str get_cwd(IAllocator &alloc) {
+    // @note: And here I thought that just winapi had some terrible parts
+    TArray<char> result(&alloc);
+    char *ret;
+
+    result.init(256);
+
+    while (getcwd(result.data, result.capacity) != result.data) {
+        if (!result.stretch()) {
+            result.release();
+            return Str::NullStr;
+        }
+    }
+
+    return Str((char*)result.data);
+}
+
+StreamTape get_stream(Console::Handle kind) {
+    return StreamTape(FileHandle{(int)kind});
+}
+
+u64 StreamTape::read(void *destination, u64 amount) {
+    int fd = stream_file.internal_handle;
+    return ::read(fd, destination, amount);
+}
+
+bool StreamTape::write(const void *src, u64 amount) {
+    int fd = stream_file.internal_handle;
+    ssize_t written = ::write(fd, src, amount);
+    return (written == amount);
+}
+
+bool StreamTape::end() {
+    int fd = stream_file.internal_handle;
+    char c;
+    return ::read(fd, &c, 1) == -1;
+}
+
+void StreamTape::move(i64 offset) {
+    int fd = stream_file.internal_handle;
+    lseek(fd, SEEK_CUR, offset);
+}
+
+bool is_dir(const Str &path) {
+    ASSERT(path.has_null_term);
+
+    struct stat statbuf;
+    stat(path.data, &statbuf);
+
+    return (statbuf.st_mode & S_IFDIR);
+}
+
+Str to_absolute_path(Str relative, IAllocator &alloc) {
+    ASSERT(relative.has_null_term);
+
+    char *result = realpath(relative.data, NULL);
+    DEFER(free(result));
+
+    return Str(result).clone(alloc);
+}
 
 #else
 

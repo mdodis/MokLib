@@ -36,8 +36,7 @@ bool parse_quoted_string(Tape *tape, Str &result) {
     return true;
 }
 
-PROC_PARSE_IMPL(Str) {
-
+bool parse_str(Tape *tape, Str &result) {
 
     char c = tape->read_char();
     if (c == '\'') {
@@ -63,7 +62,7 @@ PROC_PARSE_IMPL(Str) {
     return true;
 }
 
-PROC_FMT_IMPL(u64) {
+void format_u64(Tape *tape, const u64 &type) {
     constexpr u64 max_digits = 20ull;
     thread_local char digits[max_digits + 1];
     u32 i = max_digits;
@@ -87,8 +86,7 @@ PROC_FMT_IMPL(u64) {
     tape->write_str(Str(digits + i + 1, max_digits - i));
 }
 
-
-PROC_PARSE_IMPL(u64) {
+bool parse_u64(Tape *tape, u64 &result) {
     result = 0;
 
     char c = tape->read_char();
@@ -107,7 +105,7 @@ PROC_PARSE_IMPL(u64) {
     return true;
 }
 
-PROC_FMT_IMPL(i64) {
+void format_i64(Tape *tape, const i64 &type) {
     i64 num = type;
 
     if (num < 0) {
@@ -119,7 +117,7 @@ PROC_FMT_IMPL(i64) {
     fmt<u64>(tape, unum);
 }
 
-PROC_PARSE_IMPL(i64) {
+bool parse_i64(Tape *tape, i64 &result) {
     char c = tape->read_char();
 
     bool parsed_symbol = false;
@@ -146,7 +144,7 @@ PROC_PARSE_IMPL(i64) {
     return true;
 }
 
-PROC_FMT_IMPL(f64) {
+void format_f64(Tape *tape, const f64 &type) {
     constexpr u32 buffer_size = 16;
     thread_local char buffer[buffer_size];
 
@@ -157,7 +155,7 @@ PROC_FMT_IMPL(f64) {
     tape->write_str(s);
 }
 
-PROC_PARSE_IMPL(f64) {
+bool parse_f64(Tape *tape, f64 &result) {
     i32 back_amount = 0u;
     bool decimal_point = false;
     char c = tape->read_char();

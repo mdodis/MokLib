@@ -10,36 +10,36 @@
 #include "Memory/AllocTape.h"
 
 template <typename T>
-void fmt(Tape *tape, const T &type);
+static _inline void fmt(Tape *tape, const T &type);
 
 template <typename T>
-bool parse(Tape *tape, T &result);
+static _inline bool parse(Tape *tape, T &result);
 
 /** Declare an external template specialization for fmt */
 #define PROC_FMT(T)     			    				\
     template <>         			    				\
-    extern MOKLIB_API void fmt(Tape *tape, const T &type)
+    MOKLIB_API void fmt(Tape *tape, const T &type)
 /** Define an inline template specialization for fmt */
 #define PROC_FMT_IMPL(T)     							\
     template <>         								\
-    void fmt(Tape *tape, const T &type)
+    MOKLIB_API void fmt(Tape *tape, const T &type)
 /** Define an inline template specialization for fmt */
 #define PROC_FMT_INL(T)     			    			\
     template <>         			    				\
-    static _inline void fmt(Tape *tape, const T &type)
+    void fmt(Tape *tape, const T &type)
 
 /** Declare an external template specialization for parse */
 #define PROC_PARSE(T) 				 					\
     template <>						 					\
-    extern MOKLIB_API bool parse(Tape *tape, T &result)
+    MOKLIB_API bool parse(Tape *tape, T &result)
 /** Define an inline template specialization for parse */
 #define PROC_PARSE_IMPL(T) 				 				\
     template <>						 					\
-    bool parse(Tape *tape, T &result)
+    MOKLIB_API bool parse(Tape *tape, T &result)
 /** Define an inline template specialization for parse */
 #define PROC_PARSE_INL(T) 				 				\
     template <>						 					\
-    static _inline bool parse(Tape *tape, T &result)
+    bool parse(Tape *tape, T &result)
 
 template <typename From, typename To>
 bool _pass_parse(Tape *tape, To &to) {
@@ -52,16 +52,25 @@ bool _pass_parse(Tape *tape, To &to) {
 	return true;
 }
 
+MOKLIB_API void format_u64(Tape *tape, const u64 &type);
+MOKLIB_API void format_i64(Tape *tape, const i64 &type);
+MOKLIB_API void format_f64(Tape *tape, const f64 &type);
+MOKLIB_API bool parse_u64(Tape *tape, u64 &result);
+MOKLIB_API bool parse_i64(Tape *tape, i64 &result);
+MOKLIB_API bool parse_f64(Tape *tape, f64 &result);
+MOKLIB_API bool parse_str(Tape *tape, Str &result);
+
 PROC_FMT_INL(CStr) { tape->write_str(Str(type)); }
 PROC_FMT_INL(Str)  { tape->write_str(type); }
-PROC_FMT(u64);
-PROC_FMT(i64);
-PROC_FMT(f64);
+PROC_FMT_INL(u64)  { format_u64(tape, type); }
+PROC_FMT_INL(i64)  { format_i64(tape, type); }
+PROC_FMT_INL(f64)  { format_f64(tape, type); }
 PROC_FMT_INL(bool) { tape->write_str(type ? LIT("true") : LIT("false")); }
-PROC_PARSE(Str);
-PROC_PARSE(u64);
-PROC_PARSE(i64);
-PROC_PARSE(f64);
+
+PROC_PARSE_INL(Str) {return parse_str(tape, result);}
+PROC_PARSE_INL(u64) {return parse_u64(tape, result);}
+PROC_PARSE_INL(i64) {return parse_i64(tape, result);}
+PROC_PARSE_INL(f64) {return parse_f64(tape, result);}
 
 PROC_FMT_INL(u32) 	{ fmt<u64>(tape, (u64)type); }
 PROC_PARSE_INL(u32) { return _pass_parse<u64, u32>(tape, result); }

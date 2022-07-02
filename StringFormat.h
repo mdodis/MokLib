@@ -102,6 +102,13 @@ static _inline void fmt(Tape *tape, const TFmtStr<Policy> &type) {
     type._format(tape);
 }
 
+static _inline Str null_terminate(const Str &str, IAllocator &alloc = System_Allocator) {
+    if (!str.has_null_term) {
+        return format(alloc, LIT("$\0"), str);
+    }
+    return str;
+}
+
 /**
  * Format string with escaped characters
  */

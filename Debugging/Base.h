@@ -8,9 +8,6 @@
 	#define MOK_DEBUG 1
 #endif
 
-#ifndef MOK_ENABLE_ASSERT
-	#define MOK_ENABLE_ASSERT 1
-#endif
 
 #ifndef MOK_DEBUG_PRINTF
 	#include <stdio.h>
@@ -48,5 +45,3 @@
 #else
 	#define DEBUG_BREAK()
 #endif
-
-#define UNIMPLEMENTED() ASSERT(false)

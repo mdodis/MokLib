@@ -24,6 +24,7 @@
 #include "Thread/Thread.cpp"
 #include "Types.cpp"
 #include "Reflection.cpp"
+#include "Debugging/Backtrace.cpp"
 
 #if MOK_INCLUDE_DLL
     #include "FileSystem/Dll.cpp"

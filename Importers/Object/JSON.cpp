@@ -45,14 +45,13 @@ PROC_DESERIALIZE(json_deserialize) {
 
 static bool parse_object(Tape *in, IAllocator &alloc, DescPair pair) {
     ParseTape tape(in);
+    bool should_exit = false;
 
     eat_whitespace(&tape);
 
     if (!expect(&tape, '{')) {
         goto P_FAIL;
     }
-
-    bool should_exit = false;
 
     while (!should_exit) {
 
@@ -175,17 +174,16 @@ static bool parse_array(Tape *in, IAllocator &alloc, DescPair pair) {
         return false;
     }
 
+    bool should_exit = false;
+    auto &desc = as<IArrayDescriptor>(pair.desc);
+
     // If this is an empty array, quit out
     eat_whitespace(in);
     if (in->peek_char(']')) {
         goto PARSE_EXIT;
     }
 
-    auto &desc = as<IArrayDescriptor>(pair.desc);
-
     desc.init(pair.ptr, alloc);
-
-    bool should_exit = false;
 
     while (!should_exit) {
 

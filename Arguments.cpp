@@ -50,3 +50,11 @@ void parse_arguments(const Str &s, IArgument **args, int32 num_args) {
         }
     }
 }
+
+// MOKLIB_API void parse_args(const Slice<Str> &argv, Slice<IArgument*> args) {
+//     u32 count = 0;
+
+//     while (count < argv.count) {
+//         argv[i];
+//     }
+// }

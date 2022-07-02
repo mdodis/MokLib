@@ -11,6 +11,18 @@ struct ThreadHandle {
     Win32::Handle internal_handle;
 };
 
+#elif OS_LINUX
+#include <pthread.h>
+
+#define PROC_THREAD(name) void *name(void *data)
+struct ThreadHandle {
+    pthread_t internal_handle;
+};
+
+#else
+
+#error "No threading support for this platform"
+
 #endif
 
 typedef PROC_THREAD(ProcThread);

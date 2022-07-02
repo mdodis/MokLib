@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "Containers/Array.h"
+#include "Containers/Slice.h"
 #include "Traits.h"
 
 struct MOKLIB_API Tape {
@@ -138,7 +139,7 @@ struct MeasureTape : public Tape {
         return true;
     }
     virtual bool end() override { return false; }
-    virtual void move(i64 offset) {}
+    virtual void move(i64 offset) override {}
 };
 
 /**
@@ -165,7 +166,7 @@ struct ParseTape : public Tape {
         return false;
     }
     virtual bool end() override { return tape->end(); }
-    virtual void move(i64 offset) {
+    virtual void move(i64 offset) override {
         tape->move(offset);
         num_read -= offset;
     }
@@ -198,5 +199,61 @@ struct RedirectTape : public Tape {
         return true;
     }
     virtual bool end() override { return false; }
-    virtual void move(i64 offset) {}
+    virtual void move(i64 offset) override {}
+};
+
+struct SliceTape : SizedTape {
+    Slice<Str> &strings;
+    u64 current_index;
+    u64 current_start_offset;
+
+    SliceTape(Slice<Str> &strings)
+        : strings(strings)
+        , current_index(0)
+        , current_start_offset(0)
+    {
+        this->current_offset = 0;
+        this->size = get_size();
+    }
+
+    u64 get_size() {
+        u64 result = 0;
+        for (Str &s : strings) {
+            result += s.len;
+        }
+        return result;
+    }
+
+    virtual u64 read(void *destination, u64 amount) override {
+
+        u64 num_read = 0;
+        while (num_read < amount) {
+            u64 want_to_read = amount - num_read;
+            u64 remaining = strings[current_index].len - current_start_offset;
+
+            u64 bytes_to_read = min(
+                remaining,
+                want_to_read);
+
+            memcpy(
+                destination,
+                strings[current_index].data + current_start_offset,
+                bytes_to_read);
+            num_read += bytes_to_read;
+
+            if (bytes_to_read == remaining) {
+                current_index++;
+                current_start_offset = 0;
+            } else {
+                current_start_offset += bytes_to_read;
+            }
+
+        }
+
+        return num_read;
+    }
+
+    virtual bool write(const void *src, u64 num_bytes) override {
+        return false;
+    }
 };

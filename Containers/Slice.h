@@ -1,6 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "Array.h"
+#include "Debugging/Assertions.h"
 
 template <typename T>
 struct Slice {

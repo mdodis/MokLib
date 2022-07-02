@@ -4,10 +4,11 @@
 #include "../Base.h"
 #include "../Debugging/Assertions.h"
 #include "Memory/Arena.h"
+#include "ArrayIterator.h"
+#include "Traits.h"
 #include <iterator>
 #include <cstddef>
 #include <initializer_list>
-#include "ArrayIterator.h"
 
 template <typename T>
 struct TArray {

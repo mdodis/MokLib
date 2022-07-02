@@ -6,10 +6,10 @@ Tape *ConsoleLogContext::open() {
     FileHandle fh = open_file(
         filepath,
         FileMode::ShareRead |
-        FileMode::Append    |
-        FileMode::OpenAlways);
+        FileMode::Write);
 
     ft = FileTape(fh);
+    ft.move_to_end();
     st = get_stream(Console::Output);
 
     return &tape;

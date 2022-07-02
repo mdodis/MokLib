@@ -5,7 +5,7 @@
 #include "Containers/Slice.h"
 #include "Containers/Array.h"
 #include "Tape.h"
-#include "Filesystem/Filesystem.h"
+#include "FileSystem/FileSystem.h"
 #include "StringFormat.h"
 
 /**
@@ -58,7 +58,6 @@ struct IArrayDescriptor : IDescriptor {
     virtual umm add(umm self) = 0;
     virtual u64 size(umm self) = 0;
     virtual umm get(umm self, u64 index) = 0;
-    virtual Str type_name() = 0;
     virtual Slice<IDescriptor*> subdescriptors() override { return {}; }
 };
 
@@ -148,7 +147,8 @@ struct ArrayDescriptor : IArrayDescriptor {
  */
 template <typename T>
 constexpr static _inline IDescriptor *descriptor_of(T *what) {
-    static_assert("No descriptor for this type." && false);
+    static_assert(typeid(T).name() && false);
+    return 0;
 }
 
 /**
@@ -163,49 +163,49 @@ constexpr static _inline IDescriptor *descriptor_of(T *what) {
   * Declare the descriptor object of the type
   * @param  T  The type descriptor
   */
-#define DECLARE_DESCRIPTOR_OF(T)                                   \
-    extern MCONCAT(T,Descriptor) MCONCAT2(T,_,Descriptor);         \
-    template <>                                                    \
-    constexpr static _inline IDescriptor *descriptor_of(T *what) { \
-        return &MCONCAT2(T,_,Descriptor);                          \
+#define DECLARE_DESCRIPTOR_OF(T)                           \
+    extern MCONCAT(T,Descriptor) MCONCAT2(T,_,Descriptor); \
+    template <>                                            \
+    IDescriptor *descriptor_of(T *what) {                  \
+        return &MCONCAT2(T,_,Descriptor);                  \
     }
 
-#define DEFINE_DESCRIPTOR_OF_INL(T)                                \
-    static MCONCAT(T,Descriptor) MCONCAT2(T,_,Descriptor);         \
-    template <>                                                    \
-    constexpr static _inline IDescriptor *descriptor_of(T *what) { \
-        return &MCONCAT2(T,_,Descriptor);                          \
+#define DEFINE_DESCRIPTOR_OF_INL(T)                        \
+    static MCONCAT(T,Descriptor) MCONCAT2(T,_,Descriptor); \
+    template <>                                            \
+    IDescriptor *descriptor_of(T *what) {                  \
+        return &MCONCAT2(T,_,Descriptor);                  \
     }
 
   /**
    * Defines the default constructor of a custom descriptor object
    * @param  Type The type of the object
    */
-#define CUSTOM_DESC_DEFAULT(Type)                           \
-    constexpr Type(u64 offset = 0, Str name = Str::NullStr) \
-        : IDescriptor(offset, name, TypeClass::Object)      \
-        {}                                                  \
+#define CUSTOM_DESC_DEFAULT(Type)                      \
+    Type(u64 offset = 0, Str name = Str::NullStr)      \
+        : IDescriptor(offset, name, TypeClass::Object) \
+        {}                                             \
 
    /**
     * Internal use: define descriptor for primitive types
     * @param  Type The primitive types
     */
-#define DEFINE_PRIMITIVE_DESCRIPTOR(Type)                             \
-    static PrimitiveDescriptor<Type> MCONCAT(Type,Descriptor) = {     \
-        0, Str::NullStr                                               \
-    };                                                                \
-    template <>                                                       \
-    static _inline constexpr IDescriptor *descriptor_of(Type *what) { \
-        return &MCONCAT(Type,Descriptor);                             \
+#define DEFINE_PRIMITIVE_DESCRIPTOR(Type)                         \
+    static PrimitiveDescriptor<Type> MCONCAT(Type,Descriptor) = { \
+        0, Str::NullStr                                           \
+    };                                                            \
+    template <>                                                   \
+    IDescriptor *descriptor_of(Type *what) {                      \
+        return &MCONCAT(Type,Descriptor);                         \
     }
 
-#define DEFINE_ARRAY_DESCRIPTOR_INL(VType)                                     \
-    static ArrayDescriptor<VType> MCONCAT2(Array_,VType,Descriptor) = {        \
-        0, Str::NullStr                                                        \
-    };                                                                         \
-    template <>                                                                \
-    static _inline constexpr IDescriptor *descriptor_of(TArray<VType> *what) { \
-        return &MCONCAT2(Array_,VType,Descriptor);                             \
+#define DEFINE_ARRAY_DESCRIPTOR_INL(VType)                              \
+    static ArrayDescriptor<VType> MCONCAT2(Array_,VType,Descriptor) = { \
+        0, Str::NullStr                                                 \
+    };                                                                  \
+    template <>                                                         \
+    IDescriptor *descriptor_of(TArray<VType> *what) {                   \
+        return &MCONCAT2(Array_,VType,Descriptor);                      \
     }
 
 
@@ -252,7 +252,7 @@ DEFINE_PRIMITIVE_DESCRIPTOR(i32)
 
 static StrDescriptor Str_Descriptor = {0, Str::NullStr};
 template <>
-static _inline constexpr IDescriptor *descriptor_of(Str *what) {
+IDescriptor *descriptor_of(Str *what) {
     return &Str_Descriptor;
 }
 
@@ -293,7 +293,7 @@ struct SerializedObject {
     void load() {
         FileHandle fh = open_file(
             file_path,
-            FileMode::Read | FileMode::OpenAlways);
+            FileMode::Read);
 
         if (!IS_VALID_FILE(fh)) {
             return;
@@ -308,7 +308,7 @@ struct SerializedObject {
     void flush() {
         FileHandle fh = open_file(
             file_path,
-            FileMode::Write | FileMode::CreateAlways);
+            FileMode::Write | FileMode::Truncate);
         DEFER(close_file(fh));
 
         FileTape ft(fh);

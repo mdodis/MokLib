@@ -33,6 +33,12 @@ namespace ConsoleColor {
 
 };
 
+namespace Console {
+    enum CharSet {
+        Utf8 = 65001,
+    };
+}
+
 /**
  * Windows
  */
@@ -45,9 +51,6 @@ namespace Console {
         Error  = -12,
     };
 
-    enum CharSet {
-        Utf8 = 65001,
-    };
 };
 
 // Win32 Console color definitions
@@ -119,9 +122,9 @@ namespace Console {
 
 namespace Console {
     enum Handle {
-        Input = 1,
-        Output,
-        Error
+        Input  = 0,
+        Output = 1,
+        Error  = 2
     };
 }
 
@@ -166,6 +169,9 @@ namespace Console {
         }
 
         fputs(Color_Translation_Table[color], file);
+    }
+
+    static _inline void set_charset(i32 charset) {
     }
 };
 

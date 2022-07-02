@@ -1,7 +1,7 @@
 #pragma once
 #include "Base.h"
 #include <utility>
-#include <new.h>
+#include <new>
 
 #define PUSH_STRUCT(alloc, type) (type*)alloc->reserve(sizeof(type))
 

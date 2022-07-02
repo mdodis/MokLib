@@ -19,7 +19,7 @@ struct SliceIterator {
         {}
 
     Ref operator*()  const { return ptr[index]; }
-    Ptr operator->() const { return ptr + idnex; }
+    Ptr operator->() const { return ptr + index; }
 
     SliceIterator &operator++() {
 

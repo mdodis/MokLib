@@ -123,15 +123,16 @@ PROC_MEMORY_RELEASE(Sentry::release) {
 
 #elif OS_LINUX
 
-umm Sentry::push(uint64 size) {
+
+PROC_MEMORY_RESERVE(Sentry::reserve) {
     return 0;
 }
 
-umm Sentry::resize(umm ptr, uint64 new_size) {
+PROC_MEMORY_RESIZE(Sentry::resize) {
     return 0;
 }
 
-void Sentry::pop(umm ptr) {
+PROC_MEMORY_RELEASE(Sentry::release) {
     return;
 }
 
