@@ -17,4 +17,22 @@ void release_mutex(Mutex &mutex) {
     ReleaseMutex(mutex.handle);
 }
 
+#elif OS_LINUX
+
+Mutex create_mutex() {
+    pthread_mutex_t mutex;
+    int result = pthread_mutex_init(&mutex, 0);
+
+    // @todo: refactor so that we can know if the mutex is valid
+    return Mutex { mutex };
+}
+
+void reserve_mutex(Mutex &mutex) {
+    pthread_mutex_lock(&mutex.handle);
+}
+
+void release_mutex(Mutex &mutex) {
+    pthread_mutex_unlock(&mutex.handle);
+}
+
 #endif // OS_MSWINDOWS

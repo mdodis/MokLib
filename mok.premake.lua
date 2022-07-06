@@ -14,19 +14,24 @@ project "Lib"
         "Thread/*.h", "Thread/*.cpp",
         "Time/*.h", "Time/*.cpp",
         "Importers/*.h", "Importers/*.cpp",
-        "Debugging/*.h",
+        "Debugging/*.h", "Debugging/*.cpp",
         "Converters/*.h", "Converters/*.cpp",
         "FileSystem/DirectoryIterator.h", "FileSystem/DirectoryIterator.cpp",
         "FileSystem/Dll.h", "FileSystem/Dll.cpp",
         "Reflection.h", "Reflection.cpp",
+        "Serialization/*.h", "Serialization/*.cpp",
         "Test/**.h", "Test/**.cpp",
-        "Error.h"
+        "Error.h",
     }
 
     includedirs { "." }
 
     filter {"platforms:Linux64"}
         pic "On"
+
+    filter {"platforms:Linux64", "configurations:Debug"}
+        buildoptions { "-fsanitize=undefined,address" }
+        linkoptions { "-fsanitize=undefined,address" }
 
     filter {}
 
@@ -38,6 +43,10 @@ project "TestLib"
     files {
         "Tests/**.h", "Tests/**.cpp"
     }
+
+    filter {"platforms:Linux64", "configurations:Debug"}
+        buildoptions { "-fsanitize=undefined,address" }
+        linkoptions { "-fsanitize=undefined,address" }
 
     filter {}
     includedirs {LibDir}

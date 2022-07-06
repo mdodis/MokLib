@@ -26,6 +26,7 @@ void sleep_ms(u32 milliseconds) {
 
 #elif OS_LINUX
 #include <time.h>
+#include <errno.h>
 
 ThreadHandle create_thread(ProcThread *thread_proc, void *proc_data) {
     pthread_t hnd;

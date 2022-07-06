@@ -10,6 +10,7 @@
 #include "Memory/Base.h"
 #include <tuple>
 #include <type_traits>
+#include <string.h>
 
 #define MOK_MAX_DELEGATE_INLINE_SIZE 64
 

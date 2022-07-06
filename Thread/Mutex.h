@@ -9,11 +9,18 @@ struct MOKLIB_API Mutex {
     Win32::Handle handle;
 };
 
+#elif OS_LINUX
+#include <pthread.h>
+
+struct MOKLIB_API Mutex {
+    pthread_mutex_t handle;
+};
+
+#endif
+
 MOKLIB_API Mutex create_mutex();
 MOKLIB_API void reserve_mutex(Mutex &mutex);
 MOKLIB_API void release_mutex(Mutex &mutex);
-
-#endif
 
 /**
  * Support Structures

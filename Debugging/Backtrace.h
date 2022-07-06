@@ -1,2 +1,4 @@
 #pragma once
-void print_backtrace(struct Tape *tape = 0);
+#include "Config.h"
+
+MOKLIB_API void print_backtrace(struct Tape *tape = 0);

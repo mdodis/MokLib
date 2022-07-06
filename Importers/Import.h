@@ -10,8 +10,6 @@ namespace ImportKind {
     enum Type {
         Image,      // Any truecolor image
         Model,      // Any Model kind
-        DataObject, // JSon, YAML
-        TreeObject  // XML
     };
 };
 

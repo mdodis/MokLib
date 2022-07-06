@@ -3,18 +3,17 @@
 #include "Defer.h"
 #include <stdio.h>
 
-bool parse_quoted_string(Tape *tape, Str &result) {
+bool parse_quoted_string(Tape *tape, Str &result, IAllocator &allocator) {
     // @todo: At some point, for some reason I don't quite see now, we'll need
     // to support escape characters, but for now, we'll resort to a simple
     // substring of "This Part" that excludes the quotes
-    IAllocator *alloc = get_system_allocator();
-    AllocTape output(*alloc);
+    AllocTape output(allocator);
 
     char c = tape->read_char();
 
     if (c != '\'') {
         tape->move(-1);
-        alloc->release(output.ptr);
+        allocator.release(output.ptr);
         return false;
     }
 
@@ -26,7 +25,7 @@ bool parse_quoted_string(Tape *tape, Str &result) {
 
         if ((c == EOF) || is_newline(c)) {
             tape->move(-1);
-            alloc->release(output.ptr);
+            allocator.release(output.ptr);
             tape->move(-i64(output.wr_offset));
             return false;
         }
@@ -36,19 +35,17 @@ bool parse_quoted_string(Tape *tape, Str &result) {
     return true;
 }
 
-bool parse_str(Tape *tape, Str &result) {
+bool parse_str(Tape *tape, Str &result, IAllocator &allocator) {
 
     char c = tape->read_char();
     if (c == '\'') {
         tape->move(-1);
-        return parse_quoted_string(tape, result);
+        return parse_quoted_string(tape, result, allocator);
     } else if (!is_valid_cid(c)) {
         tape->move(-1);
         return false;
     }
-
-    IAllocator *alloc = get_system_allocator();
-    AllocTape output(*alloc);
+    AllocTape output(allocator);
 
     do {
         output.write(&c, 1);

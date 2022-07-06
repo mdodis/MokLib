@@ -361,9 +361,12 @@ FileHandle open_file(const Str &file_path, EFileMode mode) {
 
     if (mode & FileMode::Truncate) {
         truncate(path, 0);
+        access_flags |= O_CREAT;
     }
 
-    int fd = open(path, access_flags, 0664);
+    int fd = open(path, access_flags, 0644);
+    auto e = errno;
+
     if (fd == -1) {
         return FileHandle { 0 };
     }
@@ -444,7 +447,7 @@ bool create_dir(const Str &pathname) {
         dirname = buf;
     }
 
-    return mkdir(dirname, S_IFDIR) == 0;
+    return mkdir(dirname, 0755) == 0;
 }
 
 Str get_base_path(IAllocator &alloc) {

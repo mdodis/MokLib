@@ -25,6 +25,10 @@ static _inline PROC_CHAR_IS_CLASS(isnt_whitespace) {
     return !is_whitespace(c);
 }
 
+static _inline PROC_CHAR_IS_CLASS(isnt_whitespace_no_quote) {
+    return !is_whitespace(c) && (c != '\"') && (c != '\'');
+}
+
 static _inline PROC_CHAR_IS_CLASS(is_newline) {
     return (c == '\n')
         || (c == '\r');
@@ -84,6 +88,15 @@ static _inline PROC_CHAR_IS_CLASS(is_alpha_or_math) {
 static _inline PROC_CHAR_IS_CLASS(is_valid_cid) {
     return is_valid_cid_begin(c)
         || (c >= '0' && c <= '9');
+}
+
+static _inline PROC_CHAR_IS_CLASS(is_alphanumeric_or_sym) {
+    return is_alphanumeric(c)
+        || (c == '-')
+        || (c == ' ')
+        || (c == '/')
+        || (c == '\t')
+        || (c == '\\');
 }
 
 /**
@@ -147,7 +160,6 @@ MOKLIB_API u64 parse_cid(const Str &s, u64 i, Str &out);
 /**
  * Tape parsing
  */
-
 static _inline bool expect(Tape *tape, char character) {
     char c = tape->read_char();
     if (character != c) {
@@ -155,6 +167,20 @@ static _inline bool expect(Tape *tape, char character) {
             tape->move(-1);
         return false;
     }
+    return true;
+}
+
+static _inline bool expect(Tape *tape, Str str) {
+    i64 count = 0;
+    while (count != str.len) {
+        char c = tape->read_char();
+        if (c == EOF || c != str[count]) {
+            tape->move(-count);
+            return false;
+        }
+        count++;
+    }
+
     return true;
 }
 
@@ -227,6 +253,32 @@ MOKLIB_API Str parse_string(
     struct Tape *tape,
     IAllocator &alloc,
     ProcCharClassIs *predicate = isnt_whitespace);
+
+static _inline Str parse_string_no_quotes(
+    Tape *tape,
+    IAllocator &allocator)
+{
+    char fc = tape->read_char();
+    bool has_quote = false;
+
+    if (fc == '\"' || fc == '\'')
+        has_quote = true;
+
+    Str result;
+
+    if (has_quote)
+        result = parse_string(tape, allocator, is_alphanumeric_or_sym);
+    else
+        result = parse_string(tape, allocator, isnt_whitespace);
+
+    char ec = tape->read_char();
+    if (ec != fc) {
+        allocator.release(result.data);
+        return Str::NullStr;
+    }
+
+    return result;
+}
 
 static bool parse_num(struct Tape *tape, float &result) {
     char c;

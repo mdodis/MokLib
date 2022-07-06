@@ -122,7 +122,6 @@ struct Vec4 {
     union {
         float array[4];
         struct { float x, y, z, w; };
-        struct { Vec3 xyz; float _unused; };
     };
 
     Vec4() {}
@@ -132,6 +131,11 @@ struct Vec4 {
         z = v3.z;
         w = vw;
     }
+
+    Vec3 &xyz() const {
+        return *((Vec3*)array);
+    }
+
     constexpr Vec4(float v) : x(v), y(v), z(v), w(v) {}
     constexpr Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 
@@ -335,7 +339,7 @@ struct Quat {
 
     Quat(const Vec3 &axis, float angle) {
         const float s = sinf(angle * .5f);
-        v.xyz = scale(v.xyz, s);
+        v.xyz() = scale(v.xyz(), s);
     }
 
     union {
@@ -355,7 +359,7 @@ static _inline Quat operator*(const Quat &q1, const Quat &q2) {
 }
 
 static _inline Vec3 operator*(const Quat &q, const Vec3 &v) {
-    Vec3 u = q.v.xyz;
+    Vec3 u = q.v.xyz();
     float s = q.w;
 
     Vec3 result = scale(u, 2 * dot(u, v));

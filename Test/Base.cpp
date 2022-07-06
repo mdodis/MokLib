@@ -19,8 +19,9 @@ int TestRunner::run() {
 
     for (TestCase &test_case : test_cases) {
         Console::set_color(Console::Output, ConsoleColor::Yellow);
-        print(LIT("Running '$'/'$' ... "), test_case.unit, test_case.name);
+        print(LIT("Running "));
         Console::set_color(Console::Output);
+        print(LIT("['$'] '$' ... "), test_case.unit, test_case.name);
 
         test_case.result = test_case.proc();
 

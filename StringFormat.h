@@ -109,6 +109,16 @@ static _inline Str null_terminate(const Str &str, IAllocator &alloc = System_All
     return str;
 }
 
+static _inline Str make_folder_path(const Str &str, IAllocator &alloc = System_Allocator) {
+    bool gen_slash = str[str.len - 1] != '/';
+
+    return format(
+        alloc,
+        LIT("$$\0"),
+        str,
+        gen_slash ? LIT("/") : Str::NullStr);
+}
+
 /**
  * Format string with escaped characters
  */

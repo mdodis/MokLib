@@ -10,6 +10,14 @@ struct MOKLIB_API Semaphore {
     bool valid;
 };
 
+#elif OS_LINUX
+#include <semaphore.h>
+
+struct MOKLIB_API Semaphore {
+    sem_t *handle;
+    bool valid;
+};
+
 #endif
 
 enum class SemaphoreWaitExitReason {

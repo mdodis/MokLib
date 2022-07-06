@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include "Host.h"
 #include <cstdio>
 
 /**
@@ -119,6 +120,7 @@ namespace Console {
  */
 
 #if OS_LINUX
+#include <stdio.h>
 
 namespace Console {
     enum Handle {
@@ -129,29 +131,32 @@ namespace Console {
 }
 
 static const char *Color_Translation_Table[ConsoleColor::Count] = {
-    /* Red                  */ "\e[31m",
-    /* Red Bold             */ "\e[1;31m",
-    /* Red Underline        */ "\e[4;31m",
-    /* Red Bold Underline   */ "\e[1;4;31m",
-    /* Green                */ "\e[32m",
-    /* Green Bold           */ "\e[1;32m",
-    /* Green Underline      */ "\e[4;32m",
-    /* Green Bold Underline */ "\e[1;4;32m",
-    /* Blue                 */ "\e[34m",
-    /* Blue Bold            */ "\e[1;34m",
-    /* Blue Underline       */ "\e[4;34m",
-    /* Blue Bold Underline  */ "\e[1;4;34m",
-    /* White                */ "\e[31m",
-    /* White Bold           */ "\e[1;31m",
-    /* White Underline      */ "\e[4;31m",
-    /* White Bold Underline */ "\e[1;4;31m",
-    /* Default */              "\e[0m"
+    /* Red                   */ "\e[31m",
+    /* Red Bold              */ "\e[1;31m",
+    /* Red Underline         */ "\e[4;31m",
+    /* Red Bold Underline    */ "\e[1;4;31m",
+    /* Green                 */ "\e[32m",
+    /* Green Bold            */ "\e[1;32m",
+    /* Green Underline       */ "\e[4;32m",
+    /* Green Bold Underline  */ "\e[1;4;32m",
+    /* Blue                  */ "\e[34m",
+    /* Blue Bold             */ "\e[1;34m",
+    /* Blue Underline        */ "\e[4;34m",
+    /* Blue Bold Underline   */ "\e[1;4;34m",
+    /* White                 */ "\e[31m",
+    /* White Bold            */ "\e[1;31m",
+    /* White Underline       */ "\e[4;31m",
+    /* White Bold Underline  */ "\e[1;4;31m",
+    /* Yellow                */ "\e[33m",
+    /* Yellow Bold           */ "\e[1;33m",
+    /* Yellow Underline      */ "\e[4;33m",
+    /* Yellow Bold Underline */ "\e[1;4;33m",
+    /* Default */               "\e[0m"
 };
 
 namespace Console {
 
     static _inline void set_color(Console::Handle handle, ConsoleColor::Style color = ConsoleColor::Invalid) {
-
         FILE *file;
 
         switch (handle) {
@@ -169,6 +174,7 @@ namespace Console {
         }
 
         fputs(Color_Translation_Table[color], file);
+        fflush(file);
     }
 
     static _inline void set_charset(i32 charset) {

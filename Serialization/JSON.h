@@ -1,6 +1,6 @@
 #pragma once
-#include "Base.h"
-#include "Reflection.h"
+#include "../Base.h"
+#include "Serialization/Base.h"
 #include "StringFormat.h"
 #include "FileSystem/FileSystem.h"
 

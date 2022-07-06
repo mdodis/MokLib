@@ -2,6 +2,7 @@
 #include "FileSystem.h"
 #include "Memory/Base.h"
 #include "Containers/List.h"
+#include "StringFormat.h"
 
 static _inline bool write_file(FileHandle &handle, TList<Str> what) {
     for (const Str &str : what) {

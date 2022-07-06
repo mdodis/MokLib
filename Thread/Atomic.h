@@ -60,6 +60,10 @@ _inline int32 inc_and_fetch(volatile int32 *addend) {
     return __sync_add_and_fetch(addend, 1);
 }
 
+_inline u32 inc_and_fetch(volatile u32 *addend) {
+    return __sync_add_and_fetch(addend, 1);
+}
+
 _inline int32 add_and_fetch(volatile int32 *addend, int32 value) {
     return __sync_add_and_fetch(addend, value);
 }

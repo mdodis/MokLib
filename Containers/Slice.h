@@ -23,7 +23,7 @@ struct Slice {
         , count(array.size - start)
         {}
 
-    T &operator[](i32 index) {
+    T &operator[](i32 index) const {
         ASSERT((index >= 0) && (index < count));
         return ptr[index];
     }

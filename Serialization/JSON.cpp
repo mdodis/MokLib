@@ -2,29 +2,12 @@
 #include "Containers/Array.h"
 #include "Variant.h"
 #include "StringFormat.h"
+#include "Parsing.h"
 
 #if COMPILER_MSVC
     #pragma warning(push)
     #pragma warning(disable: 4533)
 #endif
-
-struct DescPair {
-    IDescriptor *desc;
-    umm ptr;
-
-    _inline operator bool() { return ptr != 0; }
-};
-
-static _inline DescPair get_descriptor(DescPair &parent, const Str &key) {
-    IDescriptor *subdescriptor = parent.desc->find_descriptor(key);
-    if (!subdescriptor) {
-        return DescPair {0, 0};
-    }
-
-    return DescPair {subdescriptor, parent.ptr + subdescriptor->offset};
-}
-
-typedef TVariant<double, Str> JsonValue;
 
 static bool parse_object(Tape *in, IAllocator &alloc, DescPair pair);
 static bool parse_qstr(Tape *in, IAllocator &alloc, Str &result);
