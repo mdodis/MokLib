@@ -41,7 +41,11 @@ bool ArgCollection::parse_args(const Slice<Str> &params) {
 
 void ArgCollection::summary() {
 	for (IArg *arg : args) {
-		print(LIT("-name ($): $"), arg->type, arg->description);
+		if (arg->id == LIT("_")) {
+			print(LIT("Unnamed argument: $ ($)\n"), arg->description, arg->type);
+		} else {
+			print(LIT("-$ ($): $\n"), arg->id, arg->type, arg->description);
+		}
 	}
 }
 
@@ -70,10 +74,25 @@ static bool parse_named_argument(
 		return false;
 	}
 
-	RawTape tape(Raw{args[index + 1].data, args[index + 1].len});
+	index++;
+
+	// If no value was specified, try to parse it as a boolean flag
+	if (IS_A(arg, TArg<bool>) &&
+		(index >= args.count || args[index].starts_with(LIT("-")))) {
+
+		TArg<bool> *barg = (TArg<bool>*)arg;
+		barg->current = true;
+		return true;
+	}
+
+	if (index >= args.count) {
+		return false;
+	}
+
+	RawTape tape(Raw{args[index].data, args[index].len});
 	bool successful = arg->parse(&tape, self.allocator);
 
-	index += 2;
+	index++;
 
 	return successful;
 }

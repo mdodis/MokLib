@@ -78,15 +78,17 @@ struct IPrimitiveDescriptor : IDescriptor {
  */
 template <typename T>
 struct PrimitiveDescriptor : IPrimitiveDescriptor {
-    constexpr PrimitiveDescriptor(u64 offset, Str name)
+    Str type_name_str;
+    constexpr PrimitiveDescriptor(u64 offset, Str name, Str type_name = Str(typeid(T).name()))
         : IPrimitiveDescriptor(offset, name)
+        , type_name_str(type_name)
         {}
 
     virtual void format_primitive(Tape *out, umm ptr) override {
         format(out, LIT("$"), *((T*)ptr));
     }
 
-    virtual Str type_name() override { return MLITSTR(T); }
+    virtual Str type_name() override { return type_name_str; }
     virtual Slice<IDescriptor*> subdescriptors() override { return {}; }
 };
 
@@ -145,10 +147,7 @@ struct ArrayDescriptor : IArrayDescriptor {
  * Fetch the descriptor instance of the object type
  */
 template <typename T>
-constexpr static _inline IDescriptor *descriptor_of(T *what) {
-    static_assert(typeid(T).name() && false);
-    return 0;
-}
+static _inline IDescriptor *descriptor_of(T *what);
 
 /**
  * Define the descriptor function and variable for the corresponding type.
@@ -191,7 +190,7 @@ constexpr static _inline IDescriptor *descriptor_of(T *what) {
     */
 #define DEFINE_PRIMITIVE_DESCRIPTOR(Type)                         \
     static PrimitiveDescriptor<Type> MCONCAT(Type,Descriptor) = { \
-        0, Str::NullStr                                           \
+        0, Str::NullStr, #Type                                    \
     };                                                            \
     template <>                                                   \
     IDescriptor *descriptor_of(Type *what) {                      \
@@ -229,6 +228,8 @@ constexpr static _inline IDescriptor *descriptor_of(T *what) {
 
 DEFINE_PRIMITIVE_DESCRIPTOR(f32)
 DEFINE_PRIMITIVE_DESCRIPTOR(i32)
+DEFINE_PRIMITIVE_DESCRIPTOR(u32)
+DEFINE_PRIMITIVE_DESCRIPTOR(bool)
 
 static StrDescriptor Str_Descriptor = {0, Str::NullStr};
 template <>

@@ -4,6 +4,7 @@
 #include "Containers/Array.h"
 #include "Memory/Base.h"
 #include "Hashing.h"
+#include <string.h>
 
 /**
  * A Simple Fixed-allocation Hashtable implementation, using Coalesced Chaining

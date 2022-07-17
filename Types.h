@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include "Tape.h"
 #include "Memory/AllocTape.h"
+#include "Parsing.h"
 
 template <typename T>
 static _inline void fmt(Tape *tape, const T &type);
@@ -87,3 +88,14 @@ PROC_FMT_INL(i32)	{ fmt<i64>(tape, (i64)type); }
 PROC_PARSE_INL(i32)	{ return _pass_parse<i64, i32>(tape, result, allocator); }
 PROC_FMT_INL(f32)	{ fmt<f64>(tape, (f64)type); }
 PROC_PARSE_INL(f32)	{ return _pass_parse<f64, f32>(tape, result, allocator); }
+PROC_PARSE_INL(bool) {
+    Str bstring = parse_string_no_quotes(tape, allocator);
+    if (bstring == LIT("true")) {
+        result = true;
+    } else if (bstring == LIT("false")) {
+        result = false;
+    } else {
+        return false;
+    }
+    return true;
+}

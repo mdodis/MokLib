@@ -14,7 +14,7 @@ struct MOKLIB_API Semaphore {
 #include <semaphore.h>
 
 struct MOKLIB_API Semaphore {
-    sem_t *handle;
+    sem_t handle;
     bool valid;
 };
 

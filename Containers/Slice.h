@@ -43,7 +43,7 @@ struct Slice {
 };
 
 template <typename T>
-Slice<T> slice(TArray<T> &arr, u32 start) {
+Slice<T> slice(TArray<T> &arr, u32 start = 0) {
     return Slice<T>(arr, start);
 }
 

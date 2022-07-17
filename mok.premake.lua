@@ -26,12 +26,12 @@ project "Lib"
 
     includedirs { "." }
 
-    filter {"platforms:Linux64"}
-        pic "On"
+    -- filter {"platforms:Linux64"}
+    --     pic "On"
 
-    filter {"platforms:Linux64", "configurations:Debug"}
-        buildoptions { "-fsanitize=undefined,address" }
-        linkoptions { "-fsanitize=undefined,address" }
+    -- filter {"platforms:Linux64", "configurations:Debug"}
+    --     buildoptions { "-fsanitize=undefined,address" }
+    --     linkoptions { "-fsanitize=undefined,address" }
 
     filter {}
 
@@ -44,9 +44,9 @@ project "TestLib"
         "Tests/**.h", "Tests/**.cpp"
     }
 
-    filter {"platforms:Linux64", "configurations:Debug"}
-        buildoptions { "-fsanitize=undefined,address" }
-        linkoptions { "-fsanitize=undefined,address" }
+    -- filter {"platforms:Linux64", "configurations:Debug"}
+    --     buildoptions { "-fsanitize=undefined,address" }
+    --     linkoptions { "-fsanitize=undefined,address" }
 
     filter {}
     includedirs {LibDir}

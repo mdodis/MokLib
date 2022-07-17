@@ -7,7 +7,7 @@
 #include "Memory/Extras.h"
 #include "FileSystem/Extras.h"
 #include "Containers/Slice.h"
-#include <typeinfo>
+#include "Reflection.h"
 
 struct IArg {
     Str id;
@@ -48,7 +48,6 @@ struct TArg<Str> : IArg {
             RawTape *rtape = (RawTape*)tape;
             Raw raw = rtape->raw;
 
-            print(LIT("D? buffer is: $\n"), ((char*)raw.buffer)[raw.size - 1]);
             current = Str(
                 (char*)raw.buffer,
                 raw.size,
@@ -59,6 +58,19 @@ struct TArg<Str> : IArg {
         }
     }
 
+};
+
+template<>
+struct TArg<bool> : IArg {
+    bool current;
+
+    virtual void *ptr() override {
+        return &current;
+    }
+
+    virtual bool parse(Tape *tape, IAllocator &allocator) override {
+        return ::parse(tape, current, allocator);
+    }
 };
 
 struct MOKLIB_API ArgCollection {
@@ -81,7 +93,7 @@ struct MOKLIB_API ArgCollection {
         arg->current = default_value;
         arg->id = identifier;
         arg->description = description;
-        arg->type = Str(typeid(T).name());
+        arg->type = descriptor_of((T*)0)->type_name();
         args.add(arg);
 
         return true;

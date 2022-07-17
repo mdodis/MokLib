@@ -52,6 +52,11 @@ int compare_time(const TimeSpec &lhs, const TimeSpec &rhs) {
 
 #elif OS_LINUX
 
+TimeSpec::TimeSpec(u64 ms) {
+    time.tv_sec = ms / 1000;
+    time.tv_nsec = (ms % 1000) * 1000;
+}
+
 TimeSpec now_time() {
     struct timespec result;
     clock_gettime(CLOCK_MONOTONIC, &result);
@@ -90,6 +95,23 @@ TimeSpec operator-(const TimeSpec &lhs, const TimeSpec &rhs) {
     return result;
 }
 
+TimeSpec operator+(const TimeSpec &lhs, const TimeSpec &rhs) {
+    TimeSpec result;
+
+    constexpr i64 billion = 1000000000;
+
+    i64 sec = lhs.time.tv_sec + rhs.time.tv_sec;
+    i64 nsec = lhs.time.tv_nsec + rhs.time.tv_nsec;
+    if (nsec >= billion) {
+        nsec -= billion;
+        sec++;
+    }
+
+    result.time.tv_sec = sec;
+    result.time.tv_nsec = nsec;
+    return result;
+}
+
 int compare_time(const TimeSpec &lhs, const TimeSpec &rhs) {
     TimeSpec diff = lhs - rhs;
 
@@ -101,6 +123,8 @@ int compare_time(const TimeSpec &lhs, const TimeSpec &rhs) {
             : int32(diff.time.tv_sec);
     }
 }
+
+
 
 
 #else

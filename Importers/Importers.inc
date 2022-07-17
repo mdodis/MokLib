@@ -1,6 +1,7 @@
 #include "Base.h"
 #include "Importer.h"
 #include "Str.h"
+#include "Host.h"
 
 #ifndef MOK_INCLUDE_DEFAULT_IMPORTERS
     #define MOK_INCLUDE_DEFAULT_IMPORTERS 1
@@ -27,16 +28,26 @@
 #ifndef MOK_IMPORTER_REGISTRY_NAME
     #define MOK_IMPORTER_REGISTRY_NAME Importer_Registry
 #endif
+
 #endif
 
 /**
  * When defining your own static import registry, you can include this
  * in your array to add the default importers
  */
+#if OS_MSWINDOWS
 #define MOK_DEFAULT_IMPORTERS \
     {LIT("Bitmap"),                     LIT(".bmp"),                       import_bmp_load}, \
     {LIT("Wavefront OBJ"),              LIT(".obj"),                       import_obj_load}, \
     {LIT("Windows Imaging Component"),  LIT(".bmp|.png|.tiff|.jpeg|.jpg"), import_wic_load}, \
+
+#else
+
+#define MOK_DEFAULT_IMPORTERS \
+    {LIT("Bitmap"),                     LIT(".bmp"),                       import_bmp_load}, \
+    {LIT("Wavefront OBJ"),              LIT(".obj"),                       import_obj_load}, \
+
+#endif
 
 #if MOK_DEFINE_DEFAULT_IMPORTERS
 static IImporter _Importers[] = {

@@ -60,11 +60,14 @@ bool DirectoryIterator::next_file(FileData *result) {
 #elif OS_LINUX
 #include <sys/types.h>
 #include <dirent.h>
+#include "Compat/UnixFileSystem.h"
 
 DirectoryIterator open_dir(Str filename) {
     ASSERT(filename.has_null_term);
 
     DIR *dir_handle = opendir((char*)filename.data);
+
+    auto e = errno;
 
     return DirectoryIterator {
         filename,
@@ -81,6 +84,13 @@ bool DirectoryIterator::next_file(FileData *result) {
     }
 
     result->filename = Str(read_result->d_name);
+
+    struct stat stat_struct;
+    stat(read_result->d_name, &stat_struct);
+
+    result->attributes =
+        unix_file_attribs_to_file_attribs(
+            stat_struct.st_mode);
 
     return true;
 }

@@ -343,6 +343,7 @@ void StreamTape::move(i64 offset) {
 #include <string.h>
 #include <sys/stat.h>
 #include <limits.h>
+#include "Compat/UnixInternal.inc"
 
 FileHandle open_file(const Str &file_path, EFileMode mode) {
     static char path[1024];
@@ -456,7 +457,7 @@ Str get_base_path(IAllocator &alloc) {
     ssize_t len = readlink("/proc/self/exe", (char*)ptr, PATH_MAX);
     Str result((char*)ptr, len);
 
-    return result.chop_right_last_of(LIT("/"));
+    return result.chop_right(result.last_of(LIT("/")));
 }
 
 Str get_cwd(IAllocator &alloc) {
@@ -515,10 +516,60 @@ Str to_absolute_path(Str relative, IAllocator &alloc) {
     ASSERT(relative.has_null_term);
 
     char *result = realpath(relative.data, NULL);
+
+    auto e = errno;
+
+    if (!result) {
+        return Str::NullStr;
+    }
+
     DEFER(free(result));
 
     return Str(result).clone(alloc);
 }
+
+TEnum<IOError> copy_file(Str source, Str destination) {
+    ASSERT(source.has_null_term);
+    ASSERT(destination.has_null_term);
+    int from_fd, to_fd;
+    from_fd = open((char*)source.data, O_RDONLY);
+    if (from_fd == -1) {
+        return to_io_error(errno);
+    }
+
+    to_fd = open((char*)destination.data, O_WRONLY | O_EXCL | O_CREAT | O_TRUNC, 0666);
+    if (to_fd == -1) {
+        return to_io_error(errno);
+    }
+
+    constexpr u64 buf_size = 1024;
+    char buf[buf_size];
+
+    size_t nread, nwritten;
+
+    while (nread = read(from_fd, buf, buf_size), nread > 0) {
+
+        char *out_buf = buf;
+
+        do {
+            nwritten = write(to_fd, out_buf, nread);
+
+            if (nwritten >= 0) {
+                nread -= nwritten;
+                out_buf += nwritten;
+            } else {
+                return IOError::Unrecognized;
+            }
+        } while (nread > 0);
+
+    }
+
+    close(from_fd);
+    close(to_fd);
+
+    return IOError::None;
+}
+
 
 #else
 

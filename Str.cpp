@@ -2,6 +2,7 @@
 #include "Memory/Extras.h"
 #include "Parsing.h"
 #include <string.h>
+#include "Math/Base.h"
 
 const Str Str::New_Line("\n", 1);
 char Str::Null = '\0';
@@ -32,7 +33,13 @@ bool Str::split(u64 at, Str *left, Str *right) const {
 }
 
 u64 Str::last_of(char c) const{
-    for (u64 i = len - 1; i > 0; --i) {
+    if (len == 0) return len;
+
+    u64 i = len;
+
+    while (i != 0) {
+        --i;
+
         if (data[i] == c) {
             return i;
         }
@@ -53,19 +60,19 @@ u64 Str::first_of(char c, u64 start) const {
 u64 Str::last_of(const Str &s, u64 start) const {
     if (s.len == 0) return len;
 
-    if (start == StartEnd) start = len - 1;
+    start = min(len, start);
 
-    u64 sindex = s.len - 1;
-    u64 i;
-    for (i = start; i >= 0; --i) {
-        
-        if (data[i] == s[sindex]) {
-            sindex--;
-        } else {
-            sindex = s.len - 1;
+    u64 sindex = s.len;
+    u64 i = start;
+    while (i != 0) {
+        i--;
+        sindex--;
+
+        if (data[i] != s[sindex]) {
+            sindex = s.len;
         }
 
-        if (sindex == -1) {
+        if (sindex == 0) {
             return i;
         }
     }

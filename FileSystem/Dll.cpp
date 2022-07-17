@@ -87,8 +87,7 @@ bool get_current_process_dlls(IAllocator& alloc, TArray<Dll>& result) {
 #include <dlfcn.h>
 #include <string.h>
 
-Dll load_dll(Str filename) {
-
+TEnum<IOError> load_dll(Str filename, Dll &result) {
     static char filename_nullterm[1024];
     const char *filepath = (const char *)filename.data;
 
@@ -101,13 +100,12 @@ Dll load_dll(Str filename) {
     void *handle = dlopen(filepath, RTLD_LAZY);
 
     if (!handle) {
-        return Dll {0};
+        return IOError::Unrecognized;
     }
 
-    Dll result;
     result.handle = handle;
 
-    return result;
+    return IOError::None;
 }
 
 void unload_dll(Dll &dll) {
@@ -117,6 +115,12 @@ void unload_dll(Dll &dll) {
 void *Dll::get_proc_address(const char *name) {
     return dlsym(handle, name);
 }
+
+Str Dll::get_filename(IAllocator &alloc, int process) {
+    // @todo
+    return Str::NullStr;
+}
+
 
 #else
 #error "No dll support for given platform!"

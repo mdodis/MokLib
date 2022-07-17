@@ -16,7 +16,6 @@ PROC_IMPORT_PNG_ERROR_HANDLER(import_png_user_error) {
 
 png_voidp import_png_malloc(png_structp ptr, png_alloc_size_t size) {
     IAllocator *alloc = (IAllocator*)png_get_mem_ptr(ptr);
-    DEBUG_PRINTF("png alloc %zu", size);
     return alloc->reserve(size);
     // return malloc(size);
 }

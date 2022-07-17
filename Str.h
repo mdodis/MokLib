@@ -42,7 +42,7 @@ struct MOKLIB_API Str {
         if (split(at, &left, &right)) {
             return right;
         } else {
-            return Str();
+            return Str::NullStr;
         }
     }
 
@@ -60,7 +60,7 @@ struct MOKLIB_API Str {
         if (split(at, &left, &right)) {
             return left;
         } else {
-            return Str();
+            return Str::NullStr;
         }
     }
 

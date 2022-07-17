@@ -23,6 +23,11 @@ struct TVariant {
     TVariant() :type_id(invalid()) {}
 
     template <typename T>
+    TVariant(T &&other) {
+        set(other);
+    }
+
+    template <typename T>
     T &operator=(T&& other) {
         set(other);
         return *(T*)data;
@@ -49,8 +54,6 @@ struct TVariant {
             return 0;
         }
     }
-
-
 
     template <typename T, typename... Args>
     bool is() const {

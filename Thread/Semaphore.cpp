@@ -1,5 +1,6 @@
 #include "Semaphore.h"
 #include "Traits.h"
+#include "Time/Time.h"
 
 #if OS_MSWINDOWS
 #include "WinInc.h"
@@ -48,44 +49,51 @@ SemaphoreWaitExitReason wait_timeout_semaphore(Semaphore &sem, u32 ms) {
 #elif OS_LINUX
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <semaphore.h>
+#include <errno.h>
 
 Semaphore create_semaphore(u32 initial_count) {
 
-    sem_t *handle = sem_open(0, O_CREAT, 0666, initial_count);
+    sem_t handle;
+    sem_init(&handle, 0, initial_count);
 
     return Semaphore {
         handle,
-        handle != SEM_FAILED
+        true
     };
 
 }
 
 void post_semaphore(Semaphore &sem) {
-    sem_close(sem.handle);
+    sem_close(&sem.handle);
 }
 
 void wait_semaphore(Semaphore &sem) {
-    sem_wait(sem.handle);
+    sem_wait(&sem.handle);
 }
 
 SemaphoreWaitExitReason wait_timeout_semaphore(Semaphore &sem, u32 ms) {
-    // @todo: timeout
-    // DWORD reason = WaitForSingleObjectEx(sem.handle, ms, FALSE);
+    TimeSpec amount_to_wait(ms);
+    TimeSpec abs_time = now_time() + amount_to_wait;
 
-    // SemaphoreWaitExitReason result;
-    // switch (reason) {
-    //     case WAIT_OBJECT_0:
-    //         result = SemaphoreWaitExitReason::Post;
-    //         break;
-    //     case WAIT_TIMEOUT:
-    //         result = SemaphoreWaitExitReason::Timeout;
-    //         break;
-    //     default:
-    //         result = SemaphoreWaitExitReason::Error;
-    //         break;
-    // }
+    int reason = sem_timedwait(&sem.handle, &abs_time.time);
 
-    // return result;
+    SemaphoreWaitExitReason result;
+    switch (reason) {
+        case 0:
+            result = SemaphoreWaitExitReason::Post;
+            break;
+        default:
+            auto e = errno;
+            if (e == ETIMEDOUT) {
+                result = SemaphoreWaitExitReason::Timeout;
+            } else {
+                result = SemaphoreWaitExitReason::Error;
+            }
+            break;
+    }
+
+    return result;
 }
 
 

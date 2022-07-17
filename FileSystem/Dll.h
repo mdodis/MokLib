@@ -51,6 +51,8 @@ struct MOKLIB_API Dll {
 
 #if OS_MSWINDOWS
     Str get_filename(IAllocator &alloc, Win32::Handle _process = 0);
+#elif OS_LINUX
+    Str get_filename(IAllocator &alloc, int process = 0);
 #else
     #warning "No Dll support for this platform!"
 #endif
