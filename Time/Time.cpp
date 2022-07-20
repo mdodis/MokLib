@@ -5,6 +5,19 @@
 #include "WinInc.h"
 
 static LARGE_INTEGER The_Counter;
+static bool _timespec_win32_has_counter = false;
+
+static void query_frequency() {
+    if (!_timespec_win32_has_counter) {
+        ASSERT(QueryPerformanceFrequency(&The_Counter));
+        _timespec_win32_has_counter = true;
+    }
+}
+
+TimeSpec::TimeSpec(u64 ms) {
+    query_frequency();
+    time = (ms * The_Counter.QuadPart) / 1000;
+}
 
 TimeSpec now_time() {
     TimeSpec result;
@@ -13,12 +26,7 @@ TimeSpec now_time() {
 }
 
 uint64 TimeSpec::to_ms(void) {
-    static bool has_counter = false;
-    if (!has_counter) {
-        ASSERT(QueryPerformanceFrequency(&The_Counter));
-        has_counter = true;
-    }
-
+    query_frequency();
     return (time * 1000) / The_Counter.QuadPart;
 }
 
@@ -35,6 +43,7 @@ TimeSpec operator-(const TimeSpec &lhs, const TimeSpec &rhs) {
 }
 
 int compare_time(const TimeSpec &lhs, const TimeSpec &rhs) {
+    // @todo: is this even right ??
     ULARGE_INTEGER lhs_int, rhs_int;
     lhs_int.QuadPart = lhs.time;
     rhs_int.QuadPart = rhs.time;

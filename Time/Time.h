@@ -12,13 +12,13 @@ struct MOKLIB_API TimeSpec {
     TimeSpec() {}
     TimeSpec(u64 ms);
     #if OS_MSWINDOWS
-        uint64 time;
+        u64 time;
     #elif OS_LINUX
         TimeSpec(struct timespec time) : time(time) {}
         timespec time;
     #endif
 
-    uint64 to_ms(void);
+    u64 to_ms(void);
     float to_s(void);
 
 };

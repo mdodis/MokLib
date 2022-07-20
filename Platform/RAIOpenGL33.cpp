@@ -11,6 +11,14 @@ gl::Enum buffer_res_kind_to_glenum(EBufferResKind kind) {
     return table[kind];
 }
 
+gl::Enum shader_part_kind_to_glenum(EShaderPartResKind kind) {
+    static gl::Enum table[2] = {
+        gl::VertexShader,   // Vertex Shader
+        gl::FragmentShader, // Pixel Shader
+    };
+    return table[kind];
+}
+
 #define GL_PROCS \
 X(Clear,                   void, gl::Enum mask) \
 X(ClearColor,              void, float r, float g, float b, float a) \
@@ -24,6 +32,11 @@ X(VertexAttribPointer,     void, gl::UInt index, gl::Int size, gl::Enum type, gl
 X(EnableVertexAttribArray, void, gl::UInt array) \
 X(BufferData,              void, gl::Enum target, gl::Sizei size, const void *data, GLenum usage) \
 X(GetError,                gl::Enum, void) \
+X(CreateShader,            gl::UInt, gl::Enum type) \
+X(ShaderSource,            void, gl::UInt shader, gl::Sizei count, const gl::Char *const* string, const gl::Int *length) \
+X(CompileShader,           void, gl::UInt shader) \
+X(GetShaderiv,             void, gl::UInt shader, gl::Enum pname, gl::Int *params) \
+X(GetShaderInfoLog,        void, gl::UInt shader, gl::Sizei bufSize, gl::Sizei *length, gl::Char *infoLog) \
 
 
 #define GLC(proc) \
@@ -98,8 +111,8 @@ PROC_RAI_GET_DEFAULT_TEXTURE(rai_gl33_get_default_texture) {
 }
 
 PROC_RAI_CREATE_RENDER_PASS(rai_gl33_create_render_pass) {
-    // the default one
     RenderPass result = {};
+    // the default one
     if (desc->color_attachment->handle == 0) {
         result.handle = 0;
     }
@@ -115,6 +128,36 @@ PROC_RAI_SET_RENDER_PASS(rai_gl33_set_render_pass) {
     GL.Clear(gl::ColorBufferBit | gl::DepthBufferBit);
 }
 
+PROC_RAI_CREATE_SHADER_PART(rai_gl33_create_shader_part) {
+    gl::Enum ekind = shader_part_kind_to_glenum(kind);
+
+    gl::UInt shader_id = GL.CreateShader(ekind);
+    int err = GL.GetError();
+    if (err != 0) {
+        return Err(RAIError::FailedToAllocateResource);
+    }
+
+    GL.ShaderSource(shader_id, 1, &source.buffer, &source.size);
+    GL.CompileShader(shader_id);
+
+    gl::Int success;
+    GL.GetShaderiv(shader_id, gl::CompileStatus, &success);
+
+    if (!success) {
+        char info_log[512];
+
+        GL.GetShaderInfoLog(shader_id, 512, 0, info_log);
+        print(LIT("GL: Shader compilation failed -- $\n"), Str(info_log));
+
+        return Err(RAIError::FailedToAllocateResource);
+    }
+
+    ShaderPartRes result = {};
+    result.kind = kind;
+    result.handle = (u64)shader_id;
+    return Ok(result);
+}
+
 PROC_RAI_INITIALIZE(rai_gl33_init) {
     auto *params = (RAIGL33InitParams*)vparams;
     Str failed_proc = load_procs(params->get_proc);
@@ -127,6 +170,7 @@ PROC_RAI_INITIALIZE(rai_gl33_init) {
     GL.GenVertexArrays(1, &GL.vao);
 
     result.create_buffer = rai_gl33_create_buffer;
+    result.create_shader_part = rai_gl33_create_shader_part;
     result.set_render_pass = rai_gl33_set_render_pass;
     return true;
 }
