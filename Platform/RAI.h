@@ -151,7 +151,7 @@ struct RAIGraphicsInitParams {
 #define PROC_RAI_CREATE_BUFFER(name) \
     Result<BufferRes, RAIError> name(BufferResDesc *desc)
 #define PROC_RAI_CREATE_SHADER_PART(name) \
-    Result<ShaderPartRes, RAIError> name(Raw source, ShaderPartResKind::Type kind)
+    Result<ShaderPartRes, RAIError> name(Raw source, EShaderPartResKind kind)
 #define PROC_RAI_CREATE_SHADER(name) \
     Result<ShaderRes, RAIError> name(ShaderResDesc *desc)
 #define PROC_RAI_CREATE_TEXTURE(name) \

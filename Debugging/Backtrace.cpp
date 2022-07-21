@@ -49,6 +49,13 @@ static ProcWin32SymGetLineFromAddr  *sym_get_line_from_addr;
 static void **stack;
 
 void print_backtrace(Tape *tape) {
+
+    StreamTape st;
+    if (tape == 0) {
+        st = get_stream(Console::Error);
+        tape = &st;
+    }
+
     stack = (void**)malloc(1024 * sizeof(*stack));
 
     // Load Dbghelp.dll
@@ -73,7 +80,7 @@ void print_backtrace(Tape *tape) {
 
     DWORD64 disp = 0;
     DWORD disp2 = 0;
-    for (WORD frame_index = 0; frame_index < num_frames; ++frame_index) {
+    for (WORD frame_index = 1; frame_index < num_frames; ++frame_index) {
         int hr = sym_from_addr(process, (DWORD64)stack[frame_index], &disp, symbol);
         if (!hr) {
             break;
@@ -84,6 +91,10 @@ void print_backtrace(Tape *tape) {
             break;
         }
 
+        format(tape, LIT("↪ $:$ in $\n"),
+            Str(line->FileName),
+            (u32)line->LineNumber,
+            Str(((char*)&symbol->Name), symbol->NameLen));
         // StringBuilder result = StringBuilder(get_system_allocator())
         //     .add(LIT("At "))
         //     .add(Str(line->FileName))

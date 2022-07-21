@@ -6,6 +6,7 @@ namespace gl {
     typedef int Sizei;
     typedef int Int;
     typedef char Bool;
+    typedef char Char;
 
     enum Constants : u32 {
         ArrayBuffer         = 0x8892,
@@ -24,6 +25,11 @@ namespace gl {
         DynamicDraw         = 0x88E8,
         DynamicRead         = 0x88E9,
         DynamicCopy         = 0x88EA,
+        VertexShader        = 0x8B31,
+        FragmentShader      = 0x8B30,
+        CompileStatus       = 0x8B81,
+        LinkStatus          = 0x8B82,
+
     };
 }
 

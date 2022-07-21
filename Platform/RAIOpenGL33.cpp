@@ -21,7 +21,11 @@ gl::Enum shader_part_kind_to_glenum(EShaderPartResKind kind) {
 
 #define GL_PROCS \
 X(Clear,                   void, gl::Enum mask) \
+X(Flush,                   void, void) \
+X(Finish,                  void, void) \
 X(ClearColor,              void, float r, float g, float b, float a) \
+X(Enable,                  void, gl::Enum cap) \
+X(Disable,                 void, gl::Enum cap) \
 X(GenBuffers,              void, gl::Sizei n, gl::UInt *buffers) \
 X(BindBuffer,              void, gl::Enum target, gl::UInt buffer) \
 X(BindFramebuffer,         void, gl::Enum target, gl::UInt framebuffer) \
@@ -37,6 +41,12 @@ X(ShaderSource,            void, gl::UInt shader, gl::Sizei count, const gl::Cha
 X(CompileShader,           void, gl::UInt shader) \
 X(GetShaderiv,             void, gl::UInt shader, gl::Enum pname, gl::Int *params) \
 X(GetShaderInfoLog,        void, gl::UInt shader, gl::Sizei bufSize, gl::Sizei *length, gl::Char *infoLog) \
+X(CreateProgram,           gl::UInt, void) \
+X(AttachShader,            void, gl::UInt program, gl::UInt shader) \
+X(LinkProgram,             void, gl::UInt program) \
+X(GetProgramiv,            void, gl::UInt program, gl::Enum pname, gl::Int *params) \
+X(GetProgramInfoLog,       void, gl::UInt program, gl::Sizei bufSize, gl::Sizei *length, gl::Char *infoLog) \
+
 
 
 #define GLC(proc) \
@@ -131,13 +141,20 @@ PROC_RAI_SET_RENDER_PASS(rai_gl33_set_render_pass) {
 PROC_RAI_CREATE_SHADER_PART(rai_gl33_create_shader_part) {
     gl::Enum ekind = shader_part_kind_to_glenum(kind);
 
+    if (!source) {
+        return Err(RAIError::FailedToAllocateResource);
+    }
+
     gl::UInt shader_id = GL.CreateShader(ekind);
     int err = GL.GetError();
     if (err != 0) {
         return Err(RAIError::FailedToAllocateResource);
     }
 
-    GL.ShaderSource(shader_id, 1, &source.buffer, &source.size);
+    gl::Int source_size = (gl::Int)source.size;
+    const gl::Char *source_str = (char*)source.buffer;
+    GL.ShaderSource(shader_id, 1, &source_str, &source_size);
+
     GL.CompileShader(shader_id);
 
     gl::Int success;
@@ -146,7 +163,7 @@ PROC_RAI_CREATE_SHADER_PART(rai_gl33_create_shader_part) {
     if (!success) {
         char info_log[512];
 
-        GL.GetShaderInfoLog(shader_id, 512, 0, info_log);
+        GL.GetShaderInfoLog(shader_id, sizeof(info_log), 0, info_log);
         print(LIT("GL: Shader compilation failed -- $\n"), Str(info_log));
 
         return Err(RAIError::FailedToAllocateResource);
@@ -156,6 +173,29 @@ PROC_RAI_CREATE_SHADER_PART(rai_gl33_create_shader_part) {
     result.kind = kind;
     result.handle = (u64)shader_id;
     return Ok(result);
+}
+
+PROC_RAI_CREATE_SHADER(rai_gl33_create_shader) {
+
+    gl::UInt program = GL.CreateProgram();
+
+    GL.AttachShader(program, (gl::UInt)desc->vertex->handle);
+    GL.AttachShader(program, (gl::UInt)desc->pixel->handle);
+
+    GL.LinkProgram(program);
+
+    gl::Int success;
+    GL.GetProgramiv(program, gl::LinkStatus, &success);
+
+    if (!success) {
+        char info_log[512];
+        GL.GetProgramInfoLog(program, sizeof(info_log), 0, info_log);
+        print(LIT("GL: program linkage failed -- $\n"), Str(info_log));
+
+        return Err(RAIError::FailedToAllocateResource);
+    }
+
+    return Ok(ShaderRes{(u64)program});
 }
 
 PROC_RAI_INITIALIZE(rai_gl33_init) {
@@ -171,6 +211,7 @@ PROC_RAI_INITIALIZE(rai_gl33_init) {
 
     result.create_buffer = rai_gl33_create_buffer;
     result.create_shader_part = rai_gl33_create_shader_part;
+    result.create_shader = rai_gl33_create_shader;
     result.set_render_pass = rai_gl33_set_render_pass;
     return true;
 }

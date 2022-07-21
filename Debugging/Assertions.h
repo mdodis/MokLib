@@ -13,8 +13,15 @@
 #if MOK_ENABLE_ASSERT
 
     #if OS_MSWINDOWS
-        #include <assert.h>  // Use Visual Studio assert window
-        #define ASSERT(expr) assert(expr)
+        // #include <assert.h>  // Use Visual Studio assert window
+        #define ASSERT(expr) \
+            do { \
+                if (!(expr)) {     \
+                    DEBUG_PRINTF("Assertion failed: %s at %s:%d\n", #expr, __FILE__, __LINE__); \
+                    print_backtrace(); \
+                    DEBUG_BREAK(); \
+                }                  \
+            } while (0)
     #else
         #define ASSERT(expr)       \
             do {                   \

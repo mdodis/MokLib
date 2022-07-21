@@ -2,6 +2,9 @@
 #include "../Base.h"
 
 struct Raw {
+    Raw() : buffer(0), size(0) {}
+    Raw(void *dummy) : Raw() {}
+    Raw(void *buffer, u64 size) : buffer(buffer), size(size) {}
     /** Pointer to buffer data */
     void *buffer;
     /** Size of the buffer (in bytes) */
