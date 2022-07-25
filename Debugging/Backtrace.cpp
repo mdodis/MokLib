@@ -3,6 +3,7 @@
 #include "Memory/Base.h"
 #include "StringFormat.h"
 #include <stdlib.h>
+#include "Tape.h"
 
 #if OS_MSWINDOWS
 #include "WinInc.h"

@@ -1,6 +1,10 @@
 #pragma once
 #include "Variant.h"
+#include "Debugging/Backtrace.h"
+#include "Debugging/DebugOutput.h"
 #include "Debugging/Assertions.h"
+#include "FileSystem/Extras.h"
+#include "Traits.h"
 
 template <typename T>
 struct Ok {
@@ -44,7 +48,16 @@ struct Result {
     }
 
     constexpr RetType &&unwrap() {
-        ASSERT(ok());
+        if (!ok()) {
+
+            if constexpr (HasFmt<ErrKind>::value) {
+                debug_print(LIT("Result unwrap() failed: $\n"), err());
+            } else {
+                debug_print(LIT("Result unwrap() failed\n"));
+            }
+            print_backtrace(get_debug_tape());
+            DEBUG_BREAK();
+        }
         return var.template get<OkType>()->take();
     }
 

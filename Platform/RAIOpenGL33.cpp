@@ -2,22 +2,6 @@
 #include "Compat/OpenGL.h"
 #include "FileSystem/Extras.h"
 
-gl::Enum buffer_res_kind_to_glenum(EBufferResKind kind) {
-    static gl::Enum table[3] = {
-        gl::ArrayBuffer,        // Vertex
-        gl::ElementArrayBuffer, // Index
-        gl::UniformBuffer,      // Constant
-    };
-    return table[kind];
-}
-
-gl::Enum shader_part_kind_to_glenum(EShaderPartResKind kind) {
-    static gl::Enum table[2] = {
-        gl::VertexShader,   // Vertex Shader
-        gl::FragmentShader, // Pixel Shader
-    };
-    return table[kind];
-}
 
 #define GL_PROCS \
 X(Clear,                   void, gl::Enum mask) \
@@ -28,6 +12,7 @@ X(Enable,                  void, gl::Enum cap) \
 X(Disable,                 void, gl::Enum cap) \
 X(GenBuffers,              void, gl::Sizei n, gl::UInt *buffers) \
 X(BindBuffer,              void, gl::Enum target, gl::UInt buffer) \
+X(BindBufferBase,          void, GLenum target, GLuint index, GLuint buffer) \
 X(BindFramebuffer,         void, gl::Enum target, gl::UInt framebuffer) \
 X(Viewport,                void, gl::Int x, gl::Int y, gl::Sizei width, gl::Sizei height) \
 X(GenVertexArrays,         void, gl::Sizei n, gl::UInt *arrays) \
@@ -44,23 +29,47 @@ X(GetShaderInfoLog,        void, gl::UInt shader, gl::Sizei bufSize, gl::Sizei *
 X(CreateProgram,           gl::UInt, void) \
 X(AttachShader,            void, gl::UInt program, gl::UInt shader) \
 X(LinkProgram,             void, gl::UInt program) \
+X(UseProgram,              void, gl::UInt program) \
 X(GetProgramiv,            void, gl::UInt program, gl::Enum pname, gl::Int *params) \
 X(GetProgramInfoLog,       void, gl::UInt program, gl::Sizei bufSize, gl::Sizei *length, gl::Char *infoLog) \
-
+X(GetUniformBlockIndex,    gl::UInt, gl::UInt program, const gl::Char *uniformBlockName) \
+X(UniformBlockBinding,     void, gl::UInt program, gl::UInt uniformBlockIndex, gl::UInt uniformBlockBinding) \
+X(DrawArrays,              void, gl::Enum mode, gl::Int first, gl::Sizei count) \
+X(DeleteVertexArrays,      void, gl::Sizei n, const gl::UInt *arrays) \
+X(IsVertexArray,           gl::Bool, gl::UInt array) \
+X(MapBuffer,               void*, gl::Enum target, gl::Enum access) \
+X(UnmapBuffer,             void, gl::Enum target) \
+X(GenTextures,             void, gl::Sizei n, gl::UInt *textures) \
+X(BindTexture,             void, gl::Enum target, gl::UInt texture) \
+X(TexImage2D,              void, gl::Enum target, gl::Int level, gl::Int internalformat, gl::Sizei width, gl::Sizei height, gl::Int border, gl::Enum format, gl::Enum type, const void *pixels)
 
 
 #define GLC(proc) \
-    do {                                                          \
-        GL.proc;                                                  \
-        int err = GL.GetError();                                  \
-        if (err != 0) {                                           \
-            print(LIT("Unexpected gl error: $ on call $ At $:$"), \
-                err,                                              \
-                LIT(#proc),                                       \
-                LIT(__FILE__),                                    \
-                __LINE__);                                        \
-        }                                                         \
+    do {                                                               \
+        GL.proc;                                                       \
+        int err = GL.GetError();                                       \
+        if (err != 0) {                                                \
+            print(LIT("Unexpected gl error: $ on call $\n  -> $:$\n"), \
+                TFmtHex(err),                                          \
+                LIT(#proc),                                            \
+                LIT(__FILE__),                                         \
+                __LINE__);                                             \
+        }                                                              \
     } while (0)
+
+#define GLCR(proc) \
+    do {                                                               \
+        proc;                                                          \
+        int err = GL.GetError();                                       \
+        if (err != 0) {                                                \
+            print(LIT("Unexpected gl error: $ on call $\n  -> $:$\n"), \
+                TFmtHex(err),                                          \
+                LIT(#proc),                                            \
+                LIT(__FILE__),                                         \
+                __LINE__);                                             \
+        }                                                              \
+    } while (0)
+
 
 
 // Typedefs
@@ -75,6 +84,10 @@ GL_PROCS
 
     // @todo: Shared contexts don't share vaos
     gl::UInt vao;
+
+    gl::UInt current_constant_buffer;
+    gl::UInt current_shader_program;
+    gl::Enum current_topology;
 } GL;
 
 static Str load_procs(ProcRAIGLGetProcAddress *get_proc_address) {
@@ -103,7 +116,8 @@ PROC_RAI_CREATE_BUFFER(rai_gl33_create_buffer) {
     GLC(BindBuffer(buffer_kind, 0));
 
     BufferRes result = {
-        buffer_id
+        buffer_id,
+        desc->kind
     };
 
     return Ok(result);
@@ -198,6 +212,92 @@ PROC_RAI_CREATE_SHADER(rai_gl33_create_shader) {
     return Ok(ShaderRes{(u64)program});
 }
 
+PROC_RAI_SET_BINDINGS(rai_gl33_set_bindings) {
+
+    gl::UInt array_buffer_id = (gl::UInt)bindings->vertex->handle;
+    gl::UInt index_buffer_id = bindings->index
+        ? (gl::UInt)bindings->index->handle
+        : 0;
+    gl::UInt const_buffer_id = bindings->constant
+        ? (gl::UInt)bindings->constant->handle
+        : 0;
+
+    GLC(BindBuffer(gl::ArrayBuffer, array_buffer_id));
+    GLC(BindBuffer(gl::ElementArrayBuffer, index_buffer_id));
+    GLC(BindBufferBase(gl::UniformBuffer, 0, const_buffer_id));
+}
+
+PROC_RAI_SET_PIPELINE(rai_gl33_set_pipeline) {
+    auto program = (gl::UInt)pipeline->shader->handle;
+
+    // @todo don't generate vaos every time
+
+    GLC(UseProgram(program));
+
+    // GL.BindVertexArray(GL.vao);
+    if (!GL.IsVertexArray(GL.vao)) {
+        GLC(GenVertexArrays(1, &GL.vao));
+        GLC(BindVertexArray(GL.vao));
+    }
+
+    for (u32 i = 0; i < pipeline->layout.num_attrs; ++i) {
+        gl::Int size;
+        gl::Enum type;
+        gl::Sizei stride;
+        input_layout_attr_to_glprops(
+            pipeline->layout.attrs[i].kind,
+            size,
+            type,
+            stride);
+        GLC(VertexAttribPointer(
+            i,
+            size,
+            type,
+            false,
+            stride,
+            (void*)pipeline->layout.attrs[i].offset));
+        GLC(EnableVertexAttribArray(i));
+    }
+
+    GL.current_topology = topology_to_gl33_topology(pipeline->topology);
+    return true;
+}
+
+PROC_RAI_DRAW(rai_gl33_draw) {
+    // @todo: num_instances?
+    GLC(DrawArrays(GL.current_topology, base, num_elements));
+}
+
+PROC_RAI_GET_DEFAULT_RENDER_PASS(rai_gl33_get_default_render_pass) {
+    return RenderPass {0};
+}
+
+PROC_RAI_MAP_BUFFER(rai_gl33_map_buffer) {
+    gl::Enum buffer_kind = buffer_res_kind_to_glenum(buffer->kind);
+    GLC(BindBuffer(buffer_kind, (gl::UInt)buffer->handle));
+    void *ptr;
+    GLCR(ptr = GL.MapBuffer(buffer_kind, gl::ReadWrite));
+
+    return ptr;
+}
+
+PROC_RAI_UNMAP_BUFFER(rai_gl33_unmap_buffer) {
+    gl::Enum buffer_kind = buffer_res_kind_to_glenum(buffer->kind);
+    GLC(UnmapBuffer(buffer_kind));
+}
+
+PROC_RAI_CREATE_TEXTURE(rai_gl33_create_texture) {
+    gl::UInt texture;
+    GLC(GenTextures(1, &texture));
+    GLC(BindTexture(gl::Texture2D, texture));
+
+    GLC(TexImage2D(
+        gl::Texture2D,
+        0,
+
+        ));
+}
+
 PROC_RAI_INITIALIZE(rai_gl33_init) {
     auto *params = (RAIGL33InitParams*)vparams;
     Str failed_proc = load_procs(params->get_proc);
@@ -207,11 +307,16 @@ PROC_RAI_INITIALIZE(rai_gl33_init) {
         return false;
     }
 
-    GL.GenVertexArrays(1, &GL.vao);
-
     result.create_buffer = rai_gl33_create_buffer;
+    result.create_texture = rai_gl33_create_texture;
     result.create_shader_part = rai_gl33_create_shader_part;
     result.create_shader = rai_gl33_create_shader;
+    result.get_default_render_pass = rai_gl33_get_default_render_pass;
     result.set_render_pass = rai_gl33_set_render_pass;
+    result.set_pipeline = rai_gl33_set_pipeline;
+    result.set_bindings = rai_gl33_set_bindings;
+    result.map_buffer = rai_gl33_map_buffer;
+    result.unmap_buffer = rai_gl33_unmap_buffer;
+    result.draw = rai_gl33_draw;
     return true;
 }

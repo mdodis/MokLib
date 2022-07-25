@@ -3,12 +3,11 @@
 #include "Base.h"
 #include "Memory/Base.h"
 #include "Str.h"
-#include "Containers/List.h"
-#include <string.h>
-#include <stdio.h>
 #include "Tape.h"
-#include "Memory/AllocTape.h"
 #include "Parsing.h"
+#include "Traits.h"
+#include <stdio.h>
+#include <string.h>
 
 template <typename T>
 static _inline void fmt(Tape *tape, const T &type);
@@ -23,12 +22,15 @@ static _inline bool parse(
 #define PROC_FMT(T)     			    				\
     template <>         			    				\
     MOKLIB_API void fmt(Tape *tape, const T &type)
-/** Define an inline template specialization for fmt */
+/** Define an external template specialization for fmt */
 #define PROC_FMT_IMPL(T)     							\
     template <>         								\
     MOKLIB_API void fmt(Tape *tape, const T &type)
 /** Define an inline template specialization for fmt */
 #define PROC_FMT_INL(T)     			    			\
+    template <> struct HasFmt<T> {                      \
+        static constexpr bool value = true;             \
+    };                                                  \
     template <>         			    				\
     void fmt(Tape *tape, const T &type)
 
@@ -99,3 +101,4 @@ PROC_PARSE_INL(bool) {
     }
     return true;
 }
+

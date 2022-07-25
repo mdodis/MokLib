@@ -4,6 +4,7 @@
 #include "Str.h"
 #include "StringFormat.h"
 #include "FileSystem/FileSystem.h"
+#include "RedirectTape.h"
 
 /** Interface for implementing a log */
 struct MOKLIB_API ILogContext {

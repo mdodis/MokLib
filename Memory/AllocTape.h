@@ -1,4 +1,5 @@
 #pragma once
+#include "Tape.h"
 #include "Math/Base.h"
 
 /**
@@ -36,9 +37,12 @@ struct MOKLIB_API AllocTape : public Tape {
 
         if (wr_offset + num_bytes > size) {
             u64 extra = (wr_offset + num_bytes) - size;
-            ptr = alloc.resize(ptr, size, size + extra);
+            umm new_ptr = alloc.resize(ptr, size, size + extra);
+            if (!new_ptr) {
+                alloc.release(ptr);
+                return false;
+            }
             size = size + extra;
-            ASSERT(ptr);
         }
 
         memcpy(ptr + wr_offset, src, num_bytes);

@@ -1,6 +1,7 @@
 #include "Types.h"
 #include "Parsing.h"
 #include "Defer.h"
+#include "Memory/AllocTape.h"
 #include <stdio.h>
 
 bool parse_quoted_string(Tape *tape, Str &result, IAllocator &allocator) {

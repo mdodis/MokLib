@@ -2,9 +2,9 @@
 #include "../Config.h"
 #include "../Memory/Base.h"
 #include "../Memory/Extras.h"
+#include "../Debugging/Assertions.h"
 #include <iterator>
 #include <cstddef>
-#include "../Debugging/Assertions.h"
 
 template <typename T>
 struct TList {

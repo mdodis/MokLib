@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Host.h"
 #include "Backtrace.h"
+#include "DebugOutput.h"
 // @todo: If we include this here, for some reason it doesnt compile
 // #include "FileSystem/FileSystem.h"
 // FileSystem depends on Str which depends on Assertions, cyclical incl dep
@@ -18,7 +19,7 @@
             do { \
                 if (!(expr)) {     \
                     DEBUG_PRINTF("Assertion failed: %s at %s:%d\n", #expr, __FILE__, __LINE__); \
-                    print_backtrace(); \
+                    print_backtrace(get_debug_tape()); \
                     DEBUG_BREAK(); \
                 }                  \
             } while (0)
@@ -27,7 +28,7 @@
             do {                   \
                 if (!(expr)) {     \
                     DEBUG_PRINTF("Assertion failed: %s at %s:%d\n", #expr, __FILE__, __LINE__); \
-                    print_backtrace(); \
+                    print_backtrace(get_debug_tape()); \
                     DEBUG_BREAK(); \
                 }                  \
             } while (0)

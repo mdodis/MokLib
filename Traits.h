@@ -1,6 +1,7 @@
 #pragma once
 #include "Base.h"
 
+/** NumProps */
 template <typename T>
 struct NumProps {
     // static constexpr T max;
@@ -34,4 +35,11 @@ struct NumProps<i64> {
     static constexpr i64  max = 0x7FFFFFFFFFFFFFFF;
     static constexpr i64  min = 0x8000000000000000;
     static constexpr bool is_signed = true;
+};
+
+
+/** HasFormat */
+template <typename T>
+struct HasFmt {
+    static constexpr bool value = false;
 };

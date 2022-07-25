@@ -1,4 +1,6 @@
 #include "Tape.h"
+#include "SliceTape.h"
+#include "RedirectTape.h"
 
 char Tape::read_char() {
     char result;

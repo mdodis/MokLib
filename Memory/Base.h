@@ -3,8 +3,8 @@
 #include "../Config.h"
 #include <stdlib.h>
 
-#define PROC_MEMORY_RESERVE(name)       umm name(uint64 size)
-#define PROC_MEMORY_RESIZE(name)        umm name(umm ptr, uint64 prev_size, uint64 new_size)
+#define PROC_MEMORY_RESERVE(name)       umm name(u64 size)
+#define PROC_MEMORY_RESIZE(name)        umm name(umm ptr, u64 prev_size, u64 new_size)
 #define PROC_MEMORY_RELEASE(name)       void name(umm ptr)
 #define PROC_MEMORY_RELEASE_BASE(name)  void name()
 

@@ -55,3 +55,53 @@ Str parse_string(struct Tape *tape, IAllocator &alloc, ProcCharClassIs *predicat
         tape->move(-1);
     return Str(result.data, result.size);
 }
+
+bool parse_escaped_string(struct Tape *tape, Str &result, IAllocator &allocator) {
+    ParseTape pt(tape);
+    TArray<char> array(&allocator);
+
+    char c = pt.read_char();
+
+    if (c != '\"') {
+        goto PARSE_FAIL;
+    }
+    c = pt.read_char();
+
+    while ((c != '\"') && c != EOF) {
+
+        if (c == '\\') {
+            char escape = pt.read_char();
+
+            switch (escape) {
+                case '\\': array.add('\\'); break;
+                case '\"': array.add('\"'); break;
+                case 't':  array.add('\t');  break;
+                case 'r':  array.add('\r');  break;
+                case 'f':  array.add('\f');  break;
+                case 'n':  array.add('\n');  break;
+                case 'b':  array.add('\b');  break;
+
+                default: {
+                    array.add(c);
+                    array.add(escape);
+                } break;
+            }
+
+        } else {
+            array.add(c);
+        }
+
+        c = pt.read_char();
+    }
+
+    if (c == EOF) {
+        goto PARSE_FAIL;
+    }
+
+    result = Str((char*)array.data, array.size);
+    return true;
+
+PARSE_FAIL:
+    pt.restore();
+    return false;
+}

@@ -31,6 +31,7 @@
 #include "Debugging/Backtrace.cpp"
 #include "Serialization/JSON.cpp"
 #include "Arg.cpp"
+#include "Debugging/DebugOutput.cpp"
 #if MOK_INCLUDE_DLL
     #include "FileSystem/Dll.cpp"
 #endif

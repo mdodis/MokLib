@@ -3,6 +3,7 @@
 #include "Str.h"
 #include "Memory/Base.h"
 #include "Types.h"
+#include "Tape.h"
 
 static _inline void format(Tape *tape,
     Str fmt_str) {
@@ -46,6 +47,29 @@ static _inline Str format(
 
     return Str((CStr)ptr, size, fmt_str[fmt_str.len - 1] == '\0');
 }
+
+template <typename T>
+struct TFmtHex {
+    const T &value;
+    TFmtHex(const T &value)
+        : value(value)
+        {}
+
+    void _format(Tape *tape) const {
+        umm v = (umm)&value;
+        u32 num_bytes = sizeof(T);
+
+        char *prefix = "0x";
+        tape->write(prefix, 2);
+
+
+        for (int i = num_bytes - 1; i >= 0; --i) {
+            char s[2];
+            hex_of_byte(v[i], s[0], s[1]);
+            tape->write(s, 2);
+        }
+    }
+};
 
 namespace FmtPolicy {
     enum : u32 {
@@ -96,6 +120,11 @@ struct TFmtStr {
         }
     }
 };
+
+template <typename T>
+static _inline void fmt(Tape *tape, const TFmtHex<T> &type) {
+    type._format(tape);
+}
 
 template <FmtPolicy::Type Policy>
 static _inline void fmt(Tape *tape, const TFmtStr<Policy> &type) {
@@ -155,51 +184,5 @@ PROC_FMT_INL(StrFormatter) {
 }
 
 PROC_PARSE_INL(StrFormatter) {
-    ParseTape pt(tape);
-    TArray<char> array(result.alloc);
-
-    char c = pt.read_char();
-
-    if (c != '\"') {
-        goto PARSE_FAIL;
-    }
-    c = pt.read_char();
-
-    while ((c != '\"') && c != EOF) {
-
-        if (c == '\\') {
-            char escape = pt.read_char();
-
-            switch (escape) {
-                case '\\': array.add('\\'); break;
-                case '\"': array.add('\"'); break;
-                case 't':  array.add('\t');  break;
-                case 'r':  array.add('\r');  break;
-                case 'f':  array.add('\f');  break;
-                case 'n':  array.add('\n');  break;
-                case 'b':  array.add('\b');  break;
-
-                default: {
-                    array.add(c);
-                    array.add(escape);
-                } break;
-            }
-
-        } else {
-            array.add(c);
-        }
-
-        c = pt.read_char();
-    }
-
-    if (c == EOF) {
-        goto PARSE_FAIL;
-    }
-
-    *result.str = Str((char*)array.data, array.size);
-    return true;
-
-PARSE_FAIL:
-    pt.restore();
-    return false;
+    return parse_escaped_string(tape, *result.str, allocator);
 }

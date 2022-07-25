@@ -1,7 +1,6 @@
 #pragma once
 #include "Config.h"
 #include "Base.h"
-#include "Containers/Array.h"
 #include "Memory/Base.h"
 #include "Str.h"
 #include "Tape.h"
@@ -338,4 +337,18 @@ static bool parse_num(struct Tape *tape, u32 &result) {
     return true;
 }
 
+static _inline void hex_of_byte(u8 byte, char &chi, char &clo) {
+    u8 hi = byte >> 4;
+    u8 lo = byte & 0x0F;
+
+    static char table[16] = {
+        '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+    };
+
+    chi = table[hi];
+    clo = table[lo];
+}
+
 MOKLIB_API Str parse_cid(struct Tape *tape, IAllocator &alloc);
+MOKLIB_API bool parse_escaped_string(struct Tape *tape, Str &result, IAllocator &allocator);

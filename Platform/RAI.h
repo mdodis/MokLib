@@ -4,6 +4,9 @@
 #include "Importers/Model/Model.h"
 #include "Result.h"
 #include "Containers/Slice.h"
+/**
+ * @todo: Add constant buffer bind slot in set_bindings
+ */
 
 namespace BufferResKind {
     enum Type : u32 {
@@ -16,6 +19,7 @@ typedef BufferResKind::Type EBufferResKind;
 
 struct BufferRes {
     u64 handle;
+    EBufferResKind kind;
 };
 
 struct BufferResDesc {
@@ -91,13 +95,9 @@ struct InputLayoutAttr {
     u32                  offset;
 };
 
-struct InputLayoutDesc {
-    InputLayoutAttr attrs[5] = {};
-    u32             num_attrs;
-};
-
 struct InputLayout {
-    void *handle;
+    InputLayoutAttr *attrs;
+    u32             num_attrs;
 };
 
 namespace TopologyKind {
@@ -109,8 +109,8 @@ typedef TopologyKind::Type ETopologyKind;
 
 struct Pipeline {
     ShaderRes     *shader;
-    InputLayout   layout;
     ETopologyKind topology;
+    InputLayout   layout;
 };
 
 struct Bindings {
@@ -133,8 +133,6 @@ struct RenderPassDesc {
 };
 
 struct RenderPass {
-    TextureRes *color_attachment;
-    TextureRes *depth_attachment;
     void *handle;
 };
 
@@ -156,16 +154,20 @@ struct RAIGraphicsInitParams {
     Result<ShaderRes, RAIError> name(ShaderResDesc *desc)
 #define PROC_RAI_CREATE_TEXTURE(name) \
     Result<TextureRes, RAIError> name(TextureResDesc *desc)
+#define PROC_RAI_CREATE_RENDER_PASS(name) \
+    RenderPass name(RenderPassDesc *desc)
+
+#define PROC_RAI_GET_DEFAULT_TEXTURE(name) \
+    TextureRes name(ETextureResUsage kind)
+#define PROC_RAI_GET_DEFAULT_RENDER_PASS(name) \
+    RenderPass name(void)
+
 #define PROC_RAI_SET_PIPELINE(name) \
     bool name(const Pipeline *pipeline)
 #define PROC_RAI_SET_BINDINGS(name) \
     void name(const Bindings *bindings)
 #define PROC_RAI_SET_VIEWPORT(name) \
     void name(const Viewport *viewport)
-#define PROC_RAI_GET_DEFAULT_TEXTURE(name) \
-    TextureRes name(ETextureResUsage kind)
-#define PROC_RAI_CREATE_RENDER_PASS(name) \
-    RenderPass name(RenderPassDesc *desc)
 #define PROC_RAI_SET_RENDER_PASS(name) \
     void name(const RenderPass *pass, Vec2i size)
 #define PROC_RAI_DRAW(name) \
@@ -181,11 +183,13 @@ typedef PROC_RAI_CREATE_BUFFER(ProcRAICreateBuffer);
 typedef PROC_RAI_CREATE_SHADER_PART(ProcRAICreateShaderPart);
 typedef PROC_RAI_CREATE_SHADER(ProcRAICreateShader);
 typedef PROC_RAI_CREATE_TEXTURE(ProcRAICreateTexture);
+typedef PROC_RAI_CREATE_RENDER_PASS(ProcRAICreateRenderPass);
+typedef PROC_RAI_GET_DEFAULT_RENDER_PASS(ProcRAIGetDefaultRenderPass);
+
 typedef PROC_RAI_SET_PIPELINE(ProcRAISetPipeline);
 typedef PROC_RAI_SET_BINDINGS(ProcRAISetBindings);
 typedef PROC_RAI_SET_VIEWPORT(ProcRAISetViewport);
 typedef PROC_RAI_GET_DEFAULT_TEXTURE(ProcRAIGetDefaultTexture);
-typedef PROC_RAI_CREATE_RENDER_PASS(ProcRAICreateRenderPass);
 typedef PROC_RAI_SET_RENDER_PASS(ProcRAISetRenderPass);
 typedef PROC_RAI_DRAW(ProcRAIDraw);
 typedef PROC_RAI_DRAW_INDEXED(ProcRAIDrawIndexed);
@@ -193,21 +197,23 @@ typedef PROC_RAI_MAP_BUFFER(ProcRAIMapBuffer);
 typedef PROC_RAI_UNMAP_BUFFER(ProcRAIUnmapBuffer);
 
 struct RAIGraphics {
-    ProcRAICreateBuffer      *create_buffer;
-    ProcRAICreateShaderPart  *create_shader_part;
-    ProcRAICreateShader      *create_shader;
-    ProcRAICreateTexture     *create_texture;
-    ProcRAISetPipeline       *set_pipeline;
-    ProcRAISetBindings       *set_bindings;
-    ProcRAISetViewport       *set_viewport;
-    ProcRAIGetDefaultTexture *get_default_texture;
-    ProcRAICreateRenderPass  *create_render_pass;
+    ProcRAICreateBuffer         *create_buffer;
+    ProcRAICreateShaderPart     *create_shader_part;
+    ProcRAICreateShader         *create_shader;
+    ProcRAICreateRenderPass     *create_render_pass;
+    ProcRAICreateTexture        *create_texture;
+    ProcRAIGetDefaultTexture    *get_default_texture;
+    ProcRAIGetDefaultRenderPass *get_default_render_pass;
+
+    ProcRAISetPipeline          *set_pipeline;
+    ProcRAISetRenderPass        *set_render_pass;
+    ProcRAISetBindings          *set_bindings;
+    ProcRAISetViewport          *set_viewport;
+    ProcRAIMapBuffer            *map_buffer;
+    ProcRAIUnmapBuffer          *unmap_buffer;
     /** @todo: pass action (clear color, depth, stencil...) */
-    ProcRAISetRenderPass     *set_render_pass;
-    ProcRAIDraw              *draw;
-    ProcRAIDrawIndexed       *draw_indexed;
-    ProcRAIMapBuffer         *map_buffer;
-    ProcRAIUnmapBuffer       *unmap_buffer;
+    ProcRAIDraw                 *draw;
+    ProcRAIDrawIndexed          *draw_indexed;
 };
 
 #define PROC_RAI_INITIALIZE(name) \

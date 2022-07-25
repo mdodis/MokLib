@@ -3,11 +3,9 @@
 #include "Math/Base.h"
 #include "Memory/RawBuffer.h"
 #include "Str.h"
+#include "Traits.h"
 #include <stdio.h>
 #include <string.h>
-#include "Containers/Array.h"
-#include "Containers/Slice.h"
-#include "Traits.h"
 
 struct MOKLIB_API Tape {
     // Interface
@@ -133,51 +131,4 @@ struct ParseTape : public Tape {
     void restore() {
         tape->move(num_read);
     }
-};
-
-/**
- * Redirects writes to multiple sub-tapes
- */
-template <u32 NumTapes>
-struct RedirectTape : public Tape {
-
-    TArr<Tape*, NumTapes> sub_tapes;
-
-    RedirectTape(TArr<Tape*, NumTapes> sub_tapes)
-        : sub_tapes(sub_tapes)
-        {}
-
-    // Interface
-    virtual u64 read(void *destination, u64 amount) override { return 0; }
-    virtual bool write(const void *src, u64 num_bytes) override {
-        for (Tape *t : sub_tapes) {
-            if (!t->write(src, num_bytes)) {
-                return false;
-            }
-        }
-        return true;
-    }
-    virtual bool end() override { return false; }
-    virtual void move(i64 offset) override {}
-};
-
-struct MOKLIB_API SliceTape : Tape {
-    Slice<Str> strings;
-    u64 current_index;
-    u64 current_start_offset;
-
-    SliceTape(const Slice<Str> &strings)
-        : strings(strings)
-        , current_index(0)
-        , current_start_offset(0)
-        {}
-
-    u64 get_size();
-
-    virtual u64 read(void *destination, u64 amount) override;
-    virtual void move(i64 offset) override;
-    void move_forwards(u64 offset);
-    void move_backwards(u64 offset);
-    virtual bool end() override;
-    virtual bool write(const void *src, u64 num_bytes) override;
 };
