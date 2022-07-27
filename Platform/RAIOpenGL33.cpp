@@ -41,7 +41,10 @@ X(MapBuffer,               void*, gl::Enum target, gl::Enum access) \
 X(UnmapBuffer,             void, gl::Enum target) \
 X(GenTextures,             void, gl::Sizei n, gl::UInt *textures) \
 X(BindTexture,             void, gl::Enum target, gl::UInt texture) \
-X(TexImage2D,              void, gl::Enum target, gl::Int level, gl::Int internalformat, gl::Sizei width, gl::Sizei height, gl::Int border, gl::Enum format, gl::Enum type, const void *pixels)
+X(TexImage2D,              void, gl::Enum target, gl::Int level, gl::Int internalformat, gl::Sizei width, gl::Sizei height, gl::Int border, gl::Enum format, gl::Enum type, const void *pixels) \
+X(ActiveTexture,           void, gl::Enum target) \
+X(TexParameteri,           void, GLenum target, GLenum pname, GLint param) \
+X(PixelStorei,             void, GLenum pname, GLint param) \
 
 
 #define GLC(proc) \
@@ -225,6 +228,12 @@ PROC_RAI_SET_BINDINGS(rai_gl33_set_bindings) {
     GLC(BindBuffer(gl::ArrayBuffer, array_buffer_id));
     GLC(BindBuffer(gl::ElementArrayBuffer, index_buffer_id));
     GLC(BindBufferBase(gl::UniformBuffer, 0, const_buffer_id));
+
+    for (int i = 0; i < bindings->ps_textures.count; ++i) {
+        TextureRes *r = bindings->ps_textures[i];
+        GLC(ActiveTexture(gl::Texture0 + i));
+        GLC(BindTexture(gl::Texture2D, (gl::UInt)r->handle));
+    }
 }
 
 PROC_RAI_SET_PIPELINE(rai_gl33_set_pipeline) {
@@ -240,15 +249,29 @@ PROC_RAI_SET_PIPELINE(rai_gl33_set_pipeline) {
         GLC(BindVertexArray(GL.vao));
     }
 
+    u32 stride = 0;
+
     for (u32 i = 0; i < pipeline->layout.num_attrs; ++i) {
         gl::Int size;
         gl::Enum type;
-        gl::Sizei stride;
+        gl::Sizei istride;
         input_layout_attr_to_glprops(
             pipeline->layout.attrs[i].kind,
             size,
             type,
-            stride);
+            istride);
+        stride += istride;
+    }
+
+    for (u32 i = 0; i < pipeline->layout.num_attrs; ++i) {
+        gl::Int size;
+        gl::Enum type;
+        gl::Sizei istride;
+        input_layout_attr_to_glprops(
+            pipeline->layout.attrs[i].kind,
+            size,
+            type,
+            istride);
         GLC(VertexAttribPointer(
             i,
             size,
@@ -291,11 +314,31 @@ PROC_RAI_CREATE_TEXTURE(rai_gl33_create_texture) {
     GLC(GenTextures(1, &texture));
     GLC(BindTexture(gl::Texture2D, texture));
 
-    GLC(TexImage2D(
+    gl::Enum format, type;
+    pixel_format_to_gl_format(desc->format, format, type);
+    GLC(PixelStorei(gl::UnpackAlignment, 1));
+    GLC(TexParameteri(gl::Texture2D, gl::TextureMinFilter, gl::Linear));
+    GLC(TexParameteri(gl::Texture2D, gl::TextureMagFilter, gl::Linear));
+
+    GL.TexImage2D(
         gl::Texture2D,
         0,
+        gl::Rgba,
+        desc->size.x,
+        desc->size.y,
+        0,
+        format,
+        type,
+        desc->data.buffer);
 
-        ));
+    auto err = GL.GetError();
+    if (err != 0) {
+        return Err(RAIError::FailedToAllocateResource);
+    }
+
+    return Ok(TextureRes {
+        (u64)texture
+    });
 }
 
 PROC_RAI_INITIALIZE(rai_gl33_init) {

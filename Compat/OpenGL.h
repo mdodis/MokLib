@@ -37,14 +37,20 @@ namespace gl {
         ReadWrite           = 0x88BA,
         WriteOnly           = 0x88B9,
         Texture2D           = 0x0DE1,
-        RGB                 = 0x1907,
-        RGBA                = 0x1908,
-        BGR                 = 0x80E0,
-        BGRA                = 0x80E1,
-        RGBA8               = 0x8058,
+        Rgb                 = 0x1907,
+        Rgba                = 0x1908,
+        Bgr                 = 0x80E0,
+        Bgra                = 0x80E1,
+        Rgba8               = 0x8058,
         UnsignedInt         = 0x1405,
         UnsignedInt8888     = 0x8035,
         UnsignedBytes       = 0x1401,
+        UnsignedShort565    = 0x8363,
+        Texture0            = 0x84C0,
+        UnpackAlignment     = 0x0CF5,
+        TextureMagFilter    = 0x2800,
+        TextureMinFilter    = 0x2801,
+        Linear              = 0x2601,
     };
 
     enum Errors : u32 {
@@ -75,25 +81,25 @@ static _inline void input_layout_attr_to_glprops(
     EInputLayoutAttrKind kind,
     gl::Int &size,
     gl::Enum &type,
-    gl::Sizei &stride)
+    gl::Sizei &istride)
 {
     switch (kind) {
         case InputLayoutAttrKind::Float2: {
             size = 2;
             type = gl::Float;
-            stride = 2 * sizeof(gl::Float);
+            istride = 2 * sizeof(gl::Float);
         } break;
 
         case InputLayoutAttrKind::Float3: {
             size = 3;
             type = gl::Float;
-            stride = 3 * sizeof(gl::Float);
+            istride = 3 * sizeof(gl::Float);
         } break;
 
         case InputLayoutAttrKind::Float4: {
             size = 4;
             type = gl::Float;
-            stride = 4 * sizeof(gl::Float);
+            istride = 4 * sizeof(gl::Float);
         } break;
     }
 }
@@ -106,33 +112,20 @@ static _inline gl::Enum topology_to_gl33_topology(ETopologyKind kind) {
     return table[kind];
 }
 
-static _inline gl::Enum pixel_format_to_gl_format(
-    PixelFormat::Type format,
-    gl::Enum format,
-    gl::Enum type)
+static _inline void pixel_format_to_gl_format(
+    PixelFormat::Type pformat,
+    gl::Enum &format,
+    gl::Enum &type)
 {
 
-    switch (format) {
-        case PixelFormat::RGB8X:
-            format = gl::RGB;
-            type = gl::None;
-            break;
-        case PixelFormat::RGBA8:
-            format = gl::RGBA;
-            type = gl::RGBA8;
-            break;
-        case PixelFormat::BGRA8:
-            format = gl::BGRA;
-            type = gl::RGBA8;
-            break;
-        case PixelFormat::BGR8:
-            format = gl::BGR;
-            type = gl::None;
-            break;
-        case PixelFormat::B5G6R5:
-            format = gl::RGB;
-            break;
-    }
+    static gl::Enum format_to_gl[PixelFormat::Count * 2] = {
+        gl::Rgb,       gl::UnsignedInt8888,  // RGB8X
+        gl::Rgba,      gl::UnsignedInt8888,  // RGBA8
+        gl::Bgra,      gl::UnsignedInt8888,  // BGRA8
+        gl::Bgr,       gl::None,             // BGR8
+        gl::Bgr,       gl::UnsignedShort565, // B5G6R5
+    };
 
-    return table[format];
+    format = format_to_gl[pformat * 2];
+    type   = format_to_gl[pformat * 2 + 1];
 }

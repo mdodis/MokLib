@@ -68,7 +68,7 @@ namespace TextureResFormat {
 typedef TextureResFormat::Type ETextureResFormat;
 
 struct TextureRes {
-    void *handle;
+    u64 handle;
 };
 
 struct TextureResDesc {
