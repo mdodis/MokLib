@@ -51,6 +51,7 @@ namespace gl {
         TextureMagFilter    = 0x2800,
         TextureMinFilter    = 0x2801,
         Linear              = 0x2601,
+        CullFace            = 0x0B44,
     };
 
     enum Errors : u32 {

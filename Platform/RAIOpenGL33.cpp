@@ -43,8 +43,9 @@ X(GenTextures,             void, gl::Sizei n, gl::UInt *textures) \
 X(BindTexture,             void, gl::Enum target, gl::UInt texture) \
 X(TexImage2D,              void, gl::Enum target, gl::Int level, gl::Int internalformat, gl::Sizei width, gl::Sizei height, gl::Int border, gl::Enum format, gl::Enum type, const void *pixels) \
 X(ActiveTexture,           void, gl::Enum target) \
-X(TexParameteri,           void, GLenum target, GLenum pname, GLint param) \
-X(PixelStorei,             void, GLenum pname, GLint param) \
+X(TexParameteri,           void, gl::Enum target, gl::Enum pname, gl::Int param) \
+X(PixelStorei,             void, gl::Enum pname, gl::Int param) \
+X(VertexAttribDivisor,     void, gl::UInt index, gl::UInt divisor) \
 
 
 #define GLC(proc) \
@@ -57,6 +58,7 @@ X(PixelStorei,             void, GLenum pname, GLint param) \
                 LIT(#proc),                                            \
                 LIT(__FILE__),                                         \
                 __LINE__);                                             \
+            print_backtrace();                                         \
         }                                                              \
     } while (0)
 
@@ -80,6 +82,27 @@ X(PixelStorei,             void, GLenum pname, GLint param) \
 GL_PROCS
 #undef X
 
+struct GL33AttributeBinding {
+    gl::UInt id = 0;
+    gl::Int size;
+    gl::Enum type;
+    gl::Bool normalized;
+    gl::Sizei stride;
+    u64 offset;
+};
+
+struct RAICache {
+    enum {
+        NumLayoutAttrs = 5,
+        NumBufferSlots = 4,
+    };
+    InputLayoutAttr attrs[NumLayoutAttrs] = {};
+    u32             num_attrs = 0;
+    BufferRes       buffers[NumBufferSlots] = {};
+    u32             num_buffers = 0;
+    bool changed_attrs = false;
+};
+
 static struct {
 #define X(name, rt, ...) MCONCAT(ProcGL,name) *name = 0;
 GL_PROCS
@@ -91,7 +114,89 @@ GL_PROCS
     gl::UInt current_constant_buffer;
     gl::UInt current_shader_program;
     gl::Enum current_topology;
+
+    RAICache cached = {};
+
+    GL33AttributeBinding attributes[16] = {};
 } GL;
+
+
+static void rai_gl33_update_layout(Slice<InputLayoutAttr> new_attrs) {
+    GL.cached.num_attrs = new_attrs.count;
+    for (u32 i = 0; i < new_attrs.count; ++i) {
+        if (new_attrs[i] != GL.cached.attrs[i]) {
+            GL.cached.attrs[i] = new_attrs[i];
+            GL.cached.changed_attrs = true;
+        }
+    }
+}
+
+static void rai_gl33_update_bindings(const Bindings &bindings) {
+    GL.cached.num_buffers = bindings.buffers.count;
+    for (u32 i = 0; i < bindings.buffers.count; ++i) {
+        if (GL.cached.buffers[i].handle != bindings.buffers[i]->handle) {
+            GL.cached.buffers[i] = *bindings.buffers[i];
+            GL.cached.changed_attrs = true;
+        }
+    }
+}
+
+static void rai_gl33_check_cache() {
+
+    if (!GL.cached.changed_attrs) return;
+
+    GL.cached.changed_attrs = false;
+    u32 stride = 0;
+
+    for (u32 i = 0; i < RAICache::NumLayoutAttrs; ++i) {
+        gl::Int size;
+        gl::Enum type;
+        gl::Sizei istride;
+        input_layout_attr_to_glprops(
+            GL.cached.attrs[i].kind,
+            size,
+            type,
+            istride);
+        stride += istride;
+    }
+
+    if (!GL.IsVertexArray(GL.vao)) {
+        GLC(GenVertexArrays(1, &GL.vao));
+        GLC(BindVertexArray(GL.vao));
+    }
+
+    for (u32 i = 0; i < GL.cached.num_attrs; ++i) {
+        InputLayoutAttr &attr = GL.cached.attrs[i];
+
+        GLC(BindBuffer(
+            gl::ArrayBuffer,
+            (gl::UInt)GL.cached.buffers[attr.slot].handle));
+
+        gl::Int size;
+        gl::Enum type;
+        gl::Sizei istride;
+        input_layout_attr_to_glprops(
+            attr.kind,
+            size,
+            type,
+            istride);
+        GLC(VertexAttribPointer(
+            i,
+            size,
+            type,
+            false,
+            attr.stride,
+            (void*)attr.offset));
+        GLC(EnableVertexAttribArray(i));
+
+        if (attr.usage == InputLayoutAttrUsage::PerInstance) {
+            GLC(VertexAttribDivisor(i, attr.instance_stride));
+        } else {
+            GLC(VertexAttribDivisor(i, 0));
+        }
+    }
+
+}
 
 static Str load_procs(ProcRAIGLGetProcAddress *get_proc_address) {
     #define X(name, rt, ...) \
@@ -217,7 +322,8 @@ PROC_RAI_CREATE_SHADER(rai_gl33_create_shader) {
 
 PROC_RAI_SET_BINDINGS(rai_gl33_set_bindings) {
 
-    gl::UInt array_buffer_id = (gl::UInt)bindings->vertex->handle;
+    rai_gl33_update_bindings(*bindings);
+
     gl::UInt index_buffer_id = bindings->index
         ? (gl::UInt)bindings->index->handle
         : 0;
@@ -225,7 +331,6 @@ PROC_RAI_SET_BINDINGS(rai_gl33_set_bindings) {
         ? (gl::UInt)bindings->constant->handle
         : 0;
 
-    GLC(BindBuffer(gl::ArrayBuffer, array_buffer_id));
     GLC(BindBuffer(gl::ElementArrayBuffer, index_buffer_id));
     GLC(BindBufferBase(gl::UniformBuffer, 0, const_buffer_id));
 
@@ -243,50 +348,16 @@ PROC_RAI_SET_PIPELINE(rai_gl33_set_pipeline) {
 
     GLC(UseProgram(program));
 
-    // GL.BindVertexArray(GL.vao);
-    if (!GL.IsVertexArray(GL.vao)) {
-        GLC(GenVertexArrays(1, &GL.vao));
-        GLC(BindVertexArray(GL.vao));
-    }
-
-    u32 stride = 0;
-
-    for (u32 i = 0; i < pipeline->layout.num_attrs; ++i) {
-        gl::Int size;
-        gl::Enum type;
-        gl::Sizei istride;
-        input_layout_attr_to_glprops(
-            pipeline->layout.attrs[i].kind,
-            size,
-            type,
-            istride);
-        stride += istride;
-    }
-
-    for (u32 i = 0; i < pipeline->layout.num_attrs; ++i) {
-        gl::Int size;
-        gl::Enum type;
-        gl::Sizei istride;
-        input_layout_attr_to_glprops(
-            pipeline->layout.attrs[i].kind,
-            size,
-            type,
-            istride);
-        GLC(VertexAttribPointer(
-            i,
-            size,
-            type,
-            false,
-            stride,
-            (void*)pipeline->layout.attrs[i].offset));
-        GLC(EnableVertexAttribArray(i));
-    }
+    rai_gl33_update_layout(pipeline->layout.attrs);
 
     GL.current_topology = topology_to_gl33_topology(pipeline->topology);
     return true;
 }
 
 PROC_RAI_DRAW(rai_gl33_draw) {
+
+    rai_gl33_check_cache();
+
     // @todo: num_instances?
     GLC(DrawArrays(GL.current_topology, base, num_elements));
 }
@@ -348,6 +419,10 @@ PROC_RAI_INITIALIZE(rai_gl33_init) {
     if (failed_proc != Str::NullStr) {
         print(LIT("Failed to load proc $"), failed_proc);
         return false;
+    }
+
+    for (u32 i = 0; i < RAICache::NumLayoutAttrs; ++i) {
+        GL.cached.attrs[i].name = 0;
     }
 
     result.create_buffer = rai_gl33_create_buffer;

@@ -75,6 +75,9 @@ struct MOKLIB_API Vec3 {
 
     Vec3() : x(0), y(0), z(0) {}
     constexpr Vec3(float v) : x(v), y(v), z(v) {}
+    constexpr Vec3(const Vec2 &xy, float z = 0.f)
+        : x(xy.x), y(xy.y), z(z)
+        {}
     constexpr Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 
     operator float* () const { return (float*)array; }
@@ -302,9 +305,18 @@ static _inline Mat4 lookat(Vec3 forward, Vec3 up, Vec3 eye) {
     };
 }
 
+static _inline Mat4 orthographic(float b, float t, float l, float r, float n, float f) {
+    return Mat4 {
+        2.f / (r - l), 0,                    0,                      -(r + l) / (r - l),
+        0,                    2.f / (t - b), 0,                      -(t + b) / (t - b),
+        0,                    0,                    -2.f / (f - n),  -(f + n) / (f - n),
+        0,                    0,                    0,                      1.f,
+    };
+}
+
 static _inline Mat4 perspective(float fov, float aspect, float znear, float zfar) {
     const float th = tanf(fov / 2.f);
-    return  Mat4 {
+    return Mat4 {
         1.f / (aspect * th), 0,        0,                                 0,
         0,                   1.f / th, 0,                                 0,
         0,                   0,        - (zfar + znear) / (zfar - znear), -2.f * (zfar * znear) / (zfar - znear),

@@ -200,3 +200,11 @@ struct TArr {
 	FwdIter begin() const { return FwdIter((T*)elements, 0); }
 	FwdIter end()   const { return FwdIter((T*)elements, Count); }
 };
+
+// constexpr TArr<Type, sizeof...(Rest)> arr(Rest&&... t) {
+template <typename Type, typename... Rest>
+constexpr auto arr(Rest&&... t) -> TArr<Type, sizeof...(Rest)> {
+	constexpr auto c = sizeof...(Rest);
+	TArr<Type, c> result = {t...};
+	return result;
+}

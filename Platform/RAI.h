@@ -89,15 +89,41 @@ namespace InputLayoutAttrKind {
 };
 typedef InputLayoutAttrKind::Type EInputLayoutAttrKind;
 
+namespace InputLayoutAttrUsage {
+    enum Type : u32 {
+        PerVertex,
+        PerInstance
+    };
+};
+typedef InputLayoutAttrUsage::Type EInputLayoutAttrUsage;
+
 struct InputLayoutAttr {
-    const char           *name;
-    EInputLayoutAttrKind kind;
-    u32                  offset;
+    u32                   slot = 0;
+    const char            *name = 0;
+    EInputLayoutAttrKind  kind = InputLayoutAttrKind::None;
+    u32                   offset = 0;
+    u32                   stride = 0;
+    EInputLayoutAttrUsage usage = InputLayoutAttrUsage::PerVertex;
+    u32                   instance_stride = 0;
 };
 
+static _inline bool operator==(const InputLayoutAttr &a, const InputLayoutAttr &b) {
+    return
+        (a.slot == b.slot) &&
+        ((a.name == b.name) || ((a.name != 0) && (b.name != 0) && (strcmp(a.name, b.name) == 0))) &&
+        (a.kind == b.kind) &&
+        (a.offset == b.offset) &&
+        (a.stride == b.stride) &&
+        (a.usage == b.usage) &&
+        (a.instance_stride == b.instance_stride);
+}
+
+static _inline bool operator!=(const InputLayoutAttr &a, const InputLayoutAttr &b) {
+    return !(a == b);
+}
+
 struct InputLayout {
-    InputLayoutAttr *attrs;
-    u32             num_attrs;
+    Slice<InputLayoutAttr> attrs;
 };
 
 namespace TopologyKind {
@@ -114,6 +140,7 @@ struct Pipeline {
 };
 
 struct Bindings {
+    Slice<BufferRes*> buffers;
     BufferRes *vertex   = 0;
     BufferRes *index    = 0;
     BufferRes *constant = 0;

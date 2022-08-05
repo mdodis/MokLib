@@ -10,5 +10,5 @@ static float Plane2DV_Vertices[] = {
 };
 
 const u32 Plane2DV_Vertices_Stride =
-    /* Position      */ sizeof(float) * 3 +
+    /* Position      */ sizeof(float) * 2 +
     /* Texture Coord */ sizeof(float) * 2;
