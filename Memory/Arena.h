@@ -60,7 +60,7 @@ struct MOKLIB_API Arena : IAllocator {
 	static uint8 memory_of__##name[(size)]; \
 	Arena name(memory_of__##name, size);
 
-#define SAVE_ARENA(arena) ArenaSave MCONCAT(_arena_save, __LINE__) (arena)
+#define SAVE_ARENA(arena) ArenaSave MJOIN2(_arena_save,__LINE__) (arena)
 
 struct MOKLIB_API ArenaSave {
 	Arena *arena;

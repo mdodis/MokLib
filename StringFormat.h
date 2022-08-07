@@ -59,7 +59,7 @@ struct TFmtHex {
         umm v = (umm)&value;
         u32 num_bytes = sizeof(T);
 
-        char *prefix = "0x";
+        const char *prefix = "0x";
         tape->write(prefix, 2);
 
 

@@ -10,6 +10,10 @@ namespace gl {
     typedef char Bool;
     typedef char Char;
 
+    // Win64: signed long long int
+    typedef signed long int IntPtr;
+    typedef signed long int SizeiPtr;
+
     enum Constants : u32 {
         None                = 0,
         ArrayBuffer         = 0x8892,
@@ -52,6 +56,7 @@ namespace gl {
         TextureMinFilter    = 0x2801,
         Linear              = 0x2601,
         CullFace            = 0x0B44,
+        BufferSize          = 0x8764,
     };
 
     enum Errors : u32 {
@@ -85,6 +90,12 @@ static _inline void input_layout_attr_to_glprops(
     gl::Sizei &istride)
 {
     switch (kind) {
+        case InputLayoutAttrKind::None: {
+            size = 0;
+            type = gl::None;
+            istride = 0;
+        } break;
+
         case InputLayoutAttrKind::Float2: {
             size = 2;
             type = gl::Float;

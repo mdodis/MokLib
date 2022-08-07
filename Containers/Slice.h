@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Array.h"
 #include "Debugging/Assertions.h"
+#include "Memory/RawBuffer.h"
 
 template <typename T>
 struct Slice {
@@ -33,6 +34,10 @@ struct Slice {
             return ((T*)ptr) + (count - 1);
         else
             return 0;
+    }
+
+    constexpr operator Raw() {
+        return Raw(ptr, count * sizeof(T));
     }
 
     SliceIterator<T> begin() const { return SliceIterator<T>(ptr, 0); }

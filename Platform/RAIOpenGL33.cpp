@@ -20,6 +20,7 @@ X(BindVertexArray,         void, gl::UInt array) \
 X(VertexAttribPointer,     void, gl::UInt index, gl::Int size, gl::Enum type, gl::Bool normalized, gl::Sizei stride, const void *pointer) \
 X(EnableVertexAttribArray, void, gl::UInt array) \
 X(BufferData,              void, gl::Enum target, gl::Sizei size, const void *data, GLenum usage) \
+X(BufferSubData,           void, gl::Enum target, gl::IntPtr offset, gl::SizeiPtr size, const void *data) \
 X(GetError,                gl::Enum, void) \
 X(CreateShader,            gl::UInt, gl::Enum type) \
 X(ShaderSource,            void, gl::UInt shader, gl::Sizei count, const gl::Char *const* string, const gl::Int *length) \
@@ -35,6 +36,7 @@ X(GetProgramInfoLog,       void, gl::UInt program, gl::Sizei bufSize, gl::Sizei 
 X(GetUniformBlockIndex,    gl::UInt, gl::UInt program, const gl::Char *uniformBlockName) \
 X(UniformBlockBinding,     void, gl::UInt program, gl::UInt uniformBlockIndex, gl::UInt uniformBlockBinding) \
 X(DrawArrays,              void, gl::Enum mode, gl::Int first, gl::Sizei count) \
+X(DrawArraysInstanced,     void, gl::Enum mode, gl::Int first, gl::Sizei count, gl::Sizei primcount) \
 X(DeleteVertexArrays,      void, gl::Sizei n, const gl::UInt *arrays) \
 X(IsVertexArray,           gl::Bool, gl::UInt array) \
 X(MapBuffer,               void*, gl::Enum target, gl::Enum access) \
@@ -46,6 +48,8 @@ X(ActiveTexture,           void, gl::Enum target) \
 X(TexParameteri,           void, gl::Enum target, gl::Enum pname, gl::Int param) \
 X(PixelStorei,             void, gl::Enum pname, gl::Int param) \
 X(VertexAttribDivisor,     void, gl::UInt index, gl::UInt divisor) \
+X(GetBufferParameter,      void, gl::Enum target, gl::Enum value, gl::Int *data) \
+
 
 
 #define GLC(proc) \
@@ -186,7 +190,7 @@ static void rai_gl33_check_cache() {
             type,
             false,
             attr.stride,
-            (void*)attr.offset));
+            (void*)((uintptr_t)attr.offset)));
         GLC(EnableVertexAttribArray(i));
 
         if (attr.usage == InputLayoutAttrUsage::PerInstance) {
@@ -355,11 +359,17 @@ PROC_RAI_SET_PIPELINE(rai_gl33_set_pipeline) {
 }
 
 PROC_RAI_DRAW(rai_gl33_draw) {
-
     rai_gl33_check_cache();
-
-    // @todo: num_instances?
     GLC(DrawArrays(GL.current_topology, base, num_elements));
+}
+
+PROC_RAI_DRAW_INSTANCED(rai_gl33_draw_instanced) {
+    rai_gl33_check_cache();
+    GLC(DrawArraysInstanced(
+        GL.current_topology,
+        base,
+        num_elements,
+        num_instances));
 }
 
 PROC_RAI_GET_DEFAULT_RENDER_PASS(rai_gl33_get_default_render_pass) {
@@ -378,6 +388,12 @@ PROC_RAI_MAP_BUFFER(rai_gl33_map_buffer) {
 PROC_RAI_UNMAP_BUFFER(rai_gl33_unmap_buffer) {
     gl::Enum buffer_kind = buffer_res_kind_to_glenum(buffer->kind);
     GLC(UnmapBuffer(buffer_kind));
+}
+
+PROC_RAI_UPDATE_BUFFER(rai_gl33_update_buffer) {
+    gl::Enum buffer_kind = buffer_res_kind_to_glenum(buffer->kind);
+    GLC(BindBuffer(buffer_kind, (gl::UInt)buffer->handle));
+    GLC(BufferSubData(buffer_kind, offset, new_data.size, new_data.buffer));
 }
 
 PROC_RAI_CREATE_TEXTURE(rai_gl33_create_texture) {
@@ -412,7 +428,21 @@ PROC_RAI_CREATE_TEXTURE(rai_gl33_create_texture) {
     });
 }
 
+PROC_RAI_GET_BUFFER_SIZE(rai_gl33_get_buffer_size) {
+    gl::Enum buffer_kind = buffer_res_kind_to_glenum(buffer->kind);
+    gl::Int result;
+    GLC(GetBufferParameter(buffer_kind, gl::BufferSize, &result));
+    return result;
+}
+
+PROC_RAI_RESIZE_BUFFER(rai_gl33_resize_buffer) {
+    gl::Enum buffer_kind = buffer_res_kind_to_glenum(buffer->kind);
+    GLC(BindBuffer(buffer_kind, (gl::UInt)buffer->handle));
+    GL.BufferData(buffer_kind, new_size, 0, gl::StaticDraw);
+}
+
 PROC_RAI_INITIALIZE(rai_gl33_init) {
+
     auto *params = (RAIGL33InitParams*)vparams;
     Str failed_proc = load_procs(params->get_proc);
 
@@ -425,16 +455,20 @@ PROC_RAI_INITIALIZE(rai_gl33_init) {
         GL.cached.attrs[i].name = 0;
     }
 
-    result.create_buffer = rai_gl33_create_buffer;
-    result.create_texture = rai_gl33_create_texture;
-    result.create_shader_part = rai_gl33_create_shader_part;
-    result.create_shader = rai_gl33_create_shader;
+    result.create_buffer           = rai_gl33_create_buffer;
+    result.create_texture          = rai_gl33_create_texture;
+    result.create_shader_part      = rai_gl33_create_shader_part;
+    result.create_shader           = rai_gl33_create_shader;
+    result.update_buffer           = rai_gl33_update_buffer;
+    result.get_buffer_size         = rai_gl33_get_buffer_size;
+    result.resize_buffer           = rai_gl33_resize_buffer;
     result.get_default_render_pass = rai_gl33_get_default_render_pass;
-    result.set_render_pass = rai_gl33_set_render_pass;
-    result.set_pipeline = rai_gl33_set_pipeline;
-    result.set_bindings = rai_gl33_set_bindings;
-    result.map_buffer = rai_gl33_map_buffer;
-    result.unmap_buffer = rai_gl33_unmap_buffer;
-    result.draw = rai_gl33_draw;
+    result.set_render_pass         = rai_gl33_set_render_pass;
+    result.set_pipeline            = rai_gl33_set_pipeline;
+    result.set_bindings            = rai_gl33_set_bindings;
+    result.map_buffer              = rai_gl33_map_buffer;
+    result.unmap_buffer            = rai_gl33_unmap_buffer;
+    result.draw                    = rai_gl33_draw;
+    result.draw_instanced          = rai_gl33_draw_instanced;
     return true;
 }

@@ -198,13 +198,22 @@ struct RAIGraphicsInitParams {
 #define PROC_RAI_SET_RENDER_PASS(name) \
     void name(const RenderPass *pass, Vec2i size)
 #define PROC_RAI_DRAW(name) \
-   void name(i32 base, i32 num_elements, i32 num_instances)
+   void name(i32 base, i32 num_elements)
+#define PROC_RAI_DRAW_INSTANCED(name) \
+   void name(i32 base, u32 num_elements, u32 num_instances)
 #define PROC_RAI_DRAW_INDEXED(name) \
    void name(u32 index_count, u32 start, i32 base_vertex)
 #define PROC_RAI_MAP_BUFFER(name) \
     void *name(BufferRes *buffer)
 #define PROC_RAI_UNMAP_BUFFER(name) \
     void name(BufferRes *buffer)
+#define PROC_RAI_UPDATE_BUFFER(name) \
+    void name(BufferRes *buffer, u32 offset, Raw new_data)
+#define PROC_RAI_GET_BUFFER_SIZE(name) \
+    u32 name(BufferRes *buffer)
+#define PROC_RAI_RESIZE_BUFFER(name) \
+    void name(BufferRes *buffer, u32 new_size)
+
 
 typedef PROC_RAI_CREATE_BUFFER(ProcRAICreateBuffer);
 typedef PROC_RAI_CREATE_SHADER_PART(ProcRAICreateShaderPart);
@@ -213,12 +222,17 @@ typedef PROC_RAI_CREATE_TEXTURE(ProcRAICreateTexture);
 typedef PROC_RAI_CREATE_RENDER_PASS(ProcRAICreateRenderPass);
 typedef PROC_RAI_GET_DEFAULT_RENDER_PASS(ProcRAIGetDefaultRenderPass);
 
+typedef PROC_RAI_UPDATE_BUFFER(ProcRAIUpdateBuffer);
+typedef PROC_RAI_GET_BUFFER_SIZE(ProcRAIGetBufferSize);
+typedef PROC_RAI_RESIZE_BUFFER(ProcRAIResizeBuffer);
+
 typedef PROC_RAI_SET_PIPELINE(ProcRAISetPipeline);
 typedef PROC_RAI_SET_BINDINGS(ProcRAISetBindings);
 typedef PROC_RAI_SET_VIEWPORT(ProcRAISetViewport);
 typedef PROC_RAI_GET_DEFAULT_TEXTURE(ProcRAIGetDefaultTexture);
 typedef PROC_RAI_SET_RENDER_PASS(ProcRAISetRenderPass);
 typedef PROC_RAI_DRAW(ProcRAIDraw);
+typedef PROC_RAI_DRAW_INSTANCED(ProcRAIDrawInstanced);
 typedef PROC_RAI_DRAW_INDEXED(ProcRAIDrawIndexed);
 typedef PROC_RAI_MAP_BUFFER(ProcRAIMapBuffer);
 typedef PROC_RAI_UNMAP_BUFFER(ProcRAIUnmapBuffer);
@@ -232,6 +246,10 @@ struct RAIGraphics {
     ProcRAIGetDefaultTexture    *get_default_texture;
     ProcRAIGetDefaultRenderPass *get_default_render_pass;
 
+    ProcRAIUpdateBuffer         *update_buffer;
+    ProcRAIGetBufferSize        *get_buffer_size;
+    ProcRAIResizeBuffer         *resize_buffer;
+
     ProcRAISetPipeline          *set_pipeline;
     ProcRAISetRenderPass        *set_render_pass;
     ProcRAISetBindings          *set_bindings;
@@ -240,6 +258,7 @@ struct RAIGraphics {
     ProcRAIUnmapBuffer          *unmap_buffer;
     /** @todo: pass action (clear color, depth, stencil...) */
     ProcRAIDraw                 *draw;
+    ProcRAIDrawInstanced        *draw_instanced;
     ProcRAIDrawIndexed          *draw_indexed;
 };
 
