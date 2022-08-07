@@ -23,12 +23,18 @@
 
 #if defined(_MSC_VER) || defined(_MSC_FULL_VER)
     #define COMPILER_MSVC 1
+#elif defined(__clang__)
+    #define COMPILER_CLANG 1
 #elif defined(__GNUC__) || defined(__GNUG__)
     #define COMPILER_GCC 1
 #endif
 
 #ifndef COMPILER_MSVC
     #define COMPILER_MSVC 0
+#endif
+
+#ifndef COMPILER_CLANG
+    #define COMPILER_CLANG 0
 #endif
 
 #ifndef COMPILER_GCC
@@ -48,7 +54,7 @@
  */
 #if COMPILER_MSVC
     #define _inline __forceinline
-#elif COMPILER_GCC
+#elif COMPILER_GCC || COMPILER_CLANG
     #define _inline inline __attribute__((always_inline))
 #else
     #error "Unsupported compiler type for _inline!"
