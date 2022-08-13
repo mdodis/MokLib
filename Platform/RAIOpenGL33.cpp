@@ -10,6 +10,7 @@ X(Finish,                  void, void) \
 X(ClearColor,              void, float r, float g, float b, float a) \
 X(Enable,                  void, gl::Enum cap) \
 X(Disable,                 void, gl::Enum cap) \
+X(BlendFunc,               void, gl::Enum sfactor, gl::Enum dfactor) \
 X(GenBuffers,              void, gl::Sizei n, gl::UInt *buffers) \
 X(BindBuffer,              void, gl::Enum target, gl::UInt buffer) \
 X(BindBufferBase,          void, GLenum target, GLuint index, GLuint buffer) \
@@ -48,7 +49,7 @@ X(ActiveTexture,           void, gl::Enum target) \
 X(TexParameteri,           void, gl::Enum target, gl::Enum pname, gl::Int param) \
 X(PixelStorei,             void, gl::Enum pname, gl::Int param) \
 X(VertexAttribDivisor,     void, gl::UInt index, gl::UInt divisor) \
-X(GetBufferParameter,      void, gl::Enum target, gl::Enum value, gl::Int *data) \
+X(GetBufferParameteriv,    void, gl::Enum target, gl::Enum value, gl::Int *data) \
 
 
 
@@ -97,7 +98,7 @@ struct GL33AttributeBinding {
 
 struct RAICache {
     enum {
-        NumLayoutAttrs = 5,
+        NumLayoutAttrs = 6,
         NumBufferSlots = 4,
     };
     InputLayoutAttr attrs[NumLayoutAttrs] = {};
@@ -210,6 +211,14 @@ static Str load_procs(ProcRAIGLGetProcAddress *get_proc_address) {
     #undef X
 
     return Str::NullStr;
+}
+
+static void toggle_state(gl::Enum state, bool enabled) {
+    if (enabled) {
+        GLC(Enable(state));
+    } else {
+        GLC(Disable(state));
+    }
 }
 
 PROC_RAI_CREATE_BUFFER(rai_gl33_create_buffer) {
@@ -354,6 +363,11 @@ PROC_RAI_SET_PIPELINE(rai_gl33_set_pipeline) {
 
     rai_gl33_update_layout(pipeline->layout.attrs);
 
+    toggle_state(gl::Blend,     pipeline->color_state.blend.enabled);
+    toggle_state(gl::DepthTest, pipeline->depth_state.test);
+    GLC(BlendFunc(gl::SrcAlpha, gl::OneMinusSrcAlpha));
+
+
     GL.current_topology = topology_to_gl33_topology(pipeline->topology);
     return true;
 }
@@ -401,8 +415,8 @@ PROC_RAI_CREATE_TEXTURE(rai_gl33_create_texture) {
     GLC(GenTextures(1, &texture));
     GLC(BindTexture(gl::Texture2D, texture));
 
-    gl::Enum format, type;
-    pixel_format_to_gl_format(desc->format, format, type);
+    gl::Enum format, type, internal;
+    pixel_format_to_gl_format(desc->format, format, type, internal);
     GLC(PixelStorei(gl::UnpackAlignment, 1));
     GLC(TexParameteri(gl::Texture2D, gl::TextureMinFilter, gl::Linear));
     GLC(TexParameteri(gl::Texture2D, gl::TextureMagFilter, gl::Linear));
@@ -410,7 +424,7 @@ PROC_RAI_CREATE_TEXTURE(rai_gl33_create_texture) {
     GL.TexImage2D(
         gl::Texture2D,
         0,
-        gl::Rgba,
+        internal,
         desc->size.x,
         desc->size.y,
         0,
@@ -431,7 +445,7 @@ PROC_RAI_CREATE_TEXTURE(rai_gl33_create_texture) {
 PROC_RAI_GET_BUFFER_SIZE(rai_gl33_get_buffer_size) {
     gl::Enum buffer_kind = buffer_res_kind_to_glenum(buffer->kind);
     gl::Int result;
-    GLC(GetBufferParameter(buffer_kind, gl::BufferSize, &result));
+    GLC(GetBufferParameteriv(buffer_kind, gl::BufferSize, &result));
     return result;
 }
 

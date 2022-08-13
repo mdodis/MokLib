@@ -57,6 +57,13 @@ namespace gl {
         Linear              = 0x2601,
         CullFace            = 0x0B44,
         BufferSize          = 0x8764,
+        Integer             = 0x1404,
+        Blend               = 0x0BE2,
+        SrcAlpha            = 0x0302,
+        OneMinusSrcAlpha    = 0x0303,
+        DepthTest           = 0x0B71,
+        Alpha               = 0x1906,
+        Red                 = 0x1903,
     };
 
     enum Errors : u32 {
@@ -96,6 +103,12 @@ static _inline void input_layout_attr_to_glprops(
             istride = 0;
         } break;
 
+        case InputLayoutAttrKind::Int: {
+            size = 1;
+            type = gl::Integer;
+            istride = sizeof(gl::Int);
+        } break;
+
         case InputLayoutAttrKind::Float2: {
             size = 2;
             type = gl::Float;
@@ -113,6 +126,12 @@ static _inline void input_layout_attr_to_glprops(
             type = gl::Float;
             istride = 4 * sizeof(gl::Float);
         } break;
+
+        case InputLayoutAttrKind::Int4: {
+            size = 4;
+            type = gl::Integer;
+            istride = 0;
+        } break;
     }
 }
 
@@ -127,17 +146,21 @@ static _inline gl::Enum topology_to_gl33_topology(ETopologyKind kind) {
 static _inline void pixel_format_to_gl_format(
     PixelFormat::Type pformat,
     gl::Enum &format,
-    gl::Enum &type)
+    gl::Enum &type,
+    gl::Enum &internal_format)
 {
 
-    static gl::Enum format_to_gl[PixelFormat::Count * 2] = {
-        gl::Rgb,       gl::UnsignedInt8888,  // RGB8X
-        gl::Rgba,      gl::UnsignedInt8888,  // RGBA8
-        gl::Bgra,      gl::UnsignedInt8888,  // BGRA8
-        gl::Bgr,       gl::None,             // BGR8
-        gl::Bgr,       gl::UnsignedShort565, // B5G6R5
+    static gl::Enum format_to_gl[PixelFormat::Count * 3] = {
+        gl::Rgb,       gl::UnsignedInt8888,  gl::Rgb,  // RGB8X
+        gl::Rgba,      gl::UnsignedInt8888,  gl::Rgba, // RGBA8
+        gl::Bgra,      gl::UnsignedInt8888,  gl::Rgba, // BGRA8
+        gl::Bgr,       gl::None,             gl::Rgb,  // BGR8
+        gl::Bgr,       gl::UnsignedShort565, gl::Rgb,  // B5G6R5
+        gl::Rgb,       gl::UnsignedBytes,    gl::Rgb,  // Mono8
+        gl::Red,       gl::UnsignedBytes,    gl::Red,  // Alpha8
     };
 
-    format = format_to_gl[pformat * 2];
-    type   = format_to_gl[pformat * 2 + 1];
+    format = format_to_gl[pformat * 3];
+    type   = format_to_gl[pformat * 3 + 1];
+    internal_format = format_to_gl[pformat * 3 + 2];
 }

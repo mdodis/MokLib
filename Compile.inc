@@ -32,6 +32,7 @@
 #include "Serialization/JSON.cpp"
 #include "Arg.cpp"
 #include "Debugging/DebugOutput.cpp"
+#include "Extras/Elf.cpp"
 #if MOK_INCLUDE_DLL
     #include "FileSystem/Dll.cpp"
 #endif

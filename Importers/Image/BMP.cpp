@@ -97,7 +97,7 @@ static bool extract_bmp(FileHandle fh, IAllocator &alloc, BMPAttribs *attribs, s
     result->image.is_flipped = attribs->dimensions.y > 0;
 
     // Taken from https://en.wikipedia.org/wiki/BMP_file_format#Color_table
-    uint32 pitch = (uint32)ceilf((attribs->bpp * result->image.width) / 32.f) * 4;
+    uint32 pitch = (uint32)ceilf((attribs->bpp * result->image.width()) / 32.f) * 4;
     result->image.pitch = pitch;
 
     uint32 image_size = pitch * result->image.dimensions.y;
@@ -147,7 +147,7 @@ static bool read_bmp_indexed(FileHandle file_handle, IAllocator &alloc, BMPAttri
     const bool is_flipped = result->image.is_flipped;
     result->image.format = PixelFormat::BGRA8;
     result->image.bpp = 32;
-    result->image.pitch = result->image.width * sizeof(uint32);
+    result->image.pitch = result->image.width() * sizeof(uint32);
     result->image.is_flipped = false;
 
     // Output Data
@@ -180,7 +180,7 @@ static bool read_bmp_indexed(FileHandle file_handle, IAllocator &alloc, BMPAttri
 
                 case BMPCompression::None: {
 
-                    if (x == result->image.width) {
+                    if (x == result->image.width()) {
                         curr_row = row_end;
                         break;
                     }
@@ -196,7 +196,7 @@ static bool read_bmp_indexed(FileHandle file_handle, IAllocator &alloc, BMPAttri
                     uint32 *out_pixels = (uint32*)(umm(output) + offset_at);
                     out_pixels[0] = color_table[left_pixel];
 
-                    if (x < result->image.width) {
+                    if (x < result->image.width()) {
                         out_pixels[1] = color_table[right_pixel];
                         x++;
                     }
@@ -217,7 +217,7 @@ static bool read_bmp_indexed(FileHandle file_handle, IAllocator &alloc, BMPAttri
 
                         for (uint8 i = 0; i < rcount; ++i) {
 
-                            if (x == result->image.width) {
+                            if (x == result->image.width()) {
                                 curr_row = row_end;
                                 break;
                             }
@@ -233,7 +233,7 @@ static bool read_bmp_indexed(FileHandle file_handle, IAllocator &alloc, BMPAttri
                             uint32 *out_pixels = (uint32*)(umm(output) + offset_at);
                             out_pixels[0] = color_table[left_pixel];
 
-                            if (x < result->image.width) {
+                            if (x < result->image.width()) {
                                 out_pixels[1] = color_table[right_pixel];
                                 x++;
                             }

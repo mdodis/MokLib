@@ -10,6 +10,8 @@ namespace PixelFormat {
         BGRA8,      // [B8 G8 R8 A8]  Packed 8bit components
         BGR8,       // [B8 G8 R8]     Packed 8bit components
         B5G6R5,     // [B5 G6 R5]     Packed 5bit components except for green (6 bits)
+        Mono8,      // [L8]           One value representing all 3 channels (Opaque)
+        Alpha8,     // [A8]           One alpha value, everything else is white
         Count,
     };
 
@@ -55,18 +57,18 @@ namespace PixelFormat {
 
 struct Image {
 
-    union {
-        Vec2i dimensions;
-        struct { int32 width, height; };
-    };
+    Vec2i dimensions;
     PixelFormat::Type format;   // The format of the image
     uint8 bpp;                  // Bits per pixel
     uint32 pitch;               // Pitch
     bool is_flipped;            // True if the image is flipped vertically
 
+    constexpr i32 &width()  { return dimensions.x; }
+    constexpr i32 &height() { return dimensions.y; }
+
     _inline uint32 offset_at(Vec2i pos) {
         return
-            pitch * (is_flipped ? height - 1 - pos.y : pos.y) +
+            pitch * (is_flipped ? height() - 1 - pos.y : pos.y) +
             (bpp / 8) * pos.x;
     }
 };

@@ -10,6 +10,9 @@ struct MOKLIB_API Vec2i {
     union {
         struct {int x, y; };
     };
+
+    Vec2i() = default;
+    constexpr Vec2i(int x, int y) : x(x), y(y) {}
 };
 
 static _inline bool operator==(const Vec2i &left, const Vec2i &right) {
@@ -133,6 +136,14 @@ struct Vec4 {
         y = v3.y;
         z = v3.z;
         w = vw;
+    }
+
+    Vec2 &xy() const {
+        return *((Vec2*)array);
+    }
+
+    Vec2 &zw() const {
+        return *((Vec2*)(array + 2));
     }
 
     Vec3 &xyz() const {

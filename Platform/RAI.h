@@ -85,6 +85,8 @@ namespace InputLayoutAttrKind {
         Float2,
         Float3,
         Float4,
+        Int,
+        Int4
     };
 };
 typedef InputLayoutAttrKind::Type EInputLayoutAttrKind;
@@ -133,10 +135,24 @@ namespace TopologyKind {
 }
 typedef TopologyKind::Type ETopologyKind;
 
+struct BlendState {
+    bool enabled = false;
+};
+
+struct ColorState {
+    BlendState blend;
+};
+
+struct DepthState {
+    bool test = false;
+};
+
 struct Pipeline {
-    ShaderRes     *shader;
-    ETopologyKind topology;
-    InputLayout   layout;
+    ShaderRes       *shader;
+    ETopologyKind   topology;
+    InputLayout     layout;
+    ColorState      color_state;
+    DepthState      depth_state;
 };
 
 struct Bindings {
@@ -213,7 +229,6 @@ struct RAIGraphicsInitParams {
     u32 name(BufferRes *buffer)
 #define PROC_RAI_RESIZE_BUFFER(name) \
     void name(BufferRes *buffer, u32 new_size)
-
 
 typedef PROC_RAI_CREATE_BUFFER(ProcRAICreateBuffer);
 typedef PROC_RAI_CREATE_SHADER_PART(ProcRAICreateShaderPart);

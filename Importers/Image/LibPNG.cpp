@@ -74,8 +74,8 @@ PROC_IMPORTER_LOAD(import_png_load) {
     png_set_sig_bytes(png_ptr, 0);
     png_read_info(png_ptr, info_ptr);
 
-    result->image.width  = png_get_image_width(png_ptr, info_ptr);
-    result->image.height = png_get_image_height(png_ptr, info_ptr);
+    result->image.width()  = png_get_image_width(png_ptr, info_ptr);
+    result->image.height() = png_get_image_height(png_ptr, info_ptr);
 
     u32 bits_per_channel = png_get_bit_depth(png_ptr, info_ptr);
     u32 num_channels     = png_get_channels(png_ptr, info_ptr);
@@ -115,19 +115,19 @@ PROC_IMPORTER_LOAD(import_png_load) {
     }
 
 
-    umm *row_ptrs = (umm*)temp.push(sizeof(umm) * result->image.height);
+    umm *row_ptrs = (umm*)temp.push(sizeof(umm) * result->image.height());
     ASSERT(row_ptrs);
 
-    result->data.size = result->image.width
-        * result->image.height
+    result->data.size = result->image.width()
+        * result->image.height()
         * ((bits_per_channel * num_channels) / 8);
 
     result->data.buffer = alloc->reserve(result->data.size);
-    result->image.pitch = result->image.width * ((bits_per_channel * num_channels) / 8);
+    result->image.pitch = result->image.width() * ((bits_per_channel * num_channels) / 8);
     result->image.bpp = num_channels * bits_per_channel;
 
-    for (i32 i = 0; i < result->image.height; ++i) {
-        row_ptrs[i] = umm(result->data.buffer) + (result->image.height - i - 1 ) * result->image.pitch;
+    for (i32 i = 0; i < result->image.height(); ++i) {
+        row_ptrs[i] = umm(result->data.buffer) + (result->image.height() - i - 1 ) * result->image.pitch;
     }
 
     png_read_image(png_ptr, row_ptrs);
