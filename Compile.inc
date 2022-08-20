@@ -33,6 +33,7 @@
 #include "Arg.cpp"
 #include "Debugging/DebugOutput.cpp"
 #include "Extras/Elf.cpp"
+#include "Test/Compile.inc"
 #if MOK_INCLUDE_DLL
     #include "FileSystem/Dll.cpp"
 #endif

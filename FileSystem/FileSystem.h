@@ -126,6 +126,7 @@ struct TFileTape : public SizedTape {
     TFileTape(FileHandle file) : file(file) {
         current_offset = 0;
         size = get_file_size(file);
+
     }
 
     ~TFileTape() {
@@ -153,6 +154,66 @@ struct TFileTape : public SizedTape {
         bool success = write_file(file, src, amount, &bytes_written, current_offset);
         current_offset += success ? bytes_written : 0;
         return success;
+    }
+};
+
+template <bool AutoClose>
+struct TBufferedFileTape : TFileTape<AutoClose> {
+    using Super = TFileTape<AutoClose>;
+    umm buffer;
+    u64 size;
+    u64 accumulated;
+    IAllocator &allocator;
+    TBufferedFileTape(
+        FileHandle file_handle,
+        u64 size = KILOBYTES(1), // 1-8Kb buffer size shows good perf readings
+        IAllocator &allocator = System_Allocator)
+        : Super(file_handle)
+        , size(size)
+        , accumulated(0)
+        , allocator(allocator)
+    {
+        buffer = allocator.reserve(size);
+    }
+
+    ~TBufferedFileTape() {
+        flush();
+        allocator.release(buffer);
+    }
+
+    bool flush() {
+        if (!Super::write(buffer, accumulated)) {
+            return false;
+        }
+        accumulated = 0;
+        return true;
+    }
+
+    bool write(const void *src, u64 amount) override {
+        u64 num_written = 0;
+        while (num_written != amount) {
+
+            if (accumulated == size) {
+                if (!flush()) return false;
+            }
+
+            u64 remaining = size - accumulated;
+            u64 bytes_to_write = min(remaining, amount - num_written);
+
+            memcpy(
+                buffer + accumulated,
+                umm(src) + num_written,
+                bytes_to_write);
+
+            accumulated += bytes_to_write;
+            num_written += bytes_to_write;
+        }
+
+        if (accumulated == size) {
+            if (!flush()) return false;
+        }
+
+        return true;
     }
 };
 

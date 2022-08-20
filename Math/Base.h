@@ -18,7 +18,7 @@ template <typename T>
 static _inline T max(T a, T b) { return a > b ? a : b; }
 
 template <typename T>
-static _inline T clamp(T x, T a, T b) { return max(a, min(x, b)); }
+static _inline T clamp(T x, T a, T b) { return max<T>(a, min<T>(x, b)); }
 
 /**
  * Approximation of e^x
@@ -89,4 +89,8 @@ static _inline float remap(
     float from2, float to2)
 {
     return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
+}
+
+static _inline f32 lerp(f32 a, f32 b, f32 t) {
+    return (1.f - t) * a + t * b;
 }

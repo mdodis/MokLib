@@ -15,13 +15,26 @@ TestCase::TestCase(Str name, Str unit, ProcTest proc)
     get_test_runner()->add_test(*this);
 }
 
-int TestRunner::run() {
+Benchmark::Benchmark(
+    Str name,
+    Str unit,
+    ProcBenchmark *proc,
+    const BenchmarkInputRange &input_range)
+    : name(name)
+    , unit(unit)
+    , proc(proc)
+    , input_range(input_range)
+{
+    get_test_runner()->add_benchmark(*this);
+}
+
+int TestRunner::run_tests() {
 
     for (TestCase &test_case : test_cases) {
         Console::set_color(Console::Output, ConsoleColor::Yellow);
         print(LIT("Running "));
         Console::set_color(Console::Output);
-        print(LIT("['$'] '$' ... "), test_case.unit, test_case.name);
+        print(LIT("[\"$\"] \"$\" ... "), test_case.unit, test_case.name);
 
         test_case.result = test_case.proc();
 
@@ -38,6 +51,41 @@ int TestRunner::run() {
     }
 
     return 0;
+}
+
+void TestRunner::run_benchmarks() {
+    for (Benchmark &benchmark : benchmarks) {
+
+        print(LIT("Benchmarking "));
+        print(LIT("[\"$\"] \"$\" ($-$-$) ... \n"),
+            benchmark.unit,
+            benchmark.name,
+            benchmark.input_range.start,
+            benchmark.input_range.step,
+            benchmark.input_range.end);
+
+        for (u64 iteration = benchmark.input_range.start;
+            (iteration <= benchmark.input_range.end);
+            (iteration += benchmark.input_range.step))
+        {
+            BenchmarkResult result = {};
+            result.iteration = iteration;
+            TimeSpec begin_time = now_time();
+            benchmark.proc(result);
+            TimeSpec end_time = now_time();
+            float s = (end_time - begin_time).to_s();
+
+            float units_per_second = (s <= 0.0001f)
+                ? 0.0f
+                : result.units_processed / s;
+            print(LIT("Iteration $ ($ units), $s $ units/s\n"),
+                iteration,
+                result.units_processed,
+                s,
+                units_per_second);
+        }
+
+    }
 }
 
 TestRunner *get_test_runner() {

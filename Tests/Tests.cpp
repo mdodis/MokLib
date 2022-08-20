@@ -1,5 +1,6 @@
 #include "Test/Test.h"
 #include "Thread/ThreadContext.h"
+#include "FileSystem/Extras.h"
 
 int main(int argc, char **argv) {
     {
@@ -7,5 +8,11 @@ int main(int argc, char **argv) {
         BOOTSTRAP_THREAD(SimpleThreadContext);
     }
 
-    return get_test_runner()->run();
+    int result = get_test_runner()->run_tests();
+    if (result != 0) {
+        print(LIT("$ Tests failed\n"), result);
+        return result;
+    }
+
+    get_test_runner()->run_benchmarks();
 }

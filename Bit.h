@@ -12,7 +12,7 @@ static _inline int32 bit_scan(uint32 value) {
         : -1;
 }
 
-#elif COMPILER_GCC
+#elif COMPILER_GCC || COMPILER_CLANG
 
 static _inline int32 bit_scan(uint32 value) {
     int result = __builtin_ffs(*((int*)&value));

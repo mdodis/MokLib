@@ -5,8 +5,9 @@
 #include "Parsing.h"
 #include "StringFormat.h"
 
-PROC_FMT_INL(Vec2) { format(tape, LIT("[$,$]"),type.x, type.y); }
-PROC_FMT_INL(Vec3) { format(tape, LIT("[$,$,$]"),type.x, type.y, type.z); }
+PROC_FMT_INL(Vec2i) { format(tape, LIT("[$,$]"),type.x, type.y); }
+PROC_FMT_INL(Vec2)  { format(tape, LIT("[$,$]"),type.x, type.y); }
+PROC_FMT_INL(Vec3)  { format(tape, LIT("[$,$,$]"),type.x, type.y, type.z); }
 PROC_PARSE_INL(Vec2) {
 
     i64 total_move_back = 0;

@@ -390,3 +390,21 @@ static _inline Vec3 operator*(const Quat &q, const Vec3 &v) {
     result = result + scale(cross(u, v), 2*s);
     return result;
 }
+
+template <>
+Vec3 max(Vec3 a, Vec3 b) {
+    return Vec3 {
+        max(a.x, b.x),
+        max(a.y, b.y),
+        max(a.z, b.z)
+    };
+}
+
+template <>
+Vec3 min(Vec3 a, Vec3 b) {
+    return Vec3 {
+        min(a.x, b.x),
+        min(a.y, b.y),
+        min(a.z, b.z)
+    };
+}

@@ -128,7 +128,9 @@ bool parse_i64(Tape *tape, i64 &result) {
             parsed_symbol = true;
         } break;
 
-        default: {} break;
+        default: {
+            tape->move(-1);
+        } break;
     }
 
     u64 result_u64;

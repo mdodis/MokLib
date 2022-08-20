@@ -147,12 +147,22 @@ struct DepthState {
     bool test = false;
 };
 
+struct ScissorState {
+    bool enabled = false;
+    i32 rect[4];
+};
+
+struct RasterizerState {
+    ScissorState scissor;
+};
+
 struct Pipeline {
     ShaderRes       *shader;
     ETopologyKind   topology;
     InputLayout     layout;
     ColorState      color_state;
     DepthState      depth_state;
+    RasterizerState rs;
 };
 
 struct Bindings {

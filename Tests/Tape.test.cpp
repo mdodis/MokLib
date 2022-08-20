@@ -1,6 +1,8 @@
 #include "Test/Test.h"
 #include "Tape.h"
 #include "Memory/Arena.h"
+#include "SliceTape.h"
+#include "FileSystem/FileSystem.h"
 #include <string.h>
 
 static bool read_tape_cmp(Tape *tape, Str expect, IAllocator &allocator) {
@@ -100,6 +102,25 @@ TEST_CASE(
 		REQUIRE(read_tape_cmp(&tape, LIT("oWorld"), temp), "");
 
 	}
+
+	return MPASSED();
+}
+
+TEST_CASE(
+	"Lib/Tape/BufferedFileTape",
+	"{'AHello world'}, write to file, writes completely")
+{
+	Str path = LIT("./test.txt");
+
+	{
+		TBufferedFileTape<true> tape(open_file_write(path), 5);
+		tape.write_str(LIT("A"));
+		tape.write_str(LIT("Hello world"));
+	}
+
+	auto check = open_read_tape(path);
+
+	REQUIRE(read_tape_cmp(&check, LIT("AHello world"), System_Allocator), "");
 
 	return MPASSED();
 }
