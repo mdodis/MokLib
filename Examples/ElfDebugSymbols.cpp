@@ -11,11 +11,6 @@ int main(int argc, char *argv[]) {
     }
     Elf::ReadContext ctx = Elf::open(&tape).unwrap();
 
-    print(LIT("Section table offset = $\nSection Table Entries = $\nclass = $\n"),
-        (u64)ctx.header->shoff,
-        (u32)ctx.header->shnum,
-        (u32)ctx.header->bitclass);
-
     return 0;
 }
 

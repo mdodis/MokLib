@@ -102,3 +102,11 @@ PROC_PARSE_INL(bool) {
     return true;
 }
 
+#define PROC_FMT_ENUM(enum_type, values) \
+    template <> \
+    void fmt(Tape *tape, const enum_type::Type &type) { \
+        switch (type) values\
+    }
+
+#define FMT_ENUM_CASE(enum_type, sub) \
+    case enum_type::sub: tape->write_str(LIT(#sub)); break

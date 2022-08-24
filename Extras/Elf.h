@@ -3,6 +3,8 @@
 #include "Config.h"
 #include "Result.h"
 #include "Str.h"
+#include "Delegates.h"
+#include "Types.h"
 
 namespace Elf {
 
@@ -268,14 +270,42 @@ struct Header64 {
     u32           eversion;
     u64           entry;
     u64           phoff;
-    u64           shoff;
+    u64           shoff; /* Section section header table offset */
     u32           flags;
     u16           ehsize;
     u16           phentsize;
     u16           phnum;
     u16           shentsize;
-    u16           shnum;
-    u16           shstrndx;
+    u16           shnum; /* Number of section header entries */
+    u16           shstrndx; /* Index of string table section header */
+};
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+struct PrgHeader64 {
+    u32 type;
+    u32 flags;
+    u64 offset;
+    u64 vaddr;
+    u64 paddr;
+    u64 filesz;
+    u64 memsz;
+    u64 align;
+};
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+struct SecHeader64 {
+    u32 name;
+    u32 type;
+    u64 flags;
+    u64 addr;
+    u64 offset;
+    u64 size;
+    u32 link;
+    u32 info;
+    u64 addralign;
+    u64 entsize;
 };
 #pragma pack(pop)
 
@@ -283,6 +313,23 @@ struct Header64 {
 struct MOKLIB_API ReadContext {
     Tape *tape;
     Header64 *header;
+    Raw string_table;
+
+    enum EnumerateSectionsAnswer {
+        DiscardHeader = 0,
+        KeepHeader,
+    };
+    using EnumerateSectionsDelegate = Delegate<
+        EnumerateSectionsAnswer,
+        SecHeader64*,
+        u16>;
+
+    bool enumerate_sections(
+        EnumerateSectionsDelegate &delegate,
+        IAllocator &allocator = System_Allocator);
+
+    Str find_string(u16 index);
+    SecHeader64 get_section_header()
 };
 
 MOKLIB_API Result<ReadContext, Str> open(
@@ -290,3 +337,9 @@ MOKLIB_API Result<ReadContext, Str> open(
     IAllocator &allocator = System_Allocator);
 
 };
+
+PROC_FMT_ENUM(Elf::Class, {
+    FMT_ENUM_CASE(Elf::Class, Invalid);
+    FMT_ENUM_CASE(Elf::Class, Bits32);
+    FMT_ENUM_CASE(Elf::Class, Bits64);
+})

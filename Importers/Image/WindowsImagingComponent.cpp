@@ -82,12 +82,12 @@ PROC_IMPORTER_LOAD(import_wic_load) {
     result->data.size = width * height * 4;
     result->data.buffer = alloc->reserve(result->data.size);
 
-    result->image.bpp        = 32;
-    result->image.format     = PixelFormat::RGBA8;
-    result->image.is_flipped = false;
-    result->image.pitch      = width * 4;
-    result->image.width      = width;
-    result->image.height     = height;
+    result->image.bpp          = 32;
+    result->image.format       = PixelFormat::RGBA8;
+    result->image.is_flipped   = false;
+    result->image.pitch        = width * 4;
+    result->image.dimensions.x = width;
+    result->image.dimensions.y = height;
 
     hr = format_converter->CopyPixels(
         0,
