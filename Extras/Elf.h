@@ -329,7 +329,9 @@ struct MOKLIB_API ReadContext {
         IAllocator &allocator = System_Allocator);
 
     Str find_string(u16 index);
-    SecHeader64 get_section_header()
+    SecHeader64 *get_section_header(
+        Str name,
+        IAllocator &allocator = System_Allocator);
 };
 
 MOKLIB_API Result<ReadContext, Str> open(

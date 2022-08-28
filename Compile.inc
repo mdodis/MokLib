@@ -22,6 +22,7 @@
 #include "Thread/ThreadContext.cpp"
 #include "Time/Time.cpp"
 #include "Thread/Thread.cpp"
+#include "Thread/Process.cpp"
 #include "Thread/Mutex.cpp"
 #include "Thread/Semaphore.cpp"
 #include "Thread/TimerQueue.cpp"

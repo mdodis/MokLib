@@ -34,40 +34,43 @@ Result<ReadContext, Str> open(Tape *tape, IAllocator &allocator) {
     // Find the string table
     u64 string_table_addr = 0;
     u64 string_table_size = 0;
-    auto find_string_table =
-        ReadContext::EnumerateSectionsDelegate::create_lambda(
-        [&](SecHeader64 *hdr, u16 index){
-            if (index != header->shstrndx)
-                return ReadContext::DiscardHeader;
-
-            string_table_addr = hdr->offset;
-            string_table_size = hdr->size;
+    auto find_string_table = ReadContext::EnumerateSectionsDelegate::create_lambda(
+    [&] (SecHeader64 *hdr, u16 index) {
+        if (index != header->shstrndx)
             return ReadContext::DiscardHeader;
-        });
+
+        string_table_addr = hdr->offset;
+        string_table_size = hdr->size;
+        return ReadContext::DiscardHeader;
+    });
 
     if (!result.enumerate_sections(find_string_table, allocator)) {
         return Err(LIT("Enumerate sections failed. File is probably malformed"));
     }
 
-    tape->move((i64)string_table_addr);
-    result.string_table.buffer = allocator.reserve(string_table_size);
-    result.string_table.size = string_table_size;
-    tape->read_raw(result.string_table);
+    {
+        ParseTape pt(tape);
+        DEFER(pt.restore());
 
-    print(LIT("String Table: $($)\n"), string_table_addr, string_table_size);
+        pt.move((i64)string_table_addr);
+        result.string_table.buffer = allocator.reserve(string_table_size);
+        result.string_table.size = string_table_size;
+        pt.read_raw(result.string_table);
 
-    for (u64 i = 0; i < string_table_size; ++i) {
-        char b = ((char*)result.string_table.buffer)[i];
-        if (b == 0) {
-            print(LIT(" "));
+        print(LIT("String Table: $($)\n"), string_table_addr, string_table_size);
 
-        } else {
-            print(LIT("$"), b);
+        for (u64 i = 0; i < string_table_size; ++i) {
+            char b = ((char*)result.string_table.buffer)[i];
+            if (b == 0) {
+                print(LIT(" "));
+
+            } else {
+                print(LIT("$"), b);
+            }
         }
+        print(LIT("\n"));
     }
-    print(LIT("\n"));
 
-    tape->move(-string_table_addr);
 
     return Ok(result);
 }
@@ -78,9 +81,6 @@ bool ReadContext::enumerate_sections(
 {
     ParseTape pt(tape);
     DEFER(pt.restore());
-    print(LIT("shstrndx :: $\n"), (u32)header->shstrndx);
-    print(LIT("shnum :: $\n"), (u32)header->shnum);
-    print(LIT("shoff :: $\n"), (u64)header->shoff);
 
     SecHeader64 *section_hdr = allocator.reserve<SecHeader64>(1);
 
@@ -92,6 +92,7 @@ bool ReadContext::enumerate_sections(
             return false;
         }
 
+
         auto result = delegate.call(section_hdr, i);
         if (result == ReadContext::KeepHeader) {
             // @todo: allocate new memory for next section header
@@ -102,19 +103,31 @@ bool ReadContext::enumerate_sections(
 }
 
 Str ReadContext::find_string(u16 index) {
-    if (index > header->shstrndx) {
-        return Str::NullStr;
+
+    char *str = (char*)string_table.buffer;
+    str = str + index;
+    return Str(str);
+}
+
+SecHeader64 *ReadContext::get_section_header(Str name, IAllocator &allocator) {
+    SecHeader64 *result = 0;
+    auto del = EnumerateSectionsDelegate::create_lambda(
+    [&] (SecHeader64* hdr, u16 index) {
+        Str hdr_name = find_string(hdr->name);
+        print(LIT("Section: $ ($)\n"), hdr_name, hdr->name);
+        if (hdr_name == name) {
+            result = hdr;
+            return EnumerateSectionsAnswer::KeepHeader;
+        } else {
+            return EnumerateSectionsAnswer::DiscardHeader;
+        }
+    });
+
+    if (!enumerate_sections(del, allocator)) {
+        return 0;
     }
 
-    // Start ptr (skip first null byte)
-    auto ptr = (char*)string_table.buffer;
-    for (u16 i = 0; i != index; ++i) {
-        ptr++;
-        while (*ptr) {
-            ptr++;
-        }
-    }
-    return Str(ptr);
+    return result;
 }
 
 

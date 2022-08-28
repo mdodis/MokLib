@@ -110,3 +110,4 @@ PROC_PARSE_INL(bool) {
 
 #define FMT_ENUM_CASE(enum_type, sub) \
     case enum_type::sub: tape->write_str(LIT(#sub)); break
+
