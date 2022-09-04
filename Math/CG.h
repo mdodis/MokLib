@@ -408,3 +408,18 @@ Vec3 min(Vec3 a, Vec3 b) {
         min(a.z, b.z)
     };
 }
+
+
+// template <typename T, int D>
+// struct TVec {
+//     T array[D];
+
+//     template <int D2>
+//     TVec(const TVec<T, D2> &other) {
+//         constexpr int n = min(D, D2);
+
+//         for (int i = 0; i < n; ++i) {
+//             array[]
+//         }
+//     }
+// };

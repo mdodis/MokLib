@@ -43,6 +43,10 @@ struct Sphere {
 struct Ray {
     Vec3 origin;
     Vec3 dir;
+
+    Vec3 at(float t) const {
+        return origin + dir * t;
+    }
 };
 
 bool sphere_vs_ray(const Ray &ray, const Sphere &sphere, float &t0) {

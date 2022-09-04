@@ -38,6 +38,9 @@ typedef char*       CStr;
     #error "Unsupported compiler type for _inline!"
 #endif
 
+// Signals that is function is not supposed to be used outside of the struct
+#define _internal
+
 /**
  * C Compatibility
  */
