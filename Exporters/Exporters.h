@@ -1,5 +1,6 @@
 #pragma once
-#include "Importers/Image/Image.h"
-#include "Str.h"
+#include "../Config.h"
+#include "../Importers/Image/Image.h"
+#include "../Str.h"
 
-void write_image_to_file(const Str &filepath, Image &image, umm data);
+void MOKLIB_API write_image_to_file(const Str &filepath, Image &image, umm data);

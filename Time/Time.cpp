@@ -1,8 +1,8 @@
 #include "Time.h"
-#include "Debugging/Assertions.h"
+#include "../Debugging/Assertions.h"
 
 #if OS_MSWINDOWS
-#include "WinInc.h"
+#include "../WinInc.h"
 
 static LARGE_INTEGER The_Counter;
 static bool _timespec_win32_has_counter = false;

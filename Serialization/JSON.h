@@ -1,5 +1,6 @@
 #pragma once
 #include "../Base.h"
+#include "../Config.h"
 #include "Serialization/Base.h"
 #include "StringFormat.h"
 #include "FileSystem/FileSystem.h"
@@ -10,16 +11,16 @@
  * @param  desc  Type Descriptor
  * @param  ptr   Pointer to type instance
  */
-PROC_SERIALIZE(json_serialize_pretty);
+MOKLIB_API PROC_SERIALIZE(json_serialize_pretty);
 
 /**
  * Deserialize an object from JSON
  * @param  output The output tape
  * @param  desc   Type Descriptor
- * @param  alloc Allocator for strings and any other object
+ * @param  alloc  Allocator for strings and any other object
  * @param  ptr    Pointer to type instance
  */
-PROC_DESERIALIZE(json_deserialize);
+MOKLIB_API PROC_DESERIALIZE(json_deserialize);
 
 /** Shorthand of json_parse */
 template <typename T>

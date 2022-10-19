@@ -1,7 +1,7 @@
 #pragma once
 #include "../Config.h"
 #include "../Base.h"
-#include "Memory/Arena.h"
+#include "../Memory/Arena.h"
 
 /**
  * Provides a common interface to TLS

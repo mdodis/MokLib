@@ -1,7 +1,7 @@
 #include "Thread.h"
 
 #if OS_MSWINDOWS
-#include "WinInc.h"
+#include "../WinInc.h"
 
 ThreadHandle create_thread(ProcThread *thread_proc, void *proc_data) {
 

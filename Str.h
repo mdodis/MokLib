@@ -139,7 +139,6 @@ struct MOKLIB_API Str {
     bool has_null_term = false;
 
     static constexpr u64 StartEnd = NumProps<u64>::max;
-    static const Str New_Line;
     static char Null;
     static const Str NullStr;
 };

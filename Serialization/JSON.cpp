@@ -1,8 +1,8 @@
 #include "JSON.h"
-#include "Containers/Array.h"
-#include "Variant.h"
-#include "StringFormat.h"
-#include "Parsing.h"
+#include "../Containers/Array.h"
+#include "../Variant.h"
+#include "../StringFormat.h"
+#include "../Parsing.h"
 
 #if COMPILER_MSVC
     #pragma warning(push)

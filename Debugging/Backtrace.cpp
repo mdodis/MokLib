@@ -4,6 +4,7 @@
 #include "StringFormat.h"
 #include <stdlib.h>
 #include "Tape.h"
+#include "../FileSystem/FileSystem.h"
 
 #if OS_MSWINDOWS
 #include "WinInc.h"

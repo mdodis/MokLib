@@ -8,7 +8,7 @@ struct MOKLIB_API Process {
 #if OS_LINUX
     int pid;
 #else
-    #error "No Process support for this platform!"
+    // #error "No Process support for this platform!"
 #endif
 };
 

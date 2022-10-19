@@ -4,9 +4,8 @@
 #include <string.h>
 #include "Math/Base.h"
 
-const Str Str::New_Line("\n", 1);
-char Str::Null = '\0';
 const Str Str::NullStr(0, 0);
+char Str::Null = '\0';
 
 Str::Str(const char *cstr) {
     data = (char*)cstr;

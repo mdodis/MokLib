@@ -15,8 +15,8 @@ static void get_conversion_constants(
     _ConversionConstants *result);
 
 bool ImageConverter::to_truecolor_rgba32(Desc *desc, Tape *output) {
-    const uint32 width  = (uint32)desc->image->width;
-    const uint32 height = (uint32)desc->image->height;
+    const u32 width = (u32)desc->image->width();
+    const uint32 height = (uint32)desc->image->height();
     uint32 final_image_size = width * height * sizeof(uint32);
 
 
@@ -95,8 +95,8 @@ static void get_conversion_constants(
 }
 
 Raw ImageConverter::to_truecolor_rgba32(Desc *desc) {
-    const uint32 width  = (uint32)desc->image->width;
-    const uint32 height = (uint32)desc->image->height;
+    const uint32 width  = (uint32)desc->image->width();
+    const uint32 height = (uint32)desc->image->height();
     uint32 final_image_size = width * height * sizeof(uint32);
     umm destination = desc->alloc->reserve(final_image_size);
 

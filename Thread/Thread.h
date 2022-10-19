@@ -1,9 +1,9 @@
 #pragma once
-#include "Base.h"
-#include "Config.h"
+#include "../Base.h"
+#include "../Config.h"
 
 #if OS_MSWINDOWS
-#include "Compat/Win32.h"
+#include "../Compat/Win32.h"
 
 #define PROC_THREAD(name) unsigned long name(void *data)
 
