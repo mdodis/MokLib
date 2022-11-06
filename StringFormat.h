@@ -36,6 +36,7 @@ static _inline void format(Tape *tape, Str fmt_str, const First &first, const Re
             if ((idx + 1) < fmt_str.len) {
                 if (fmt_str[idx + 1] == '$') {
                     idx += 2;
+                    tape->write_str(LIT("$"));
                     continue;
                 }
             }
