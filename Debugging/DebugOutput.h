@@ -1,8 +1,8 @@
 #pragma once
-#include "Base.h"
-#include "Str.h"
-#include "Config.h"
-#include "StringFormat.h"
+#include "../Base.h"
+#include "../Str.h"
+#include "../Config.h"
+#include "../StringFormat.h"
 
 MOKLIB_API struct Tape *get_debug_tape();
 MOKLIB_API void set_debug_tape(struct Tape *tape);

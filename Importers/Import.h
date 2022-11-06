@@ -1,8 +1,8 @@
 #pragma once
-#include "Base.h"
-#include "Math/Base.h"
-#include "Memory/RawBuffer.h"
-#include "Debugging/Base.h"
+#include "../Base.h"
+#include "../Math/Base.h"
+#include "../Memory/RawBuffer.h"
+#include "../Debugging/Base.h"
 #include "Image/Image.h"
 #include "Model/Model.h"
 

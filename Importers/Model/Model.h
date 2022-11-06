@@ -1,7 +1,7 @@
 #pragma once
-#include "Base.h"
-#include "Math/Base.h"
-#include "Debugging/Base.h"
+#include "../../Base.h"
+#include "../../Math/Base.h"
+#include "../../Debugging/Base.h"
 
 namespace IndexFormat {
     enum Type {

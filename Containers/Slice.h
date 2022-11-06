@@ -7,24 +7,24 @@
 template <typename T>
 struct Slice {
     T *ptr;
-    u32 count;
+    u64 count;
 
     constexpr Slice()
         : ptr(0)
         , count(0)
         {}
 
-    constexpr Slice(T *ptr, u32 count)
+    constexpr Slice(T *ptr, u64 count)
         : ptr(ptr)
         , count(count)
         {}
 
-    constexpr Slice(TArray<T> &array, u32 start = 0)
+    constexpr Slice(TArray<T> &array, u64 start = 0)
         : ptr(array.data + start)
         , count(array.size - start)
         {}
 
-    T &operator[](i32 index) const {
+    T &operator[](u64 index) const {
         ASSERT((index >= 0) && (index < count));
         return ptr[index];
     }

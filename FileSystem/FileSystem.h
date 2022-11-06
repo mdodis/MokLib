@@ -1,13 +1,13 @@
 #pragma once
 #include "../Config.h"
-#include "Host.h"
-#include "Str.h"
-#include "Memory/RawBuffer.h"
-#include "Memory/Arena.h"
-#include "Time/Time.h"
-#include "Tape.h"
-#include "Console.h"
-#include "Error.h"
+#include "../Host.h"
+#include "../Str.h"
+#include "../Memory/RawBuffer.h"
+#include "../Memory/Arena.h"
+#include "../Time/Time.h"
+#include "../Tape.h"
+#include "../Console.h"
+#include "../Error.h"
 
 enum class SymLinkKind {
     File,

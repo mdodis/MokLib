@@ -1,8 +1,8 @@
 #pragma once
-#include "Base.h"
-#include "Math/CG.h"
-#include "Debugging/Assertions.h"
-#include "Bit.h"
+#include "../../Base.h"
+#include "../../Math/CG.h"
+#include "../../Debugging/Assertions.h"
+#include "../../Bit.h"
 
 #define MOK_PIXEL_FORMATS                                                       \
     X(R8G8B8G4u,          "4 byte aligned 8bit components (RGB)")               \

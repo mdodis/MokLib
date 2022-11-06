@@ -67,6 +67,12 @@ MOKLIB_API bool parse_f64(Tape *tape, f64 &result);
 MOKLIB_API bool parse_str(Tape *tape, Str &result, IAllocator &allocator);
 
 PROC_FMT_INL(CStr) { tape->write_str(Str(type)); }
+
+template <size_t N>
+static _inline void fmt(Tape *tape, const char(&ar)[N]) {
+    tape->write_str(Str(ar, N, true));
+}
+
 PROC_FMT_INL(Str)  {
     if (type[type.len - 1] == 0)
         tape->write_str(type.chop_right(type.len - 2));

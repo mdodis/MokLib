@@ -1,8 +1,8 @@
 #pragma once
-#include "Config.h"
-#include "Base.h"
-#include "FileSystem/FileSystem.h"
-#include "Memory/Base.h"
+#include "../Config.h"
+#include "../Base.h"
+#include "../FileSystem/FileSystem.h"
+#include "../Memory/Base.h"
 
 #define PROC_IMPORTER_LOAD(name) bool name(FileHandle file_handle, IAllocator *alloc, struct Import *result)
 typedef PROC_IMPORTER_LOAD(ProcImporterLoad);

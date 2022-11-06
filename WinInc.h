@@ -28,7 +28,7 @@
 #define NOWH
 #define NOCOMM
 #define NOKANJI
-#define NOHELP
+// #define NOHELP
 #define NOPROFILER
 #define NODEFERWINDOWPOS
 #define NOMCX

@@ -1,9 +1,9 @@
 #include "Importer.h"
-#include "Base.h"
-#include "Defer.h"
-#include "FileSystem/FileSystem.h"
-#include "Importers/Import.h"
-#include "Memory/Arena.h"
+#include "Import.h"
+#include "../Base.h"
+#include "../Defer.h"
+#include "../FileSystem/FileSystem.h"
+#include "../Memory/Arena.h"
 
 bool match_against_extensions(const Str &match, const Str &extensions) {
 

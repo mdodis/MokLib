@@ -1,6 +1,5 @@
 #pragma once
 #include "Base.h"
-#include "Host.h"
 #include "Backtrace.h"
 #include "DebugOutput.h"
 // @todo: If we include this here, for some reason it doesnt compile

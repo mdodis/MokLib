@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.0.0)
 
 file(GLOB_RECURSE SOURCES ./*.cpp)
 
+set(MOKLIB_COMPILE_STANDALONE_IMPORTERS On CACHE FILEPATH "Additional")
+
 set(SOURCES
     "Arg.cpp"
     "Arguments.cpp"
@@ -37,7 +39,22 @@ set(SOURCES
     "Thread/ThreadContext.cpp"
     "Thread/TimerQueue.cpp"
     "Time/Time.cpp"
+    "Importers/Importer.cpp"
     )
+
+# if (MOKLIB_COMPILE_STANDALONE_IMPORTERS)
+#     set(SOURCES ${SOURCES}
+#         "Importers/Image/BMP.cpp"
+#         "Importers/Model/OBJ.cpp"
+#     )
+# endif()
+
+# Add Natvis file if we're on Windows
+if (WIN32)
+    set(SOURCES ${SOURCES}
+        "Lib.natvis"
+    )
+endif()
 
 add_library(MokLib SHARED 
     ${SOURCES})
@@ -52,3 +69,5 @@ target_compile_definitions(MokLib PRIVATE
 
 target_include_directories(MokLib PUBLIC
     "./")
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" CACHE INTERNAL "")
