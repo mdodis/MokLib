@@ -7,7 +7,23 @@
 
 static _inline void format(Tape *tape,
     Str fmt_str) {
-    tape->write_str(fmt_str);
+    
+    u64 idx = 0;
+
+    while (idx < fmt_str.len) {
+
+        if (fmt_str[idx] == '$') {
+            if ((idx + 1) < fmt_str.len) {
+                if (fmt_str[idx + 1] == '$') {
+                    idx += 1;
+                    continue;
+                }
+            }
+        }
+
+        tape->write((void*)(fmt_str.data + idx), 1);
+        idx++;
+    }
 }
 
 template <typename First, typename... Rest>
@@ -15,7 +31,14 @@ static _inline void format(Tape *tape, Str fmt_str, const First &first, const Re
     u64 idx = 0;
 
     while (idx < fmt_str.len) {
+
         if (fmt_str[idx] == '$') {
+            if ((idx + 1) < fmt_str.len) {
+                if (fmt_str[idx + 1] == '$') {
+                    idx += 2;
+                    continue;
+                }
+            }
             fmt(tape, first);
             break;
         }
@@ -108,7 +131,10 @@ struct TFmtStr {
                 case '\f': tape->write_str(LIT(R"(\f)")); break;
                 case '\n': tape->write_str(LIT(R"(\n)")); break;
                 case '\b': tape->write_str(LIT(R"(\b)")); break;
-
+                // @fixme: We shouldn't be able to get to this point
+                // so, if this hits, then it means we're losing some null
+                // terminators on other functions 
+                case '\0': break;
                 default: {
                     tape->write_char(str[i]);
                 } break;
