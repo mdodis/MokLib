@@ -42,9 +42,9 @@ bool ArgCollection::parse_args(const Slice<Str> &params) {
 void ArgCollection::summary() {
 	for (IArg *arg : args) {
 		if (arg->id == LIT("_")) {
-			print(LIT("Unnamed argument: $ ($)\n"), arg->description, arg->type);
+			print(LIT("Unnamed argument: {} ({})\n"), arg->description, arg->type);
 		} else {
-			print(LIT("-$ ($): $\n"), arg->id, arg->type, arg->description);
+			print(LIT("-{} ({}): {}\n"), arg->id, arg->type, arg->description);
 		}
 	}
 }

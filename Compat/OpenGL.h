@@ -90,7 +90,23 @@ static _inline gl::Enum shader_part_kind_to_glenum(EShaderPartResKind kind) {
     return table[kind];
 }
 
-static _inline void input_layout_attr_to_glprops(
+
+namespace VertexAttribPointerVariantHint {
+    enum Type {
+        // Use glVertexAttribPointer: When normalization is enabled, data will 
+        // be mapped to either [-1, 1] or [0, 1], depending on signage. 
+        // Otherwise, all values will be converted to floating-point values
+        Default,
+        // Use glVertexAttribIPointer: Only accepts integer values, and data
+        // will be passed as integers (i.e. no conversion to floats).
+        Integer,
+        // Use glVertexAttribLPointer: Only accepts doubles.
+        Long
+    };
+}
+typedef VertexAttribPointerVariantHint::Type EVertexAttribPointerVariantHint;
+
+static _inline EVertexAttribPointerVariantHint input_layout_attr_to_glprops(
     EInputLayoutAttrKind kind,
     gl::Int &size,
     gl::Enum &type,
@@ -101,36 +117,49 @@ static _inline void input_layout_attr_to_glprops(
             size = 0;
             type = gl::None;
             istride = 0;
+            return VertexAttribPointerVariantHint::Default;
         } break;
 
         case InputLayoutAttrKind::Int: {
             size = 1;
             type = gl::Integer;
             istride = sizeof(gl::Int);
+            return VertexAttribPointerVariantHint::Integer;
+        } break;
+
+        case InputLayoutAttrKind::Float: {
+            size = 1;
+            type = gl::Float;
+            istride = sizeof(gl::Float);
+            return VertexAttribPointerVariantHint::Default;
         } break;
 
         case InputLayoutAttrKind::Float2: {
             size = 2;
             type = gl::Float;
             istride = 2 * sizeof(gl::Float);
+            return VertexAttribPointerVariantHint::Default;
         } break;
 
         case InputLayoutAttrKind::Float3: {
             size = 3;
             type = gl::Float;
             istride = 3 * sizeof(gl::Float);
+            return VertexAttribPointerVariantHint::Default;
         } break;
 
         case InputLayoutAttrKind::Float4: {
             size = 4;
             type = gl::Float;
             istride = 4 * sizeof(gl::Float);
+            return VertexAttribPointerVariantHint::Default;
         } break;
 
         case InputLayoutAttrKind::Int4: {
             size = 4;
             type = gl::Integer;
             istride = 0;
+            return VertexAttribPointerVariantHint::Integer;
         } break;
     }
 }

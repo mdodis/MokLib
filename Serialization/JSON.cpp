@@ -242,7 +242,7 @@ static void json_output_pretty_value(Tape *output, IDescriptor *desc, umm ptr, u
 
         case TypeClass::String: {
             TFmtStr<FmtPolicy::WithQuotes> sf(as<Str>(ptr));
-            format(output, LIT("$"), sf);
+            format(output, LIT("{}"), sf);
         } break;
 
         case TypeClass::Object: {

@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     }
     Elf::ReadContext ctx = Elf::open(&tape).unwrap();
 
-    print(LIT("Off $\n"), tape.current_offset);
+    print(LIT("Off {}\n"), tape.current_offset);
     auto *debug_line_sec = ctx.get_section_header(LIT(".debug_line"));
     if (!debug_line_sec) {
         print(LIT("Failed to find debug_line section\n"));

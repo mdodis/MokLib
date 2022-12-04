@@ -85,7 +85,7 @@ struct PrimitiveDescriptor : IPrimitiveDescriptor {
         {}
 
     virtual void format_primitive(Tape *out, umm ptr) override {
-        format(out, LIT("$"), *((T*)ptr));
+        format(out, LIT("{}"), *((T*)ptr));
     }
 
     virtual Str type_name() override { return type_name_str; }

@@ -34,7 +34,7 @@ int TestRunner::run_tests() {
         Console::set_color(Console::Output, ConsoleColor::Yellow);
         print(LIT("Running "));
         Console::set_color(Console::Output);
-        print(LIT("[\"$\"] \"$\" ... "), test_case.unit, test_case.name);
+        print(LIT("[\"{}\"] \"{}\" ... "), test_case.unit, test_case.name);
 
         test_case.result = test_case.proc();
 
@@ -44,7 +44,7 @@ int TestRunner::run_tests() {
             Console::set_color(Console::Output);
         } else {
             Console::set_color(Console::Output, ConsoleColor::Red + ConsoleColor::Bold);
-            print(LIT("Failed\n\t$"), test_case.result.reason);
+            print(LIT("Failed\n\t{}"), test_case.result.reason);
             Console::set_color(Console::Output);
         }
         print(LIT("\n"));
@@ -57,7 +57,7 @@ void TestRunner::run_benchmarks() {
     for (Benchmark &benchmark : benchmarks) {
 
         print(LIT("Benchmarking "));
-        print(LIT("[\"$\"] \"$\" ($-$-$) ... \n"),
+        print(LIT("[\"{}\"] \"{}\" ({}-{}-{}) ... \n"),
             benchmark.unit,
             benchmark.name,
             benchmark.input_range.start,
@@ -78,7 +78,7 @@ void TestRunner::run_benchmarks() {
             float units_per_second = (s <= 0.0001f)
                 ? 0.0f
                 : result.units_processed / s;
-            print(LIT("Iteration $ ($ units), $s $ units/s\n"),
+            print(LIT("Iteration {} ({} units), {}s {} units/s\n"),
                 iteration,
                 result.units_processed,
                 s,

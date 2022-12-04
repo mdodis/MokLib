@@ -1,3 +1,4 @@
+
 #include "Backtrace.h"
 #include "Host.h"
 #include "Memory/Base.h"
@@ -93,7 +94,7 @@ void print_backtrace(Tape *tape) {
             break;
         }
 
-        format(tape, LIT("↪ $:$ in $\n"),
+        format(tape, LIT("↪ {}:{} in {}\n"),
             Str(line->FileName),
             (u32)line->LineNumber,
             Str(((char*)&symbol->Name), symbol->NameLen));
@@ -131,7 +132,7 @@ void print_backtrace(Tape *tape) {
     for (int i = 0; i < size; ++i) {
         Str s(symbols[i]);
 
-        format(tape, LIT("At: $\n"), s);
+        format(tape, LIT("At: {}\n"), s);
     }
 }
 

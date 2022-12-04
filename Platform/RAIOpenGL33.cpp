@@ -2,7 +2,6 @@
 #include "Compat/OpenGL.h"
 #include "FileSystem/Extras.h"
 
-
 #define GL_PROCS \
 X(Clear,                   void, gl::Enum mask) \
 X(Flush,                   void, void) \
@@ -19,6 +18,7 @@ X(Viewport,                void, gl::Int x, gl::Int y, gl::Sizei width, gl::Size
 X(GenVertexArrays,         void, gl::Sizei n, gl::UInt *arrays) \
 X(BindVertexArray,         void, gl::UInt array) \
 X(VertexAttribPointer,     void, gl::UInt index, gl::Int size, gl::Enum type, gl::Bool normalized, gl::Sizei stride, const void *pointer) \
+X(VertexAttribIPointer,    void, gl::UInt index, gl::Int size, gl::Enum type, gl::Sizei stride, const void *pointer) \
 X(EnableVertexAttribArray, void, gl::UInt array) \
 X(BufferData,              void, gl::Enum target, gl::Sizei size, const void *data, GLenum usage) \
 X(BufferSubData,           void, gl::Enum target, gl::IntPtr offset, gl::SizeiPtr size, const void *data) \
@@ -58,7 +58,7 @@ X(GetBufferParameteriv,    void, gl::Enum target, gl::Enum value, gl::Int *data)
         GL.proc;                                                       \
         int err = GL.GetError();                                       \
         if (err != 0) {                                                \
-            print(LIT("Unexpected gl error: $ on call $\n  -> $:$\n"), \
+            print(LIT("Unexpected gl error: {} on call {}\n  -> {}:{}\n"), \
                 TFmtHex(err),                                          \
                 LIT(#proc),                                            \
                 LIT(__FILE__),                                         \
@@ -72,7 +72,7 @@ X(GetBufferParameteriv,    void, gl::Enum target, gl::Enum value, gl::Int *data)
         proc;                                                          \
         int err = GL.GetError();                                       \
         if (err != 0) {                                                \
-            print(LIT("Unexpected gl error: $ on call $\n  -> $:$\n"), \
+            print(LIT("Unexpected gl error: {} on call {}\n  -> {}:{}\n"), \
                 TFmtHex(err),                                          \
                 LIT(#proc),                                            \
                 LIT(__FILE__),                                         \
@@ -98,7 +98,7 @@ struct GL33AttributeBinding {
 
 struct RAICache {
     enum {
-        NumLayoutAttrs = 6,
+        NumLayoutAttrs = 10,
         NumBufferSlots = 4,
     };
     InputLayoutAttr attrs[NumLayoutAttrs] = {};
@@ -127,6 +127,12 @@ GL_PROCS
 
 
 static void rai_gl33_update_layout(Slice<InputLayoutAttr> new_attrs) {
+    if (new_attrs.count > RAICache::NumLayoutAttrs) {
+        print(LIT("Cannot support this many layout attributes {} < {}"),
+            u32(RAICache::NumLayoutAttrs), 
+            new_attrs.count);
+        return;
+    }
     GL.cached.num_attrs = new_attrs.count;
     for (u32 i = 0; i < new_attrs.count; ++i) {
         if (new_attrs[i] != GL.cached.attrs[i]) {
@@ -172,6 +178,13 @@ static void rai_gl33_check_cache() {
 
     for (u32 i = 0; i < GL.cached.num_attrs; ++i) {
         InputLayoutAttr &attr = GL.cached.attrs[i];
+        
+        BufferRes &buffer = GL.cached.buffers[attr.slot];
+        if (buffer.kind != BufferResKind::Vertex) {
+            print(LIT(
+                "Buffer detected in cache that's not a vertex buffer, "
+                "and thus cannot be associated with an input layout slot\n"));
+        }
 
         GLC(BindBuffer(
             gl::ArrayBuffer,
@@ -180,18 +193,37 @@ static void rai_gl33_check_cache() {
         gl::Int size;
         gl::Enum type;
         gl::Sizei istride;
-        input_layout_attr_to_glprops(
+        auto hint = input_layout_attr_to_glprops(
             attr.kind,
             size,
             type,
             istride);
-        GLC(VertexAttribPointer(
-            i,
-            size,
-            type,
-            false,
-            attr.stride,
-            (void*)((uintptr_t)attr.offset)));
+
+        switch (hint) {
+            case VertexAttribPointerVariantHint::Default: {
+                GLC(VertexAttribPointer(
+                    i,
+                    size,
+                    type,
+                    false,
+                    attr.stride,
+                    (void*)((uintptr_t)attr.offset)));
+            } break;
+
+            case VertexAttribPointerVariantHint::Integer: {
+                GLC(VertexAttribIPointer(
+                    i,
+                    size,
+                    type,
+                    attr.stride,
+                    (void*)((uintptr_t)attr.offset)));
+            } break;
+
+            default: {
+                UNIMPLEMENTED();
+            } break;
+        }
+        
         GLC(EnableVertexAttribArray(i));
 
         if (attr.usage == InputLayoutAttrUsage::PerInstance) {
@@ -199,6 +231,20 @@ static void rai_gl33_check_cache() {
         } else {
             GLC(VertexAttribDivisor(i, 0));
         }
+    }
+
+
+
+    for (int i = 0; i < GL.cached.num_buffers; ++i) {
+        auto &buffer = GL.cached.buffers[i];
+        if (buffer.kind == BufferResKind::Index) {
+            GLC(BindBuffer(gl::ElementArrayBuffer, (gl::UInt)buffer.handle));
+        }
+
+        if (buffer.kind == BufferResKind::Constant) {
+            GLC(BindBufferBase(gl::UniformBuffer, 0, (gl::UInt)buffer.handle));
+        }
+
     }
 
 }
@@ -299,7 +345,7 @@ PROC_RAI_CREATE_SHADER_PART(rai_gl33_create_shader_part) {
         char info_log[512];
 
         GL.GetShaderInfoLog(shader_id, sizeof(info_log), 0, info_log);
-        print(LIT("GL: Shader compilation failed -- $\n"), Str(info_log));
+        print(LIT("GL: Shader compilation failed -- {}\n"), Str(info_log));
 
         return Err(RAIError::FailedToAllocateResource);
     }
@@ -325,7 +371,7 @@ PROC_RAI_CREATE_SHADER(rai_gl33_create_shader) {
     if (!success) {
         char info_log[512];
         GL.GetProgramInfoLog(program, sizeof(info_log), 0, info_log);
-        print(LIT("GL: program linkage failed -- $\n"), Str(info_log));
+        print(LIT("GL: program linkage failed -- {}\n"), Str(info_log));
 
         return Err(RAIError::FailedToAllocateResource);
     }
@@ -336,16 +382,12 @@ PROC_RAI_CREATE_SHADER(rai_gl33_create_shader) {
 PROC_RAI_SET_BINDINGS(rai_gl33_set_bindings) {
 
     rai_gl33_update_bindings(*bindings);
-
-    gl::UInt index_buffer_id = bindings->index
-        ? (gl::UInt)bindings->index->handle
-        : 0;
-    gl::UInt const_buffer_id = bindings->constant
-        ? (gl::UInt)bindings->constant->handle
-        : 0;
-
-    GLC(BindBuffer(gl::ElementArrayBuffer, index_buffer_id));
-    GLC(BindBufferBase(gl::UniformBuffer, 0, const_buffer_id));
+    // gl::UInt index_buffer_id = bindings->index
+    //     ? (gl::UInt)bindings->index->handle
+    //     : 0;
+    // gl::UInt const_buffer_id = bindings->constant
+    //     ? (gl::UInt)bindings->constant->handle
+    //     : 0;
 
     for (int i = 0; i < bindings->ps_textures.count; ++i) {
         TextureRes *r = bindings->ps_textures[i];
@@ -445,6 +487,7 @@ PROC_RAI_CREATE_TEXTURE(rai_gl33_create_texture) {
 PROC_RAI_GET_BUFFER_SIZE(rai_gl33_get_buffer_size) {
     gl::Enum buffer_kind = buffer_res_kind_to_glenum(buffer->kind);
     gl::Int result;
+    GLC(BindBuffer(buffer_kind, buffer->handle));
     GLC(GetBufferParameteriv(buffer_kind, gl::BufferSize, &result));
     return result;
 }
@@ -461,7 +504,7 @@ PROC_RAI_INITIALIZE(rai_gl33_init) {
     Str failed_proc = load_procs(params->get_proc);
 
     if (failed_proc != Str::NullStr) {
-        print(LIT("Failed to load proc $"), failed_proc);
+        print(LIT("Failed to load proc {}"), failed_proc);
         return false;
     }
 

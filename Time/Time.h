@@ -11,6 +11,7 @@
 struct MOKLIB_API TimeSpec {
     TimeSpec() {}
     TimeSpec(u64 ms);
+    TimeSpec(float seconds) : TimeSpec(u64(seconds * 1000.f)) {}
     #if OS_MSWINDOWS
         u64 time;
     #elif OS_LINUX

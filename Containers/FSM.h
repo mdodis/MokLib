@@ -41,14 +41,18 @@ struct FSMTransition {
 
 };
 
+typedef Delegate<void> FSMChangedDelegate;
+
 template <u32 NumStates, u32 NumTransitions>
 struct TFSM {
     TArr<FSMState, NumStates> states;
     TArr<FSMTransition, NumTransitions> transitions;
+    FSMChangedDelegate on_changed;
 
     float current_time = 0.f;
     u32 current_state = 0, target_state = 0;
     FSMTransition *current_transition = 0;
+    bool changed = false;
 
     void change_to(u32 state) {
         target_state = state;
@@ -70,11 +74,15 @@ struct TFSM {
             current_time = 0.f;
             current_transition->on_update.call(0.f);
         }
+        on_changed.call_safe();
+        changed = true;
     }
 
     void update(f32 dt) {
-        if (!current_transition)
+        changed = false;
+        if (!current_transition) {
             return;
+        }
 
         current_time += dt;
 
@@ -86,6 +94,8 @@ struct TFSM {
             states[current_state].on_enter.call();
             current_transition = 0;
         }
+        on_changed.call_safe();
+        changed = true;
 
     }
 };

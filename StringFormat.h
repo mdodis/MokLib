@@ -8,22 +8,7 @@
 static _inline void format(Tape *tape,
     Str fmt_str) {
     
-    u64 idx = 0;
-
-    while (idx < fmt_str.len) {
-
-        if (fmt_str[idx] == '$') {
-            if ((idx + 1) < fmt_str.len) {
-                if (fmt_str[idx + 1] == '$') {
-                    idx += 1;
-                    continue;
-                }
-            }
-        }
-
-        tape->write((void*)(fmt_str.data + idx), 1);
-        idx++;
-    }
+    tape->write_str(fmt_str);
 }
 
 template <typename First, typename... Rest>
@@ -32,16 +17,12 @@ static _inline void format(Tape *tape, Str fmt_str, const First &first, const Re
 
     while (idx < fmt_str.len) {
 
-        if (fmt_str[idx] == '$') {
-            if ((idx + 1) < fmt_str.len) {
-                if (fmt_str[idx + 1] == '$') {
-                    idx += 2;
-                    tape->write_str(LIT("$"));
-                    continue;
-                }
+        if (fmt_str[idx] == '{') {
+            if (((idx + 1) < fmt_str.len) && (fmt_str[idx + 1] == '}')) {
+                fmt(tape, first);
+                idx += 1;
+                break;
             }
-            fmt(tape, first);
-            break;
         }
 
         tape->write((void*)(fmt_str.data + idx), 1);
@@ -160,7 +141,7 @@ static _inline void fmt(Tape *tape, const TFmtStr<Policy> &type) {
 
 static _inline Str null_terminate(const Str &str, IAllocator &alloc = System_Allocator) {
     if (!str.has_null_term) {
-        return format(alloc, LIT("$\0"), str);
+        return format(alloc, LIT("{}\0"), str);
     }
     return str;
 }
@@ -170,7 +151,7 @@ static _inline Str make_folder_path(const Str &str, IAllocator &alloc = System_A
 
     return format(
         alloc,
-        LIT("$$\0"),
+        LIT("{}{}\0"),
         str,
         gen_slash ? LIT("/") : Str::NullStr);
 }

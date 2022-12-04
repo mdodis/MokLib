@@ -82,6 +82,7 @@ struct TextureResDesc {
 namespace InputLayoutAttrKind {
     enum Type : u32 {
         None,
+        Float,
         Float2,
         Float3,
         Float4,

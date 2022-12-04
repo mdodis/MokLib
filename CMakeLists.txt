@@ -39,6 +39,7 @@ set(SOURCES
     "Thread/ThreadContext.cpp"
     "Thread/TimerQueue.cpp"
     "Time/Time.cpp"
+    "Time/TimerGroup.cpp"
     "Importers/Importer.cpp"
     )
 
@@ -71,3 +72,5 @@ target_include_directories(MokLib PUBLIC
     "./")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" CACHE INTERNAL "")
+
+add_subdirectory("Tests")

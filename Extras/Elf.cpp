@@ -57,7 +57,7 @@ Result<ReadContext, Str> open(Tape *tape, IAllocator &allocator) {
         result.string_table.size = string_table_size;
         pt.read_raw(result.string_table);
 
-        print(LIT("String Table: $($)\n"), string_table_addr, string_table_size);
+        print(LIT("String Table: {}({})\n"), string_table_addr, string_table_size);
 
         for (u64 i = 0; i < string_table_size; ++i) {
             char b = ((char*)result.string_table.buffer)[i];
@@ -65,7 +65,7 @@ Result<ReadContext, Str> open(Tape *tape, IAllocator &allocator) {
                 print(LIT(" "));
 
             } else {
-                print(LIT("$"), b);
+                print(LIT("{}"), b);
             }
         }
         print(LIT("\n"));
@@ -114,7 +114,7 @@ SecHeader64 *ReadContext::get_section_header(Str name, IAllocator &allocator) {
     auto del = EnumerateSectionsDelegate::create_lambda(
     [&] (SecHeader64* hdr, u16 index) {
         Str hdr_name = find_string(hdr->name);
-        print(LIT("Section: $ ($)\n"), hdr_name, hdr->name);
+        print(LIT("Section: {} ({})\n"), hdr_name, hdr->name);
         if (hdr_name == name) {
             result = hdr;
             return EnumerateSectionsAnswer::KeepHeader;

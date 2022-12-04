@@ -234,6 +234,13 @@ struct Delegate : DelegateBase {
         return ((IDelegateT*)get_delegate())->call(std::forward<Args>(args)...);
     }
 
+    RetVal call_safe(Args... args) const {
+        if (is_bound) {
+            return call(std::forward<Args>(args)...);
+        } else {
+            return RetVal();
+        }
+    }
 };
 
 /**

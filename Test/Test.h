@@ -28,7 +28,7 @@
             return TestResult {                     \
                 false, format(                      \
                     System_Allocator,               \
-                    LIT("'$' failed (At $:$) - $"), \
+                    LIT("'{}' failed (At {}:{}) - {}"), \
                     LIT(MSTR(expr)),                \
                     LIT(__FILE__),                  \
                     LIT(MSTR(__LINE__)),            \

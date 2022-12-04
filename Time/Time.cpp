@@ -25,37 +25,52 @@ TimeSpec now_time() {
     return result;
 }
 
-uint64 TimeSpec::to_ms(void) {
+u64 TimeSpec::to_ms(void) {
     query_frequency();
     return (time * 1000) / The_Counter.QuadPart;
 }
 
 float TimeSpec::to_s(void) {
-    uint64 ms = to_ms();
+    u64 ms = to_ms();
 
     return float((double)ms / 1000.0);
 }
 
 TimeSpec operator-(const TimeSpec &lhs, const TimeSpec &rhs) {
     TimeSpec result;
-    result.time = (uint64)(lhs.time - rhs.time);
+    result.time = (u64)(lhs.time - rhs.time);
+    return result;
+}
+
+TimeSpec operator+(const TimeSpec &lhs, const TimeSpec &rhs) {
+    TimeSpec result;
+    result.time = (u64)(lhs.time + rhs.time);
     return result;
 }
 
 int compare_time(const TimeSpec &lhs, const TimeSpec &rhs) {
     // @todo: is this even right ??
-    ULARGE_INTEGER lhs_int, rhs_int;
-    lhs_int.QuadPart = lhs.time;
-    rhs_int.QuadPart = rhs.time;
+    // ULARGE_INTEGER lhs_int, rhs_int;
+    // lhs_int.QuadPart = lhs.time;
+    // rhs_int.QuadPart = rhs.time;
 
-    FILETIME lhs_time, rhs_time;
-    lhs_time.dwHighDateTime = lhs_int.HighPart;
-    lhs_time.dwLowDateTime  = lhs_int.LowPart;
+    // @todo: Somehow this compares file times. Why?
+    // FILETIME lhs_time, rhs_time;
+    // lhs_time.dwHighDateTime = lhs_int.HighPart;
+    // lhs_time.dwLowDateTime  = lhs_int.LowPart;
 
-    rhs_time.dwHighDateTime = rhs_int.HighPart;
-    rhs_time.dwLowDateTime  = rhs_int.LowPart;
+    // rhs_time.dwHighDateTime = rhs_int.HighPart;
+    // rhs_time.dwLowDateTime  = rhs_int.LowPart;
 
-    return CompareFileTime(&rhs_time, &lhs_time);
+    // return CompareFileTime(&rhs_time, &lhs_time);
+
+    if (lhs.time < rhs.time) {
+        return -1;
+    } else if (lhs.time == rhs.time) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 

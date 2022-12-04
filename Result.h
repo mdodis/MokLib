@@ -51,7 +51,7 @@ struct Result {
         if (!ok()) {
 
             if constexpr (HasFmt<ErrKind>::value) {
-                debug_print(LIT("Result unwrap() failed: $\n"), err());
+                debug_print(LIT("Result unwrap() failed: {}\n"), err());
             } else {
                 debug_print(LIT("Result unwrap() failed\n"));
             }
