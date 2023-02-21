@@ -97,7 +97,7 @@ PROC_PARSE_INL(i32)	{ return _pass_parse<i64, i32>(tape, result, allocator); }
 PROC_FMT_INL(f32)	{ fmt<f64>(tape, (f64)type); }
 PROC_PARSE_INL(f32)	{ return _pass_parse<f64, f32>(tape, result, allocator); }
 PROC_PARSE_INL(bool) {
-    Str bstring = parse_string_no_quotes(tape, allocator);
+    Str bstring = parse_string(tape, allocator, is_letter);
     if (bstring == LIT("true")) {
         result = true;
     } else if (bstring == LIT("false")) {

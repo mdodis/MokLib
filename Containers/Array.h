@@ -197,6 +197,8 @@ struct TArr {
 		return elements;
 	}
 
+	constexpr u32 count() const { return Count; }
+
 	FwdIter begin() const { return FwdIter((T*)elements, 0); }
 	FwdIter end()   const { return FwdIter((T*)elements, Count); }
 };

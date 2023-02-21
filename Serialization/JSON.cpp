@@ -12,7 +12,8 @@
 static bool parse_object(Tape *in, IAllocator &alloc, DescPair pair);
 static bool parse_qstr(Tape *in, IAllocator &alloc, Str &result);
 static bool parse_value(Tape *in, IAllocator &alloc, DescPair pair);
-static bool parse_number(Tape *in, IAllocator &alloc, DescPair pair);
+static bool parse_number(Tape* in, IAllocator& alloc, DescPair pair);
+static bool parse_bool(Tape *in, IAllocator &alloc, DescPair pair);
 static bool parse_string(Tape *in, IAllocator &alloc, DescPair pair);
 static bool parse_array(Tape *in, IAllocator &alloc, DescPair pair);
 
@@ -111,6 +112,12 @@ static bool parse_value(Tape *in, IAllocator &alloc, DescPair pair) {
             return parse_number(in, alloc, pair);
         } break;
 
+        case 't':
+        case 'f': {
+            in->move(-1);
+            return parse_bool(in, alloc, pair);
+        } break;
+
         case '[': {
             in->move(-1);
             return parse_array(in, alloc, pair);
@@ -127,6 +134,13 @@ static bool parse_number(Tape *in, IAllocator &alloc, DescPair pair) {
         return parse<f32>(in, (*(float*)pair.ptr));
     }
 
+    return false;
+}
+
+static bool parse_bool(Tape* in, IAllocator& alloc, DescPair pair) {
+    if (IS_A(pair.desc, PrimitiveDescriptor<bool>)) {
+        return parse<bool>(in, (*(bool*)pair.ptr));
+    }
     return false;
 }
 
