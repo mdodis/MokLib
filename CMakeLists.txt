@@ -18,6 +18,7 @@ set(SOURCES
     "StringFormat.cpp"
     "Tape.cpp"
     "Types.cpp"
+    "Types.h"
     "Converters/ImageConverter.cpp"
     "Debugging/Backtrace.cpp"
     "Debugging/DebugOutput.cpp"
@@ -45,6 +46,8 @@ set(SOURCES
     "Time/Time.cpp"
     "Time/TimerGroup.cpp"
     "Importers/Importer.cpp"
+    "Compat/Win32Base.h"
+    "Compat/Win32Extra.h"
     )
 
 # if (MOKLIB_COMPILE_STANDALONE_IMPORTERS)
@@ -62,7 +65,7 @@ if (WIN32)
 endif()
 
 add_library(MokLib SHARED 
-    ${SOURCES})
+    ${SOURCES} )
 
 target_compile_features(MokLib PUBLIC
     cxx_std_17)

@@ -111,6 +111,11 @@ struct TArray {
 		return true;
 	}
 
+	void init_range(u64 amount) {
+		init(amount);
+		size = amount;
+	}
+
 	bool stretch() {
 		T *new_data = (T*)alloc->resize((umm)data, capacity * sizeof(T), capacity * 2 * sizeof(T));
 		if (!new_data) return false;
