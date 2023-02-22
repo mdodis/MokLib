@@ -1,36 +1,45 @@
 #pragma once
 
-#define WIN32_DECLARE_HANDLE(name) struct name##__{int unused;}; typedef struct name##__ *name
-#define WIN32_DECLARE_WNDPROC(name) Win32::LRESULT name(Win32::HWND hwnd, Win32::UINT msg, Win32::WPARAM wparam, Win32::LPARAM lparam)
+#define WIN32_DECLARE_HANDLE(name) \
+    struct name##__ {              \
+        int unused;                \
+    };                             \
+    typedef struct name##__* name
+#define WIN32_DECLARE_WNDPROC(name) \
+    Win32::LRESULT name(            \
+        Win32::HWND   hwnd,         \
+        Win32::UINT   msg,          \
+        Win32::WPARAM wparam,       \
+        Win32::LPARAM lparam)
 #define WIN32_MAKEINTRESOURCEA(i) ((LPSTR)((ULONG_PTR)((WORD)(i))))
 #define WIN32_MAKEINTRESOURCEW(i) ((LPWSTR)((ULONG_PTR)((WORD)(i))))
 
 namespace Win32 {
     WIN32_DECLARE_HANDLE(HINSTANCE);
     typedef HINSTANCE HMODULE;
-    
-    typedef unsigned long DWORD;
-    typedef int BOOL;
-    typedef int INT;
-    typedef long LONG;
-    typedef unsigned int UINT;
-    typedef unsigned char BYTE;
-    typedef unsigned short WORD;
-    typedef float FLOAT;
-    typedef long long INT_PTR;
-    typedef char CHAR;
-    typedef CHAR* LPSTR;
-    typedef const CHAR* LPCSTR;
-    typedef wchar_t WCHAR;
-    typedef WCHAR* LPWSTR;
-    typedef const WCHAR* LPCWSTR;
-    typedef unsigned __int64 UINT_PTR, * PUINT_PTR;
-    typedef __int64 LONG_PTR, * PLONG_PTR;
-    typedef unsigned __int64 ULONG_PTR, * PULONG_PTR;
-    typedef UINT_PTR WPARAM;
-    typedef LONG_PTR LPARAM;
-    typedef LONG_PTR LRESULT;
-    typedef void* LPVOID;
+
+    typedef unsigned long    DWORD;
+    typedef int              BOOL;
+    typedef int              INT;
+    typedef long             LONG;
+    typedef unsigned int     UINT;
+    typedef unsigned char    BYTE;
+    typedef unsigned short   WORD;
+    typedef float            FLOAT;
+    typedef long long        INT_PTR;
+    typedef char             CHAR;
+    typedef CHAR*            LPSTR;
+    typedef const CHAR*      LPCSTR;
+    typedef wchar_t          WCHAR;
+    typedef WCHAR*           LPWSTR;
+    typedef const WCHAR*     LPCWSTR;
+    typedef unsigned __int64 UINT_PTR, *PUINT_PTR;
+    typedef __int64          LONG_PTR, *PLONG_PTR;
+    typedef unsigned __int64 ULONG_PTR, *PULONG_PTR;
+    typedef UINT_PTR         WPARAM;
+    typedef LONG_PTR         LPARAM;
+    typedef LONG_PTR         LRESULT;
+    typedef void*            LPVOID;
 
     typedef WORD ATOM;
 
@@ -39,64 +48,101 @@ namespace Win32 {
     WIN32_DECLARE_HANDLE(HWND);
     WIN32_DECLARE_HANDLE(HMENU);
     typedef HICON HCURSOR;
-    
+
     typedef LRESULT(__stdcall* WNDPROC)(HWND, UINT, WPARAM, LPARAM);
 
     struct WNDCLASSEXA {
-        UINT size;
-        UINT style;
-        WNDPROC wndproc;
-        int cls_extra;
-        int wnd_extra;
+        UINT      size;
+        UINT      style;
+        WNDPROC   wndproc;
+        int       cls_extra;
+        int       wnd_extra;
         HINSTANCE instance;
-        HICON icon;
-        HCURSOR cursor;
-        HBRUSH background;
-        LPCSTR menu_name;
-        LPCSTR class_name;
-        HICON small_icon;
+        HICON     icon;
+        HCURSOR   cursor;
+        HBRUSH    background;
+        LPCSTR    menu_name;
+        LPCSTR    class_name;
+        HICON     small_icon;
     };
 
-    typedef struct tagPOINT
-    {
-        LONG  x;
-        LONG  y;
+    typedef struct tagPOINT {
+        LONG x;
+        LONG y;
     } POINT, *PPOINT;
 
     typedef struct tagMSG {
-        HWND        hwnd;
-        UINT        message;
-        WPARAM      wParam;
-        LPARAM      lParam;
-        DWORD       time;
-        POINT       pt;
+        HWND   hwnd;
+        UINT   message;
+        WPARAM wParam;
+        LPARAM lParam;
+        DWORD  time;
+        POINT  pt;
 #ifdef _MAC
-        DWORD       lPrivate;
+        DWORD lPrivate;
 #endif
     } MSG, *PMSG, *LPMSG;
-
+#ifndef MOK_WIN32_NO_FUNCTIONS
     extern "C" __declspec(dllimport) DWORD __stdcall GetLastError(void);
-    extern "C" __declspec(dllimport) void  __stdcall SetLastError(DWORD code);
-    extern "C" __declspec(dllimport) ATOM  __stdcall RegisterClassExA(WNDCLASSEXA *wnd_class);
-    extern "C" __declspec(dllimport) HWND  __stdcall CreateWindowExA(DWORD ex_style, LPCSTR class_name, LPCSTR window_name, DWORD style, int x, int y, int w, int h, HWND parent, HMENU menu, HINSTANCE instance, LPVOID param);
-    extern "C" __declspec(dllimport) BOOL  __stdcall ShowWindow(HWND handle, int cmd_show);
-    extern "C" __declspec(dllimport) BOOL  __stdcall DestroyWindow(HWND handle);
-    extern "C" __declspec(dllimport) void  __stdcall PostQuitMessage(int exit_code);
-    extern "C" __declspec(dllimport) LRESULT __stdcall DefWindowProcA(HWND handle, UINT msg, WPARAM wparam, LPARAM lparam);
-    extern "C" __declspec(dllimport) HCURSOR __stdcall LoadCursorA(HINSTANCE instance, LPCSTR name);
-    extern "C" __declspec(dllimport) HCURSOR __stdcall LoadCursorW(HINSTANCE instance, LPCWSTR name);
-    extern "C" __declspec(dllimport) HMODULE __stdcall GetModuleHandleA(LPCSTR module_name);
-    extern "C" __declspec(dllimport) HMODULE __stdcall GetModuleHandleW(LPCWSTR module_name);
+    extern "C" __declspec(dllimport) void __stdcall SetLastError(DWORD code);
+    extern "C" __declspec(dllimport) ATOM
+        __stdcall RegisterClassExA(WNDCLASSEXA* wnd_class);
+    extern "C" __declspec(dllimport) HWND __stdcall CreateWindowExA(
+        DWORD     ex_style,
+        LPCSTR    class_name,
+        LPCSTR    window_name,
+        DWORD     style,
+        int       x,
+        int       y,
+        int       w,
+        int       h,
+        HWND      parent,
+        HMENU     menu,
+        HINSTANCE instance,
+        LPVOID    param);
+    extern "C" __declspec(dllimport) BOOL
+        __stdcall ShowWindow(HWND handle, int cmd_show);
+    extern "C" __declspec(dllimport) BOOL __stdcall DestroyWindow(HWND handle);
+    extern "C" __declspec(dllimport) void __stdcall PostQuitMessage(
+        int exit_code);
+    extern "C" __declspec(dllimport) LRESULT __stdcall DefWindowProcA(
+        HWND handle, UINT msg, WPARAM wparam, LPARAM lparam);
+    extern "C" __declspec(dllimport) HCURSOR
+        __stdcall LoadCursorA(HINSTANCE instance, LPCSTR name);
+    extern "C" __declspec(dllimport) HCURSOR
+        __stdcall LoadCursorW(HINSTANCE instance, LPCWSTR name);
+    extern "C" __declspec(dllimport) HMODULE
+        __stdcall GetModuleHandleA(LPCSTR module_name);
+    extern "C" __declspec(dllimport) HMODULE
+        __stdcall GetModuleHandleW(LPCWSTR module_name);
     extern "C" __declspec(dllimport) BOOL __stdcall UpdateWindow(HWND hwnd);
-    extern "C" __declspec(dllimport) LONG_PTR __stdcall SetWindowLongPtrA(HWND hwnd, int index, LONG_PTR ptr);
-    extern "C" __declspec(dllimport) LONG_PTR __stdcall SetWindowLongPtrW(HWND hwnd, int index, LONG_PTR ptr);
-    extern "C" __declspec(dllimport) LONG_PTR __stdcall GetWindowLongPtrA(HWND hwnd, int index);
-    extern "C" __declspec(dllimport) LONG_PTR __stdcall GetWindowLongPtrW(HWND hwnd, int index);
-    extern "C" __declspec(dllimport) BOOL __stdcall PeekMessageA(LPMSG msg, HWND hwnd, UINT filter_min, UINT filter_max, UINT remove_msg);
-    extern "C" __declspec(dllimport) BOOL __stdcall PeekMessageW(LPMSG msg, HWND hwnd, UINT filter_min, UINT filter_max, UINT remove_msg);
-    extern "C" __declspec(dllimport) BOOL __stdcall TranslateMessage(const MSG * msg);
-    extern "C" __declspec(dllimport) LRESULT __stdcall DispatchMessageA(const MSG *msg);
-    extern "C" __declspec(dllimport) LRESULT __stdcall DispatchMessageW(const MSG *msg);
+    extern "C" __declspec(dllimport) LONG_PTR
+        __stdcall SetWindowLongPtrA(HWND hwnd, int index, LONG_PTR ptr);
+    extern "C" __declspec(dllimport) LONG_PTR
+        __stdcall SetWindowLongPtrW(HWND hwnd, int index, LONG_PTR ptr);
+    extern "C" __declspec(dllimport) LONG_PTR
+        __stdcall GetWindowLongPtrA(HWND hwnd, int index);
+    extern "C" __declspec(dllimport) LONG_PTR
+        __stdcall GetWindowLongPtrW(HWND hwnd, int index);
+    extern "C" __declspec(dllimport) BOOL __stdcall PeekMessageA(
+        LPMSG msg,
+        HWND  hwnd,
+        UINT  filter_min,
+        UINT  filter_max,
+        UINT  remove_msg);
+    extern "C" __declspec(dllimport) BOOL __stdcall PeekMessageW(
+        LPMSG msg,
+        HWND  hwnd,
+        UINT  filter_min,
+        UINT  filter_max,
+        UINT  remove_msg);
+    extern "C" __declspec(dllimport) BOOL
+        __stdcall TranslateMessage(const MSG* msg);
+    extern "C" __declspec(dllimport) LRESULT
+        __stdcall DispatchMessageA(const MSG* msg);
+    extern "C" __declspec(dllimport) LRESULT
+        __stdcall DispatchMessageW(const MSG* msg);
+#endif  // MOK_WIN32_NO_FUNCTIONS
 
     constexpr int DefaultWindowPos = ((int)0x80000000);
 
@@ -104,7 +150,7 @@ namespace Win32 {
         constexpr UINT NoRemove = 0x0000;
         constexpr UINT Remove   = 0x0001;
         constexpr UINT NoYield  = 0x0002;
-    }
+    }  // namespace PeekMessageOption
 
     namespace WindowLongPointer {
         constexpr int WndProc    = -4;
@@ -112,25 +158,25 @@ namespace Win32 {
         constexpr int HWNDParent = -8;
         constexpr int UserData   = -21;
         constexpr int ID         = -12;
-    }
+    }  // namespace WindowLongPointer
 
     namespace ShowMode {
-        constexpr int Hide = 0;
-        constexpr int ShowNormal = 1;
-        constexpr int Normal = 1;
-        constexpr int ShowMinimized = 2;
-        constexpr int ShowMaximized = 3;
-        constexpr int Maximize = 3;
-        constexpr int ShowNoActivate = 4;
-        constexpr int Show = 5;
-        constexpr int Minimize = 6;
+        constexpr int Hide            = 0;
+        constexpr int ShowNormal      = 1;
+        constexpr int Normal          = 1;
+        constexpr int ShowMinimized   = 2;
+        constexpr int ShowMaximized   = 3;
+        constexpr int Maximize        = 3;
+        constexpr int ShowNoActivate  = 4;
+        constexpr int Show            = 5;
+        constexpr int Minimize        = 6;
         constexpr int ShowMinNoActive = 7;
-        constexpr int ShowNa = 8;
-        constexpr int Restore = 9;
-        constexpr int ShowDefault = 10;
-        constexpr int ForceMinimize = 11;
-        constexpr int Max = 11;
-    }
+        constexpr int ShowNa          = 8;
+        constexpr int Restore         = 9;
+        constexpr int ShowDefault     = 10;
+        constexpr int ForceMinimize   = 11;
+        constexpr int Max             = 11;
+    }  // namespace ShowMode
 
     namespace Style {
         constexpr long Overlapped   = 0x00000000L;
@@ -154,29 +200,25 @@ namespace Win32 {
         constexpr long MinimizeBox  = 0x00020000L;
         constexpr long MaximizeBox  = 0x00010000L;
 
-        constexpr long OverlappedWindow =
-            Overlapped | 
-            Caption | 
-            SysMenu | 
-            ThickFrame | 
-            MinimizeBox | 
-            MaximizeBox;
-    }
+        constexpr long OverlappedWindow = Overlapped | Caption | SysMenu |
+                                          ThickFrame | MinimizeBox |
+                                          MaximizeBox;
+    }  // namespace Style
 
     namespace Cursor {
-        const LPSTR A_Arrow     = WIN32_MAKEINTRESOURCEA(32512);
-        const LPSTR A_IBeam     = WIN32_MAKEINTRESOURCEA(32513);
-        const LPSTR A_Wait      = WIN32_MAKEINTRESOURCEA(32514);
-        const LPSTR A_Cross     = WIN32_MAKEINTRESOURCEA(32515);
-        const LPSTR A_UpArrow   = WIN32_MAKEINTRESOURCEA(32516);
-        const LPSTR A_Size      = WIN32_MAKEINTRESOURCEA(32640);
-        const LPSTR A_Icon      = WIN32_MAKEINTRESOURCEA(32641);
-        const LPSTR A_SizeNWSE  = WIN32_MAKEINTRESOURCEA(32642);
-        const LPSTR A_SizeNESW  = WIN32_MAKEINTRESOURCEA(32643);
-        const LPSTR A_SizeWE    = WIN32_MAKEINTRESOURCEA(32644);
-        const LPSTR A_SizeNS    = WIN32_MAKEINTRESOURCEA(32645);
-        const LPSTR A_SizeAll   = WIN32_MAKEINTRESOURCEA(32646);
-        const LPSTR A_No        = WIN32_MAKEINTRESOURCEA(32648);
+        const LPSTR  A_Arrow    = WIN32_MAKEINTRESOURCEA(32512);
+        const LPSTR  A_IBeam    = WIN32_MAKEINTRESOURCEA(32513);
+        const LPSTR  A_Wait     = WIN32_MAKEINTRESOURCEA(32514);
+        const LPSTR  A_Cross    = WIN32_MAKEINTRESOURCEA(32515);
+        const LPSTR  A_UpArrow  = WIN32_MAKEINTRESOURCEA(32516);
+        const LPSTR  A_Size     = WIN32_MAKEINTRESOURCEA(32640);
+        const LPSTR  A_Icon     = WIN32_MAKEINTRESOURCEA(32641);
+        const LPSTR  A_SizeNWSE = WIN32_MAKEINTRESOURCEA(32642);
+        const LPSTR  A_SizeNESW = WIN32_MAKEINTRESOURCEA(32643);
+        const LPSTR  A_SizeWE   = WIN32_MAKEINTRESOURCEA(32644);
+        const LPSTR  A_SizeNS   = WIN32_MAKEINTRESOURCEA(32645);
+        const LPSTR  A_SizeAll  = WIN32_MAKEINTRESOURCEA(32646);
+        const LPSTR  A_No       = WIN32_MAKEINTRESOURCEA(32648);
         const LPWSTR W_Arrow    = WIN32_MAKEINTRESOURCEW(32512);
         const LPWSTR W_IBeam    = WIN32_MAKEINTRESOURCEW(32513);
         const LPWSTR W_Wait     = WIN32_MAKEINTRESOURCEW(32514);
@@ -190,17 +232,14 @@ namespace Win32 {
         const LPWSTR W_SizeNS   = WIN32_MAKEINTRESOURCEW(32645);
         const LPWSTR W_SizeAll  = WIN32_MAKEINTRESOURCEW(32646);
         const LPWSTR W_No       = WIN32_MAKEINTRESOURCEW(32648);
-    }
+    }  // namespace Cursor
 
-    namespace Message
-    {
+    namespace Message {
         constexpr UINT Null     = 0x0000;
         constexpr UINT Create   = 0x0001;
         constexpr UINT Destroy  = 0x0002;
         constexpr UINT Move     = 0x0003;
         constexpr UINT Size     = 0x0005;
         constexpr UINT Activate = 0x0006;
-    }
-}
-
-
+    }  // namespace Message
+}  // namespace Win32
