@@ -152,6 +152,8 @@ namespace Win32 {
         __stdcall DispatchMessageW(const MSG* msg);
     extern "C" BOOL GetWindowRect(HWND hWnd, LPRECT lpRect);
     extern "C" BOOL GetClientRect(HWND hWnd, LPRECT lpRect);
+    extern "C" BOOL AdjustWindowRect(LPRECT rect, DWORD style, BOOL menu);
+
 #endif  // MOK_WIN32_NO_FUNCTIONS
 
     constexpr int DefaultWindowPos = ((int)0x80000000);
