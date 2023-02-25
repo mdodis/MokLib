@@ -82,6 +82,14 @@ namespace Win32 {
         DWORD lPrivate;
 #endif
     } MSG, *PMSG, *LPMSG;
+
+    typedef struct tagRECT {
+        LONG left;
+        LONG top;
+        LONG right;
+        LONG bottom;
+    } RECT, *PRECT, *NPRECT, *LPRECT;
+
 #ifndef MOK_WIN32_NO_FUNCTIONS
     extern "C" __declspec(dllimport) DWORD __stdcall GetLastError(void);
     extern "C" __declspec(dllimport) void __stdcall SetLastError(DWORD code);
@@ -142,6 +150,8 @@ namespace Win32 {
         __stdcall DispatchMessageA(const MSG* msg);
     extern "C" __declspec(dllimport) LRESULT
         __stdcall DispatchMessageW(const MSG* msg);
+    extern "C" BOOL GetWindowRect(HWND hWnd, LPRECT lpRect);
+    extern "C" BOOL GetClientRect(HWND hWnd, LPRECT lpRect);
 #endif  // MOK_WIN32_NO_FUNCTIONS
 
     constexpr int DefaultWindowPos = ((int)0x80000000);
@@ -203,6 +213,11 @@ namespace Win32 {
         constexpr long OverlappedWindow = Overlapped | Caption | SysMenu |
                                           ThickFrame | MinimizeBox |
                                           MaximizeBox;
+        /**
+         * An overlapped window without the ability to be resized or maximized
+         */
+        constexpr long OverlappedWindowNonResizeable =
+            OverlappedWindow & (~MaximizeBox) & (~ThickFrame);
     }  // namespace Style
 
     namespace Cursor {
