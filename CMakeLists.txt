@@ -48,6 +48,7 @@ set(SOURCES
     "Importers/Importer.cpp"
     "Compat/Win32Base.h"
     "Compat/Win32Extra.h"
+    "Containers/Extras.h"
     )
 
 # if (MOKLIB_COMPILE_STANDALONE_IMPORTERS)
