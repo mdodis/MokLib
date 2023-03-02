@@ -16,6 +16,8 @@
 #define WIN32_LOWORD(l) ((Win32::WORD)(((Win32::DWORD_PTR)(l)) & 0xffff))
 #define WIN32_HIWORD(l) \
     ((Win32::WORD)((((Win32::DWORD_PTR)(l)) >> 16) & 0xffff))
+#define WIN32_GET_X_LPARAM(lp) ((int)(short)WIN32_LOWORD(lp))
+#define WIN32_GET_Y_LPARAM(lp) ((int)(short)WIN32_HIWORD(lp))
 
 namespace Win32 {
     WIN32_DECLARE_HANDLE(HINSTANCE);
@@ -256,11 +258,15 @@ namespace Win32 {
     }  // namespace Cursor
 
     namespace Message {
-        constexpr UINT Null     = 0x0000;
-        constexpr UINT Create   = 0x0001;
-        constexpr UINT Destroy  = 0x0002;
-        constexpr UINT Move     = 0x0003;
-        constexpr UINT Size     = 0x0005;
-        constexpr UINT Activate = 0x0006;
+        constexpr UINT Null      = 0x0000;
+        constexpr UINT Create    = 0x0001;
+        constexpr UINT Destroy   = 0x0002;
+        constexpr UINT Move      = 0x0003;
+        constexpr UINT Size      = 0x0005;
+        constexpr UINT Activate  = 0x0006;
+        constexpr UINT KeyDown   = 0x0100;
+        constexpr UINT KeyUp     = 0x0101;
+        constexpr UINT MouseMove = 0x0200;
     }  // namespace Message
+
 }  // namespace Win32

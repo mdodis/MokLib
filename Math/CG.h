@@ -518,6 +518,32 @@ struct Quat {
         v.xyz()       = scale(v.xyz(), s);
     }
 
+    _inline Mat4 rotation_matrix()
+    {
+        Mat4  result = Mat4::identity();
+        float qxx    = (x * x);
+        float qyy    = (y * y);
+        float qzz    = (z * z);
+        float qxz    = (x * z);
+        float qxy    = (x * y);
+        float qyz    = (y * z);
+        float qwx    = (w * x);
+        float qwy    = (w * y);
+        float qwz    = (w * z);
+        result[0][0] = 1 - 2 * (qyy + qzz);
+        result[0][1] = 2 * (qxy + qwz);
+        result[0][2] = 2 * (qxz - qwy);
+
+        result[1][0] = 2 * (qxy - qwz);
+        result[1][1] = 1 - 2 * (qxx + qzz);
+        result[1][2] = 2 * (qyz + qwx);
+
+        result[2][0] = 2 * (qxz + qwy);
+        result[2][1] = 2 * (qyz - qwx);
+        result[2][2] = 1 - 2 * (qxx + qyy);
+        return result;
+    }
+
     union {
         struct {
             float x, y, z, w;

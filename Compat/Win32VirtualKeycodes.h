@@ -1,55 +1,55 @@
 #include "Platform/Keycodes.h"
-#include "WinInc.h"
+#include "Win32Base.h"
 
 static InputKey _WParam_To_InputKey_Table[0xFE] = {
-    InputKey::Count,  // 0x0
-    InputKey::Count,  // VK_LBUTTON
-    InputKey::Count,  // VK_RBUTTON
-    InputKey::Count,  // VK_CANCEL
-    InputKey::Count,  // VK_MBUTTON
-    InputKey::Count,  // VK_XBUTTON1
-    InputKey::Count,  // VK_XBUTTON2
-    InputKey::Count,  // 0x07
-    InputKey::Count,  // VK_BACK
-    InputKey::Count,  // VK_TAB
-    InputKey::Count,  // 0x0A
-    InputKey::Count,  // 0x0B
-    InputKey::Count,  // VK_CLEAR
-    InputKey::Count,  // VK_RETURN
-    InputKey::Count,  // 0x0E
-    InputKey::Count,  // 0x0F
-    InputKey::Count,  // VK_SHIFT
-    InputKey::Count,  // VK_CONTROl
-    InputKey::Count,  // VK_MENU
-    InputKey::Count,  // VK_PAUSE
-    InputKey::Count,  // VK_CAPITAL
-    InputKey::Count,  // VK_KANA  | VK_HANGEUL | VK_HANGUL
-    InputKey::Count,  // VK_IME_ON
-    InputKey::Count,  // VK_JUNJA
-    InputKey::Count,  // VK_FINAL
-    InputKey::Count,  // VK_HANJA | VK_KANJI
-    InputKey::Count,  // VK_IME_OFF
-    InputKey::Escape, // VK_ESCAPE
-    InputKey::Count,  // VK_CONVERT
-    InputKey::Count,  // VK_NONCONVERT
-    InputKey::Count,  // VK_ACCEPT
-    InputKey::Count,  // VK_MODECHANGE
-    InputKey::Space,  // VK_SPACE
-    InputKey::Count,  // VK_PRIOR
-    InputKey::Count,  // VK_NEXT
-    InputKey::Count,  // VK_END
-    InputKey::Count,  // VK_HOME
-    InputKey::Count,  // VK_LEFT
-    InputKey::Count,  // VK_UP
-    InputKey::Count,  // VK_RIGHT
-    InputKey::Count,  // VK_DOWN
-    InputKey::Count,  // VK_SELECT
-    InputKey::Count,  // VK_PRINT
-    InputKey::Count,  // VK_EXECUTE
-    InputKey::Count,  // VK_SNAPSHOT
-    InputKey::Count,  // VK_INSERT
-    InputKey::Count,  // VK_DELETE
-    InputKey::Count,  // VK_HELP
+    InputKey::Count,   // 0x0
+    InputKey::Count,   // VK_LBUTTON
+    InputKey::Count,   // VK_RBUTTON
+    InputKey::Count,   // VK_CANCEL
+    InputKey::Count,   // VK_MBUTTON
+    InputKey::Count,   // VK_XBUTTON1
+    InputKey::Count,   // VK_XBUTTON2
+    InputKey::Count,   // 0x07
+    InputKey::Count,   // VK_BACK
+    InputKey::Count,   // VK_TAB
+    InputKey::Count,   // 0x0A
+    InputKey::Count,   // 0x0B
+    InputKey::Count,   // VK_CLEAR
+    InputKey::Count,   // VK_RETURN
+    InputKey::Count,   // 0x0E
+    InputKey::Count,   // 0x0F
+    InputKey::Count,   // VK_SHIFT
+    InputKey::Count,   // VK_CONTROl
+    InputKey::Count,   // VK_MENU
+    InputKey::Count,   // VK_PAUSE
+    InputKey::Count,   // VK_CAPITAL
+    InputKey::Count,   // VK_KANA  | VK_HANGEUL | VK_HANGUL
+    InputKey::Count,   // VK_IME_ON
+    InputKey::Count,   // VK_JUNJA
+    InputKey::Count,   // VK_FINAL
+    InputKey::Count,   // VK_HANJA | VK_KANJI
+    InputKey::Count,   // VK_IME_OFF
+    InputKey::Escape,  // VK_ESCAPE
+    InputKey::Count,   // VK_CONVERT
+    InputKey::Count,   // VK_NONCONVERT
+    InputKey::Count,   // VK_ACCEPT
+    InputKey::Count,   // VK_MODECHANGE
+    InputKey::Space,   // VK_SPACE
+    InputKey::Count,   // VK_PRIOR
+    InputKey::Count,   // VK_NEXT
+    InputKey::Count,   // VK_END
+    InputKey::Count,   // VK_HOME
+    InputKey::Count,   // VK_LEFT
+    InputKey::Count,   // VK_UP
+    InputKey::Count,   // VK_RIGHT
+    InputKey::Count,   // VK_DOWN
+    InputKey::Count,   // VK_SELECT
+    InputKey::Count,   // VK_PRINT
+    InputKey::Count,   // VK_EXECUTE
+    InputKey::Count,   // VK_SNAPSHOT
+    InputKey::Count,   // VK_INSERT
+    InputKey::Count,   // VK_DELETE
+    InputKey::Count,   // VK_HELP
     /** General Keys */
     InputKey::Num0,   // VK_KEY_0
     InputKey::Num1,   // VK_KEY_1
@@ -253,7 +253,7 @@ static InputKey _WParam_To_InputKey_Table[0xFE] = {
     InputKey::Count,  // VK_OEM_CLEAR   [Nokia/Ericsson]
 };
 
-static _inline InputKey wparam_to_input_key(WPARAM wparam) {
+static _inline InputKey wparam_to_input_key(Win32::WPARAM wparam)
+{
     return _WParam_To_InputKey_Table[wparam];
 }
-
