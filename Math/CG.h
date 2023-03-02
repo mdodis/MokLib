@@ -343,45 +343,27 @@ static _inline Mat4 translation(Vec3 v)
 
 static _inline Mat4 rotation_pitch(float angle)
 {
+    // clang-format off
     return Mat4{
-        1,
-        0,
-        0,
-        0,
-        0,
-        cosf(angle),
-        -sinf(angle),
-        0,
-        0,
-        sinf(angle),
-        cosf(angle),
-        0,
-        0,
-        0,
-        0,
-        1,
+        1, 0, 0, 0,
+        0, cosf(angle), sinf(angle), 0,
+        0, -sinf(angle), cosf(angle), 0,
+        0, 0, 0, 1,
     };
+
+    // clang-format on
 }
 
 static _inline Mat4 rotation_yaw(float angle)
 {
+    // clang-format off
     return Mat4{
-        cosf(angle),
-        0,
-        sinf(angle),
-        0,
-        0,
-        1,
-        0,
-        0,
-        -sinf(angle),
-        0,
-        cosf(angle),
-        0,
-        0,
-        0,
-        0,
-        1};
+        cosf(angle), 0, -sinf(angle), 0,
+        0, 1, 0, 0,
+        sinf(angle), 0, cosf(angle), 0,
+        0, 0, 0, 1,
+    };
+    // clang-format on
 }
 
 static _inline Mat4 rotation(Vec3 u, float a)

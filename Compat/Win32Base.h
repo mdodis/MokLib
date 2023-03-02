@@ -13,6 +13,9 @@
         Win32::LPARAM lparam)
 #define WIN32_MAKEINTRESOURCEA(i) ((LPSTR)((ULONG_PTR)((WORD)(i))))
 #define WIN32_MAKEINTRESOURCEW(i) ((LPWSTR)((ULONG_PTR)((WORD)(i))))
+#define WIN32_LOWORD(l) ((Win32::WORD)(((Win32::DWORD_PTR)(l)) & 0xffff))
+#define WIN32_HIWORD(l) \
+    ((Win32::WORD)((((Win32::DWORD_PTR)(l)) >> 16) & 0xffff))
 
 namespace Win32 {
     WIN32_DECLARE_HANDLE(HINSTANCE);
@@ -40,6 +43,7 @@ namespace Win32 {
     typedef LONG_PTR         LPARAM;
     typedef LONG_PTR         LRESULT;
     typedef void*            LPVOID;
+    typedef ULONG_PTR        DWORD_PTR, *PDWORD_PTR;
 
     typedef WORD ATOM;
 
@@ -212,9 +216,9 @@ namespace Win32 {
         constexpr long MinimizeBox  = 0x00020000L;
         constexpr long MaximizeBox  = 0x00010000L;
 
-        constexpr long OverlappedWindow = Overlapped | Caption | SysMenu |
-                                          ThickFrame | MinimizeBox |
-                                          MaximizeBox;
+        constexpr long OverlappedWindow =
+            Overlapped | Caption | SysMenu | ThickFrame | MinimizeBox |
+            MaximizeBox;
         /**
          * An overlapped window without the ability to be resized or maximized
          */

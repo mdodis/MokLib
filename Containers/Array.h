@@ -16,8 +16,8 @@ struct TArray {
     using FwdIter = SliceIterator<T>;
     using RevIter = SliceIterator<T, false>;
 
-    T          *data;
-    IAllocator *alloc;
+    T*          data;
+    IAllocator* alloc;
     u64         capacity, size;
 
     static constexpr u64 Init_Capacity = 4;
@@ -29,7 +29,7 @@ struct TArray {
         this->size     = 0;
     }
 
-    _inline TArray(IAllocator *alloc)
+    _inline TArray(IAllocator* alloc)
     {
         this->alloc    = alloc;
         this->data     = 0;
@@ -41,15 +41,15 @@ struct TArray {
         : TArray(get_system_allocator(), init_list)
     {}
 
-    _inline TArray(IAllocator *alloc, std::initializer_list<T> init_list)
+    _inline TArray(IAllocator* alloc, std::initializer_list<T> init_list)
         : TArray(alloc)
     {
-        for (const T &elem : init_list) {
+        for (const T& elem : init_list) {
             add(elem);
         }
     }
 
-    u64 add(const T &item)
+    u64 add(const T& item)
     {
         if (!data) {
             if (!init(Init_Capacity)) return -1;
@@ -63,14 +63,14 @@ struct TArray {
         return size - 1;
     }
 
-    void add_range(T *elems, u64 num_elems)
+    void add_range(T* elems, u64 num_elems)
     {
         for (u64 i = 0; i < num_elems; ++i) {
             add(elems[i]);
         }
     }
 
-    T *add()
+    T* add()
     {
         if (!data) {
             if (!init(Init_Capacity)) return 0;
@@ -107,7 +107,7 @@ struct TArray {
 
     bool init(u64 amount)
     {
-        data = (T *)alloc->reserve(amount * sizeof(T));
+        data = (T*)alloc->reserve(amount * sizeof(T));
         if (!data) {
             return false;
         }
@@ -119,13 +119,26 @@ struct TArray {
 
     void init_range(u64 amount)
     {
-        init(amount);
+        set_capacity(amount);
         size = amount;
+    }
+
+    void set_capacity(u64 new_capacity)
+    {
+        if (new_capacity <= capacity) return;
+
+        T* new_data = (T*)alloc->resize(
+            (umm)data,
+            capacity * sizeof(T),
+            new_capacity * sizeof(T));
+        ASSERT(new_data);
+        data     = new_data;
+        capacity = new_capacity;
     }
 
     bool stretch()
     {
-        T *new_data = (T *)alloc->resize(
+        T* new_data = (T*)alloc->resize(
             (umm)data,
             capacity * sizeof(T),
             capacity * 2 * sizeof(T));
@@ -135,29 +148,29 @@ struct TArray {
         return true;
     }
 
-    T *last() const
+    T* last() const
     {
         if (size > 0)
-            return ((T *)data) + (size - 1);
+            return ((T*)data) + (size - 1);
         else
             return 0;
     }
 
     _inline bool is_index_valid(u64 i) const { return (i >= 0) && (i < size); }
 
-    _inline T &operator[](u64 idx)
+    _inline T& operator[](u64 idx)
     {
         ASSERT(is_index_valid(idx));
         return data[idx];
     }
 
-    _inline const T &operator[](u64 idx) const
+    _inline const T& operator[](u64 idx) const
     {
         ASSERT(is_index_valid(idx));
         return data[idx];
     }
 
-    u64 index_of(const T &query) const
+    u64 index_of(const T& query) const
     {
         for (u64 i = 0; i < size; ++i) {
             if (query == data[i]) {
@@ -184,7 +197,7 @@ struct TInlineArray : TArray<T> {
 
     TInlineArray(std::initializer_list<T> init_list) : TInlineArray()
     {
-        for (const T &elem : init_list) {
+        for (const T& elem : init_list) {
             add(elem);
         }
     }
@@ -202,28 +215,28 @@ struct TArr {
     constexpr TArr(const std::initializer_list<T> init_list)
     {
         u32 c = 0;
-        for (const T &elem : init_list) {
+        for (const T& elem : init_list) {
             elements[c++] = elem;
         }
     }
 
-    T &operator[](i32 index)
+    T& operator[](i32 index)
     {
         ASSERT((index >= 0) && (index < Count));
         return elements[index];
     }
 
-    operator T *() { return elements; }
+    operator T*() { return elements; }
 
     constexpr u32 count() const { return Count; }
 
-    FwdIter begin() const { return FwdIter((T *)elements, 0); }
-    FwdIter end() const { return FwdIter((T *)elements, Count); }
+    FwdIter begin() const { return FwdIter((T*)elements, 0); }
+    FwdIter end() const { return FwdIter((T*)elements, Count); }
 };
 
 // constexpr TArr<Type, sizeof...(Rest)> arr(Rest&&... t) {
 template <typename Type, typename... Rest>
-constexpr auto arr(Rest &&...t) -> TArr<Type, sizeof...(Rest)>
+constexpr auto arr(Rest&&... t) -> TArr<Type, sizeof...(Rest)>
 {
     constexpr auto c      = sizeof...(Rest);
     TArr<Type, c>  result = {t...};
