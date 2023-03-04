@@ -182,7 +182,7 @@ struct TArray {
     }
 
     FwdIter begin() const { return FwdIter(data, 0); }
-    FwdIter end() const { return FwdIter(data, size); }
+    FwdIter end() const { return FwdIter(data, (i32)size); }
     RevIter rbegin() const { return RevIter(data, size - 1); }
     RevIter rend() const { return RevIter(data, -1); }
 };

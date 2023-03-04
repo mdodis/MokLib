@@ -36,7 +36,7 @@ struct Slice {
     constexpr operator Raw() { return Raw(ptr, count * sizeof(T)); }
 
     SliceIterator<T> begin() const { return SliceIterator<T>(ptr, 0); }
-    SliceIterator<T> end() const { return SliceIterator<T>(ptr, count); }
+    SliceIterator<T> end() const { return SliceIterator<T>(ptr, (i32)count); }
 
     SliceIterator<T, false> rbegin() const
     {
