@@ -21,6 +21,7 @@
 
 namespace Win32 {
     WIN32_DECLARE_HANDLE(HINSTANCE);
+    WIN32_DECLARE_HANDLE(HRAWINPUT);
     typedef HINSTANCE HMODULE;
 
     typedef unsigned long    DWORD;
@@ -28,6 +29,8 @@ namespace Win32 {
     typedef int              INT;
     typedef long             LONG;
     typedef unsigned int     UINT;
+    typedef UINT*            PUINT;
+    typedef unsigned short   USHORT;
     typedef unsigned char    BYTE;
     typedef unsigned short   WORD;
     typedef float            FLOAT;
@@ -38,6 +41,7 @@ namespace Win32 {
     typedef wchar_t          WCHAR;
     typedef WCHAR*           LPWSTR;
     typedef const WCHAR*     LPCWSTR;
+    typedef unsigned long    ULONG;
     typedef unsigned __int64 UINT_PTR, *PUINT_PTR;
     typedef __int64          LONG_PTR, *PLONG_PTR;
     typedef unsigned __int64 ULONG_PTR, *PULONG_PTR;
@@ -45,6 +49,8 @@ namespace Win32 {
     typedef LONG_PTR         LPARAM;
     typedef LONG_PTR         LRESULT;
     typedef void*            LPVOID;
+    typedef void*            PVOID;
+    typedef PVOID            HANDLE;
     typedef ULONG_PTR        DWORD_PTR, *PDWORD_PTR;
 
     typedef WORD ATOM;
@@ -95,6 +101,59 @@ namespace Win32 {
         LONG right;
         LONG bottom;
     } RECT, *PRECT, *NPRECT, *LPRECT;
+
+    typedef struct tagRAWINPUTDEVICE {
+        USHORT usUsagePage;
+        USHORT usUsage;
+        DWORD  dwFlags;
+        HWND   hwndTarget;
+    } RAWINPUTDEVICE, *PRAWINPUTDEVICE, *LPRAWINPUTDEVICE;
+
+    typedef struct tagRAWINPUTHEADER {
+        DWORD  dwType;
+        DWORD  dwSize;
+        HANDLE hDevice;
+        WPARAM wParam;
+    } RAWINPUTHEADER, *PRAWINPUTHEADER, *LPRAWINPUTHEADER;
+
+    typedef struct tagRAWMOUSE {
+        USHORT usFlags;
+        union {
+            ULONG ulButtons;
+            struct {
+                USHORT usButtonFlags;
+                USHORT usButtonData;
+            } DUMMYSTRUCTNAME;
+        } DUMMYUNIONNAME;
+        ULONG ulRawButtons;
+        LONG  lLastX;
+        LONG  lLastY;
+        ULONG ulExtraInformation;
+    } RAWMOUSE, *PRAWMOUSE, *LPRAWMOUSE;
+
+    typedef struct tagRAWKEYBOARD {
+        USHORT MakeCode;
+        USHORT Flags;
+        USHORT Reserved;
+        USHORT VKey;
+        UINT   Message;
+        ULONG  ExtraInformation;
+    } RAWKEYBOARD, *PRAWKEYBOARD, *LPRAWKEYBOARD;
+
+    typedef struct tagRAWHID {
+        DWORD dwSizeHid;
+        DWORD dwCount;
+        BYTE  bRawData[1];
+    } RAWHID, *PRAWHID, *LPRAWHID;
+
+    typedef struct tagRAWINPUT {
+        RAWINPUTHEADER header;
+        union {
+            RAWMOUSE    mouse;
+            RAWKEYBOARD keyboard;
+            RAWHID      hid;
+        } data;
+    } RAWINPUT, *PRAWINPUT, *LPRAWINPUT;
 
 #ifndef MOK_WIN32_NO_FUNCTIONS
     extern "C" __declspec(dllimport) DWORD __stdcall GetLastError(void);
@@ -159,10 +218,48 @@ namespace Win32 {
     extern "C" BOOL GetWindowRect(HWND hWnd, LPRECT lpRect);
     extern "C" BOOL GetClientRect(HWND hWnd, LPRECT lpRect);
     extern "C" BOOL AdjustWindowRect(LPRECT rect, DWORD style, BOOL menu);
+    extern "C" BOOL SetCursorPos(int X, int Y);
+    extern "C" int  ShowCursor(BOOL bShow);
+    extern "C" HWND SetCapture(HWND hWnd);
+    extern "C" BOOL ReleaseCapture();
+
+    extern "C" BOOL RegisterRawInputDevices(
+        PRAWINPUTDEVICE pRawInputDevices, UINT uiNumDevices, UINT cbSize);
+    extern "C" UINT GetRawInputData(
+        HRAWINPUT hRawInput,
+        UINT      uiCommand,
+        LPVOID    pData,
+        PUINT     pcbSize,
+        UINT      cbSizeHeader);
 
 #endif  // MOK_WIN32_NO_FUNCTIONS
 
     constexpr int DefaultWindowPos = ((int)0x80000000);
+    namespace HIDUsage {
+        constexpr unsigned short Mouse = 0x02;
+    }  // namespace HIDUsage
+
+    namespace HIDUsagePage {
+        constexpr unsigned short Generic = 0x01;
+    }  // namespace HIDUsagePage
+
+    namespace HIDMode {
+        /* If set, this enables the caller to receive the input even when the
+         * caller is not in the foreground. Note that hwndTarget must be
+         * specified. */
+        constexpr UINT InputSink = 0x00000100;
+    }  // namespace HIDMode
+
+    namespace RawInputCommand {
+        constexpr UINT Header = 0x10000005;
+        constexpr UINT Input  = 0x10000003;
+    }  // namespace RawInputCommand
+
+    namespace RawInputDataType {
+        constexpr DWORD Mouse    = 0;
+        constexpr DWORD Keyboard = 1;
+        constexpr DWORD Hid      = 2;
+    }  // namespace RawInputDataType
 
     namespace PeekMessageOption {
         constexpr UINT NoRemove = 0x0000;
@@ -267,6 +364,7 @@ namespace Win32 {
         constexpr UINT KeyDown   = 0x0100;
         constexpr UINT KeyUp     = 0x0101;
         constexpr UINT MouseMove = 0x0200;
+        constexpr UINT Input     = 0x00FF;
     }  // namespace Message
 
 }  // namespace Win32
