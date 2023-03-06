@@ -261,6 +261,15 @@ namespace Win32 {
         constexpr DWORD Hid      = 2;
     }  // namespace RawInputDataType
 
+    namespace RawInputMouseState {
+        constexpr USHORT MoveRelative      = 0x00;
+        constexpr USHORT MoveAbsolute      = 0x01;
+        constexpr USHORT VirtualDesktop    = 0x02;
+        constexpr USHORT AttributesChanged = 0x04;
+        constexpr USHORT NoCoalesce        = 0x08;
+
+    }  // namespace RawInputMouseState
+
     namespace PeekMessageOption {
         constexpr UINT NoRemove = 0x0000;
         constexpr UINT Remove   = 0x0001;
