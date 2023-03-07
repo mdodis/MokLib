@@ -14,7 +14,7 @@
 #include "Containers/Array.h"
 #include "Memory/Base.h"
 
-#define MOK_MAX_DELEGATE_INLINE_SIZE 64
+#define MOK_MAX_DELEGATE_INLINE_SIZE 128
 
 namespace DelegateInternals {
     template <bool IsConst, typename T, typename RetVal, typename... Args>
@@ -234,7 +234,7 @@ struct Delegate : DelegateBase {
     }
 
     template <typename TLambda, typename... Args2>
-    static Delegate create_lambda(TLambda&& lambda, Args2... args)
+    static Delegate create_lambda(TLambda&& lambda, Args2&&... args)
     {
         Delegate handler;
         handler.bind<LambdaDelegate<TLambda, RetVal(Args...), Args2...>>(
@@ -267,6 +267,7 @@ struct Delegate : DelegateBase {
     template <typename T, typename... Args3>
     void bind(Args3&&... args)
     {
+        static_assert(sizeof(T) <= MOK_MAX_DELEGATE_INLINE_SIZE);
         is_bound = true;
         new (buffer) T(std::forward<Args3>(args)...);
     }
@@ -465,8 +466,10 @@ struct MulticastDelegate : DelegateBase {
 #define FORWARD_DELEGATE_LAMBDA_SIG(delegate_type) \
     TLambda &&lambda, Args2 &&... args
 
-#define FORWARD_DELEGATE_LAMBDA_BODY(delegate) \
-    delegate.bind_lambda(lambda, std::forward<Args2>(args)...)
+#define FORWARD_DELEGATE_LAMBDA_CREATE(delegate_type) \
+    delegate_type::create_lambda(                     \
+        std::forward<TLambda>(lambda),                \
+        std::forward<Args2>(args)...)
 
 #define FORWARD_DELEGATE_EXTRA_RAW(                                    \
     signature,                                                         \
