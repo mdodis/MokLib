@@ -65,8 +65,14 @@ if (WIN32)
     )
 endif()
 
-add_library(MokLib SHARED 
-    ${SOURCES} )
+option(MOKLIB_COMPILE_STATIC "Build static library" OFF)
+
+if (MOKLIB_COMPILE_STATIC)
+    add_library(MokLib STATIC ${SOURCES})
+else()
+    add_library(MokLib SHARED ${SOURCES})
+endif()
+
 
 target_compile_features(MokLib PUBLIC
     cxx_std_17)
@@ -76,8 +82,18 @@ target_compile_definitions(MokLib PRIVATE
     _CRT_SECURE_NO_WARNINGS
     )
 
+
+if (MOKLIB_COMPILE_STATIC)
+    target_compile_definitions(MokLib PUBLIC
+        MOK_LIB_STATIC=1
+        _CRT_SECURE_NO_WARNINGS
+        )
+
+endif()
+
 target_include_directories(MokLib PUBLIC
     "./")
+
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" CACHE INTERNAL "")
 
