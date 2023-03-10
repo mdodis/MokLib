@@ -49,6 +49,7 @@ set(SOURCES
     "Compat/Win32Base.h"
     "Compat/Win32Extra.h"
     "Containers/Extras.h"
+    "Sort.h"
     )
 
 # if (MOKLIB_COMPILE_STANDALONE_IMPORTERS)

@@ -7,7 +7,7 @@ TEST_CASE(
     "Lib/Time/TimerGroup", 
     "0.2s Repeat timer, sleep for 0.3s twice, calls twice")
 {
-    TimerGroup group;
+    TimerGroup group(System_Allocator);
     int times_called = 0;
 
     auto callback = TimerGroup::Callback::create_lambda([&times_called](){

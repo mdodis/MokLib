@@ -9,6 +9,7 @@ set(SOURCES
     "./Tape.bench.cpp"
     "./Types.test.cpp"
     "./TimerGroup.test.cpp"
+    "./Sort.test.cpp"
     "./Tests.cpp"
     )
 

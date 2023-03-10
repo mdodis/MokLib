@@ -1,14 +1,15 @@
+#include "FileSystem/Extras.h"
 #include "Test/Test.h"
 #include "Thread/ThreadContext.h"
-#include "FileSystem/Extras.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
     {
         ThreadContextBase::setup();
         BOOTSTRAP_THREAD(SimpleThreadContext);
     }
 
-    print(LIT("Running tests {} yo\n"), LIT("haha"));
+    print(LIT("Running tests\n"));
 
     int result = get_test_runner()->run_tests();
     if (result != 0) {
