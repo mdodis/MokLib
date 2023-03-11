@@ -9,6 +9,8 @@
 
 /**
  * A Simple Fixed-allocation Hashtable implementation, using Coalesced Chaining
+ *
+ * @todo: Key comparison
  */
 template <typename TKey, typename TValue>
 struct TMap {

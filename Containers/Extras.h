@@ -6,6 +6,6 @@
 template <typename T, u64 Count>
 Slice<T> alloc_slice(IAllocator& allocator)
 {
-    T* ptr = alloc_array<T, Count>(allocator);
+    T* ptr = alloc_array<T>(allocator, Count);
     return slice(ptr, Count);
 }

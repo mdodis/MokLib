@@ -49,6 +49,8 @@ set(SOURCES
     "Compat/Win32Base.h"
     "Compat/Win32Extra.h"
     "Containers/Extras.h"
+    "Containers/IntrusiveList.h"
+    "Containers/Set.h"
     "Sort.h"
     )
 

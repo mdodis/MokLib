@@ -16,10 +16,10 @@ T* alloc(IAllocator& allocator, Args&&... args)
     return result;
 }
 
-template <typename T, size_t Count>
-T* alloc_array(IAllocator& allocator)
+template <typename T>
+T* alloc_array(IAllocator& allocator, size_t count)
 {
-    umm ptr = allocator.reserve(sizeof(T) * Count);
+    umm ptr = allocator.reserve(sizeof(T) * count);
     return (T*)ptr;
 }
 
