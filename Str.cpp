@@ -14,7 +14,7 @@ Str::Str(const char *cstr) {
 }
 
 bool Str::split(u64 at, Str *left, Str *right) const {
-    if (len < at) {
+    if ((len < at) || (at >= len)) {
         return false;
     }
 
