@@ -1,9 +1,9 @@
 #pragma once
 #include "../Base.h"
 #include "../Config.h"
+#include "FileSystem/FileSystem.h"
 #include "Serialization/Base.h"
 #include "StringFormat.h"
-#include "FileSystem/FileSystem.h"
 
 /**
  * Serialize an object to JSON
@@ -24,14 +24,15 @@ MOKLIB_API PROC_DESERIALIZE(json_deserialize);
 
 /** Shorthand of json_parse */
 template <typename T>
-static _inline void json_input(Tape *from, IAllocator &alloc, T *result) {
+static _inline void json_input(Tape* from, IAllocator& alloc, T* result)
+{
     json_parse(from, alloc, descriptor_of(result), (umm)result);
 }
 
 /** Shorthand of json_serialize_pretty */
 template <typename T>
-static _inline void json_serialize_pretty(Tape *output, T *ptr) {
-    IDescriptor *descriptor = descriptor_of(ptr);
+static _inline void json_serialize_pretty(Tape* output, T* ptr)
+{
+    IDescriptor* descriptor = descriptor_of(ptr);
     json_serialize_pretty(output, descriptor, (umm)ptr);
 }
-
