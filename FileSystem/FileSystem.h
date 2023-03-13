@@ -1,13 +1,13 @@
 #pragma once
-#include "../Config.h"
-#include "../Console.h"
-#include "../Error.h"
-#include "../Host.h"
-#include "../Memory/Arena.h"
-#include "../Memory/RawBuffer.h"
-#include "../Str.h"
-#include "../Tape.h"
-#include "../Time/Time.h"
+#include "Config.h"
+#include "Console.h"
+#include "Error.h"
+#include "Host.h"
+#include "Memory/Arena.h"
+#include "Memory/RawBuffer.h"
+#include "Str.h"
+#include "Tape.h"
+#include "Time/Time.h"
 
 enum class SymLinkKind
 {
@@ -23,7 +23,6 @@ enum class SymLinkKind
  * 3: ShareWrites
  * 4: Create / Open (i.e. Truncate / Open)
  */
-
 namespace FileMode {
     enum Type : u16
     {
@@ -53,11 +52,13 @@ struct MOKLIB_API FileHandle {
     int internal_handle;
 #endif
 };
+
 #define IS_VALID_FILE(f) ((f).internal_handle != 0)
 
 MOKLIB_API TEnum<IOError> copy_file(Str source, Str destination);
 MOKLIB_API bool           create_symlink(
               const Str& symlink_path, const Str& target_path, SymLinkKind kind);
+
 MOKLIB_API TimeSpec get_file_time(const Str& file_path);
 
 MOKLIB_API FileHandle open_file(const Str& file_path, EFileMode mode);
