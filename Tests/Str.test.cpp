@@ -1,8 +1,10 @@
-#include "Test/Test.h"
 #include "Str.h"
 
-TEST_CASE("Lib/Str", "'hello', chop_right_last_of('llo'), 'he'") {
-    Str text = LIT("hello");
+#include "Test/Test.h"
+
+TEST_CASE("Lib/Str", "'hello', chop_right_last_of('llo'), 'he'")
+{
+    Str text   = LIT("hello");
     Str result = text.chop_right_last_of(LIT("llo"));
     REQUIRE(result == LIT("he"), "");
 

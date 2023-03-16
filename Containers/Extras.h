@@ -3,9 +3,9 @@
 #include "Memory/Extras.h"
 #include "Slice.h"
 
-template <typename T, u64 Count>
-Slice<T> alloc_slice(IAllocator& allocator)
+template <typename T>
+Slice<T> alloc_slice(IAllocator& allocator, size_t count)
 {
-    T* ptr = alloc_array<T>(allocator, Count);
-    return slice(ptr, Count);
+    T* ptr = alloc_array<T>(allocator, count);
+    return slice(ptr, count);
 }

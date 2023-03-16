@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "Base.h"
+#include "RawBuffer.h"
 
 #define PUSH_STRUCT(alloc, type) (type*)alloc->reserve(sizeof(type))
 
@@ -21,6 +22,14 @@ T* alloc_array(IAllocator& allocator, size_t count)
 {
     umm ptr = allocator.reserve(sizeof(T) * count);
     return (T*)ptr;
+}
+
+static _inline Raw alloc_raw(IAllocator& allocator, size_t size)
+{
+    umm ptr = allocator.reserve(size);
+    if (!ptr) return Raw(0, 0);
+
+    return Raw(ptr, size);
 }
 
 template <typename T>
