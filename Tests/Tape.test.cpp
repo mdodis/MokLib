@@ -217,3 +217,20 @@ TEST_CASE(
 
     return MPASSED();
 }
+
+TEST_CASE(
+    "Lib/Tape/RawWriteTape", "{u8[10]}, write 0123456789 is correctly written")
+{
+    char         buffer[10];
+    RawWriteTape tape(Raw(buffer, 10));
+
+    Str s = LIT("0123456789");
+
+    tape.write_str(s);
+
+    Str comp(tape.buffer);
+
+    REQUIRE(comp == s, "");
+
+    return MPASSED();
+}

@@ -84,8 +84,52 @@ struct ReadTape {
         i64 num_read = read(ptr, (i64)len);
         if (num_read == 0) return Str::NullStr;
 
-        return Str((const char*)ptr, (u64)num_read, false);
+        return Str(ptr, (u64)num_read, false);
     }
+};
+
+enum class WriteTapeMode : u32
+{
+    Write,
+    Seek,
+    End
+};
+
+/**
+ * i64 proc(void* src, i64 size, Mode mode, void* usr)
+ *
+ * @param src  The source buffer
+ * @param size The size of the source buffer
+ * @param Mode The mode:
+ *        - Write: write from the source buffer
+ *        - Seek: seek by size
+ *        - End: return 1 if at end. Note that some tapes may never be at their
+ * end
+ * @return The number of bytes written, or the number of bytes moved
+ */
+#define PROC_WRITE_TAPE_WRITE(name) \
+    i64 name(void* src, i64 size, WriteTapeMode mode, void* usr)
+typedef PROC_WRITE_TAPE_WRITE(ProcWriteTapeWrite);
+
+struct WriteTape {
+    WriteTape(ProcWriteTapeWrite* proc, void* usr) : proc(proc), usr(usr) {}
+
+    _inline i64 write(void* src, i64 size)
+    {
+        return proc(src, size, WriteTapeMode::Write, usr);
+    }
+
+    _inline bool write_char(char c) { return write(&c, 1) == 1; }
+
+    _inline bool write_raw(const Raw& raw)
+    {
+        return write(raw.buffer, raw.size);
+    }
+
+    _inline bool write_str(const Str& str) { return write_raw((Raw)str); }
+
+    ProcWriteTapeWrite* proc;
+    void*               usr;
 };
 
 struct MOKLIB_API RawReadTape : public ReadTape {
@@ -137,6 +181,63 @@ struct MOKLIB_API RawReadTape : public ReadTape {
             } break;
 
             case ReadTapeMode::End: {
+                return (self->offset == self->buffer.size) ? 1 : 0;
+            } break;
+        }
+        return 0;
+    }
+
+    u64 offset;
+    Raw buffer;
+};
+
+struct MOKLIB_API RawWriteTape : public WriteTape {
+    RawWriteTape(Raw buffer)
+        : buffer(buffer), offset(0), WriteTape(write_proc, (void*)this)
+    {}
+
+    static PROC_WRITE_TAPE_WRITE(write_proc)
+    {
+        RawWriteTape* self = (RawWriteTape*)usr;
+
+        switch (mode) {
+            case WriteTapeMode::Write: {
+                if (size <= 0) return -1;
+                u64 sizeu64 = (u64)size;
+
+                if ((sizeu64 + self->offset) > self->buffer.size) {
+                    sizeu64 = self->buffer.size - self->offset;
+                }
+
+                memcpy((u8*)self->buffer.buffer + self->offset, src, sizeu64);
+                self->offset += sizeu64;
+
+                return (i64)sizeu64;
+
+            } break;
+
+            case WriteTapeMode::Seek: {
+                if (size < 0) {
+                    u64 sizeu64 = (u64)(-size);
+
+                    if (sizeu64 > self->offset) sizeu64 = self->offset;
+
+                    self->offset -= sizeu64;
+
+                    return -((i64)sizeu64);
+                } else {
+                    u64 sizeu64 = (u64)size;
+
+                    if ((sizeu64 + self->offset) > self->buffer.size)
+                        sizeu64 = self->buffer.size - self->offset;
+
+                    self->offset += sizeu64;
+
+                    return (i64)sizeu64;
+                }
+            } break;
+
+            case WriteTapeMode::End: {
                 return (self->offset == self->buffer.size) ? 1 : 0;
             } break;
         }
