@@ -22,13 +22,6 @@ MOKLIB_API PROC_SERIALIZE(json_serialize_pretty);
  */
 MOKLIB_API PROC_DESERIALIZE(json_deserialize);
 
-/** Shorthand of json_parse */
-template <typename T>
-static _inline void json_input(Tape* from, IAllocator& alloc, T* result)
-{
-    json_parse(from, alloc, descriptor_of(result), (umm)result);
-}
-
 /** Shorthand of json_serialize_pretty */
 template <typename T>
 static _inline void json_serialize_pretty(Tape* output, T* ptr)

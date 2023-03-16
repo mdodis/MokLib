@@ -5,7 +5,7 @@
 #define PROC_SERIALIZE(name) void name(Tape* out, IDescriptor* desc, umm ptr)
 
 #define PROC_DESERIALIZE(name) \
-    void name(Tape* in, IAllocator& alloc, IDescriptor* desc, umm ptr)
+    bool name(Tape* in, IAllocator& alloc, IDescriptor* desc, umm ptr)
 
 typedef PROC_SERIALIZE(ProcSerialize);
 typedef PROC_DESERIALIZE(ProcDeserialize);
@@ -17,9 +17,9 @@ void serialize(Tape* in, T& object, ProcSerialize* proc)
 }
 
 template <typename T>
-void deserialize(Tape* in, IAllocator& alloc, T& object, ProcDeserialize* proc)
+bool deserialize(Tape* in, IAllocator& alloc, T& object, ProcDeserialize* proc)
 {
-    proc(in, alloc, descriptor_of<T>(&object), (umm)&object);
+    return proc(in, alloc, descriptor_of<T>(&object), (umm)&object);
 }
 
 struct DescPair {
@@ -76,7 +76,7 @@ struct SerializedObject {
         DEFER(close_file(fh));
 
         FileTape ft(fh);
-        deserialize(&ft, *allocator, descriptor, (umm)&object);
+        ASSERT(deserialize(&ft, *allocator, descriptor, (umm)&object));
     }
 
     void flush()

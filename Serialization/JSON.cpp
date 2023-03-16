@@ -22,10 +22,13 @@ PROC_DESERIALIZE(json_deserialize)
 {
     // @todo: Check first if we're parsing an object or an array instead of
     // doing this.
+    //
+    // Technically, it should always be an object first, with an array inside of
+    // it, but this is not the case sometimes...
     if (parse_object(in, alloc, DescPair{desc, ptr})) {
-        return;
+        return true;
     }
-    parse_array(in, alloc, DescPair{desc, ptr});
+    return parse_array(in, alloc, DescPair{desc, ptr});
 }
 
 static bool parse_object(Tape* in, IAllocator& alloc, DescPair pair)
