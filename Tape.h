@@ -4,9 +4,181 @@
 
 #include "Config.h"
 #include "Math/Base.h"
+#include "Memory/Base.h"
 #include "Memory/RawBuffer.h"
 #include "Str.h"
 #include "Traits.h"
+
+enum class ReadTapeMode : u32
+{
+    Read,
+    Seek,
+    End,
+};
+
+/**
+ * i64 proc(void* dst, i64 size, Mode mode, void* usr)
+ *
+ * @param dst  The destination buffer
+ * @param size The size of the destination buffer
+ * @param Mode The mode:
+ *        - Read: read to the destination buffer
+ *        - Seek: seek by size
+ *        - End: return 1 if at end
+ * @return The number of bytes read, or the number of bytes moved
+ */
+#define PROC_READ_TAPE_READ(name) \
+    i64 name(void* dst, i64 size, ReadTapeMode mode, void* usr)
+typedef PROC_READ_TAPE_READ(ProcReadTapeRead);
+
+struct ReadTape {
+    ReadTape(ProcReadTapeRead* proc, void* usr) : proc(proc), usr(usr) {}
+
+    ProcReadTapeRead* proc;
+    void*             usr;
+
+    _inline i64 read(void* dst, i64 size)
+    {
+        return proc(dst, size, ReadTapeMode::Read, usr);
+    }
+
+    _inline bool seek(i64 offset) { return try_seek(offset) == offset; }
+
+    _inline i64 try_seek(i64 offset)
+    {
+        return proc(0, offset, ReadTapeMode::Seek, usr);
+    }
+
+    _inline bool end() { return proc(0, 0, ReadTapeMode::End, usr) == 1; }
+
+    _inline char read_char()
+    {
+        char result;
+        if (read(&result, sizeof(result)) != 1) {
+            return EOF;
+        }
+
+        return result;
+    }
+
+    _inline bool peek_char(char match)
+    {
+        char result;
+        if (read(&result, sizeof(result)) != 1) {
+            return false;
+        }
+
+        if (result == match) {
+            return true;
+        } else {
+            seek(-1);
+            return false;
+        }
+    }
+
+    _inline Str read_str(IAllocator& allocator, u64 len)
+    {
+        umm ptr = allocator.reserve(len);
+        if (!ptr) return Str::NullStr;
+
+        i64 num_read = read(ptr, (i64)len);
+        if (num_read == 0) return Str::NullStr;
+
+        return Str((const char*)ptr, (u64)num_read, false);
+    }
+};
+
+struct MOKLIB_API RawReadTape : public ReadTape {
+    RawReadTape(Raw buffer)
+        : buffer(buffer)
+        , offset(0)
+        , ReadTape(RawReadTape::read_proc, (void*)this)
+    {}
+
+    static PROC_READ_TAPE_READ(read_proc)
+    {
+        RawReadTape* self = (RawReadTape*)usr;
+
+        switch (mode) {
+            case ReadTapeMode::Read: {
+                if (size <= 0) return -1;
+
+                u64 sizeu64 = (u64)size;
+
+                if ((sizeu64 + self->offset) > self->buffer.size) {
+                    sizeu64 = self->buffer.size - self->offset;
+                }
+
+                memcpy(dst, (u8*)self->buffer.buffer + self->offset, sizeu64);
+                self->offset += sizeu64;
+
+                return (i64)sizeu64;
+            } break;
+
+            case ReadTapeMode::Seek: {
+                if (size < 0) {
+                    u64 sizeu64 = (u64)(-size);
+
+                    if (sizeu64 > self->offset) sizeu64 = self->offset;
+
+                    self->offset -= sizeu64;
+
+                    return -((i64)sizeu64);
+                } else {
+                    u64 sizeu64 = (u64)size;
+
+                    if ((sizeu64 + self->offset) > self->buffer.size)
+                        sizeu64 = self->buffer.size - self->offset;
+
+                    self->offset += sizeu64;
+
+                    return (i64)sizeu64;
+                }
+            } break;
+
+            case ReadTapeMode::End: {
+                return (self->offset == self->buffer.size) ? 1 : 0;
+            } break;
+        }
+        return 0;
+    }
+
+    u64 offset;
+    Raw buffer;
+};
+
+struct MOKLIB_API ParseReadTape : public ReadTape {
+    ParseReadTape(ReadTape& tape)
+        : tape(tape), num_read(0), ReadTape(read_proc, (void*)this)
+    {}
+
+    static PROC_READ_TAPE_READ(read_proc)
+    {
+        ParseReadTape* self = (ParseReadTape*)usr;
+        switch (mode) {
+            case ReadTapeMode::Read: {
+                i64 off = self->tape.proc(dst, size, mode, self->tape.usr);
+                self->num_read += off;
+                return off;
+            } break;
+
+            case ReadTapeMode::Seek: {
+                i64 off = self->tape.proc(0, size, mode, self->tape.usr);
+                self->num_read += off;
+                return off;
+            } break;
+
+            case ReadTapeMode::End: {
+                return self->tape.proc(0, 0, mode, self->tape.usr);
+            } break;
+        }
+    }
+
+    void restore() { tape.seek(-num_read); }
+
+    ReadTape& tape;
+    i64       num_read;
+};
 
 struct MOKLIB_API Tape {
     // Interface

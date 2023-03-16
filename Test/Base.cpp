@@ -26,6 +26,8 @@ Benchmark::Benchmark(
 
 int TestRunner::run_tests()
 {
+    u64 num_passed = 0;
+    u64 num_failed = 0;
     for (TestCase& test_case : test_cases) {
         Console::set_color(Console::Output, ConsoleColor::Yellow);
         print(LIT("Running "));
@@ -38,14 +40,22 @@ int TestRunner::run_tests()
             Console::set_color(Console::Output, ConsoleColor::Green);
             print(LIT("Passed"));
             Console::set_color(Console::Output);
+            num_passed++;
         } else {
             Console::set_color(
                 Console::Output,
                 ConsoleColor::Red + ConsoleColor::Bold);
             print(LIT("Failed\n\t{}"), test_case.result.reason);
             Console::set_color(Console::Output);
+            num_failed++;
         }
         print(LIT("\n"));
+    }
+
+    if (num_passed == test_cases.size) {
+        print(LIT("Passed {}/{}\n"), num_passed, test_cases.size);
+    } else {
+        print(LIT("Failed {}/{}\n"), num_passed, test_cases.size);
     }
 
     return 0;
