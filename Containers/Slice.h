@@ -68,3 +68,8 @@ Slice<T> slice(T* ptr, u64 count)
 {
     return Slice(ptr, count);
 }
+
+static _inline Slice<u8> slice(const Raw& raw)
+{
+    return Slice<u8>((u8*)raw.buffer, raw.size);
+}

@@ -114,6 +114,10 @@ PROC_PARSE_INL(bool)
 
 #define PROC_FMT_ENUM(enum_type, values)              \
     template <>                                       \
+    struct HasFmt<enum_type::Type> {                  \
+        static constexpr bool value = true;           \
+    };                                                \
+    template <>                                       \
     void fmt(Tape* tape, const enum_type::Type& type) \
     {                                                 \
         switch (type)                                 \
@@ -122,12 +126,16 @@ PROC_PARSE_INL(bool)
 
 #define FMT_ENUM_CASE(enum_type, sub) \
     case enum_type::sub:              \
+        tape->write_str(LIT("\""));   \
         tape->write_str(LIT(#sub));   \
+        tape->write_str(LIT("\""));   \
         break
 
 #define FMT_ENUM_DEFAULT_CASE(sub)  \
     default:                        \
+        tape->write_str(LIT("\"")); \
         tape->write_str(LIT(#sub)); \
+        tape->write_str(LIT("\"")); \
         break
 
 #define FMT_ENUM_DEFAULT_CASE_UNREACHABLE() \
@@ -145,7 +153,7 @@ PROC_PARSE_INL(bool)
 
 #define PARSE_ENUM_CASE(enum_type, sub) \
     {                                   \
-        Str cmp = LIT(#sub);            \
+        Str cmp = LIT("\"" #sub "\"");  \
         if (cmp == s) {                 \
             type = enum_type::sub;      \
             return true;                \

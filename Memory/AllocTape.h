@@ -53,7 +53,7 @@ struct MOKLIB_API AllocTape : public Tape {
 
     bool end() override { return rd_offset == size; }
 
-    void move(i64 offset) override {}
-
+    void        move(i64 offset) override {}
+    void        release() { alloc.release(ptr); }
     IAllocator& alloc;
 };

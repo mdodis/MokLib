@@ -229,6 +229,7 @@ struct TArr {
     operator T*() { return elements; }
 
     constexpr u32 count() const { return Count; }
+    constexpr u32 size() const { return Count * sizeof(T); }
 
     FwdIter begin() const { return FwdIter((T*)elements, 0); }
     FwdIter end() const { return FwdIter((T*)elements, Count); }

@@ -17,6 +17,11 @@ enum class TypeClass
     Primitive,
     /** Str */
     String,
+    /**
+     * Slightly different than @String: Values are stored as strings, but
+     * serialized into primitives
+     */
+    Enumeration,
     /** Any object with an array or vector-like behavior */
     Array,
     /** A compound object from any other set of type classes */
@@ -73,6 +78,20 @@ struct IPrimitiveDescriptor : IDescriptor {
     virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
 };
 
+struct IEnumDescriptor : IDescriptor {
+    constexpr IEnumDescriptor(u64 offset, Str name, Str type_name)
+        : IDescriptor(offset, name, TypeClass::Enumeration)
+        , type_name_str(type_name)
+    {}
+
+    virtual void format_enum(Tape* out, umm ptr)                      = 0;
+    virtual bool parse_enum(Tape* in, IAllocator& allocator, umm ptr) = 0;
+
+    virtual Str                 type_name() override { return type_name_str; }
+    virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
+    Str                         type_name_str;
+};
+
 /**
  * Describes a primitive value that has a fmt parameter
  */
@@ -103,6 +122,24 @@ struct StrDescriptor : IDescriptor {
 
     virtual Str                 type_name() override { return LIT("Str"); }
     virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
+};
+
+template <typename T>
+struct EnumDescriptor : IEnumDescriptor {
+    constexpr EnumDescriptor(
+        u64 offset, Str name, Str type_name = Str(typeid(T).name()))
+        : IEnumDescriptor(offset, name, type_name)
+    {}
+
+    virtual void format_enum(Tape* out, umm ptr) override
+    {
+        format(out, LIT("{}"), *(T*)ptr);
+    }
+
+    virtual bool parse_enum(Tape* in, IAllocator& allocator, umm ptr) override
+    {
+        return parse<T>(in, *(T*)ptr, allocator);
+    }
 };
 
 /**

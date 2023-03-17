@@ -139,11 +139,28 @@ static bool parse_value(Tape* in, IAllocator& alloc, DescPair pair)
     return false;
 }
 
+template <typename NumType>
+bool try_parse_primitive_type(Tape* in, DescPair pair)
+{
+    if constexpr (HasFmt<NumType>::value) {
+        if (dynamic_cast<PrimitiveDescriptor<NumType>*>(pair.desc)) {
+            return parse<NumType>(in, (*(NumType*)pair.ptr));
+        }
+    }
+    return false;
+}
+
 static bool parse_number(Tape* in, IAllocator& alloc, DescPair pair)
 {
-    if (IS_A(pair.desc, PrimitiveDescriptor<f32>)) {
-        return parse<f32>(in, (*(float*)pair.ptr));
-    }
+    if (try_parse_primitive_type<i64>(in, pair)) return true;
+    if (try_parse_primitive_type<u64>(in, pair)) return true;
+    if (try_parse_primitive_type<i32>(in, pair)) return true;
+    if (try_parse_primitive_type<u32>(in, pair)) return true;
+    if (try_parse_primitive_type<i16>(in, pair)) return true;
+    if (try_parse_primitive_type<u16>(in, pair)) return true;
+    if (try_parse_primitive_type<i8>(in, pair)) return true;
+    if (try_parse_primitive_type<u8>(in, pair)) return true;
+    if (try_parse_primitive_type<f32>(in, pair)) return true;
 
     return false;
 }
@@ -158,17 +175,17 @@ static bool parse_bool(Tape* in, IAllocator& alloc, DescPair pair)
 
 static bool parse_string(Tape* in, IAllocator& alloc, DescPair pair)
 {
-    if (!IS_A(pair.desc, StrDescriptor)) {
-        return false;
+    if (IS_A(pair.desc, StrDescriptor)) {
+        Str  result;
+        bool success = parse_qstr(in, alloc, result);
+        if (!success) return false;
+
+        *(Str*)pair.ptr = result;
+    } else if (IS_A(pair.desc, IEnumDescriptor)) {
+        return as<IEnumDescriptor>(pair.desc).parse_enum(in, alloc, pair.ptr);
     }
 
-    Str  result;
-    bool success = parse_qstr(in, alloc, result);
-    if (!success) return false;
-
-    *(Str*)pair.ptr = result;
-
-    return true;
+    return false;
 }
 
 static bool parse_array(Tape* in, IAllocator& alloc, DescPair pair)
@@ -270,6 +287,10 @@ static void json_output_pretty_value(
         case TypeClass::String: {
             TFmtStr<FmtPolicy::WithQuotes> sf(as<Str>(ptr));
             format(output, LIT("{}"), sf);
+        } break;
+
+        case TypeClass::Enumeration: {
+            as<IEnumDescriptor>(desc).format_enum(output, ptr);
         } break;
 
         case TypeClass::Object: {
