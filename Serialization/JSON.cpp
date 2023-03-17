@@ -182,7 +182,18 @@ static bool parse_string(Tape* in, IAllocator& alloc, DescPair pair)
 
         *(Str*)pair.ptr = result;
     } else if (IS_A(pair.desc, IEnumDescriptor)) {
-        return as<IEnumDescriptor>(pair.desc).parse_enum(in, alloc, pair.ptr);
+        if (!expect(in, '"')) {
+            return false;
+        }
+
+        bool success =
+            as<IEnumDescriptor>(pair.desc).parse_enum(in, alloc, pair.ptr);
+
+        if (!expect(in, '"')) {
+            return false;
+        }
+
+        return success;
     }
 
     return false;
@@ -290,7 +301,9 @@ static void json_output_pretty_value(
         } break;
 
         case TypeClass::Enumeration: {
+            output->write_str(LIT("\""));
             as<IEnumDescriptor>(desc).format_enum(output, ptr);
+            output->write_str(LIT("\""));
         } break;
 
         case TypeClass::Object: {

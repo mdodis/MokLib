@@ -126,16 +126,12 @@ PROC_PARSE_INL(bool)
 
 #define FMT_ENUM_CASE(enum_type, sub) \
     case enum_type::sub:              \
-        tape->write_str(LIT("\""));   \
         tape->write_str(LIT(#sub));   \
-        tape->write_str(LIT("\""));   \
         break
 
 #define FMT_ENUM_DEFAULT_CASE(sub)  \
     default:                        \
-        tape->write_str(LIT("\"")); \
         tape->write_str(LIT(#sub)); \
-        tape->write_str(LIT("\"")); \
         break
 
 #define FMT_ENUM_DEFAULT_CASE_UNREACHABLE() \
@@ -146,14 +142,14 @@ PROC_PARSE_INL(bool)
     template <>                                                          \
     bool parse(Tape* tape, enum_type::Type& type, IAllocator& allocator) \
     {                                                                    \
-        Str s = parse_string(tape, allocator);                           \
+        Str s = parse_string(tape, allocator, is_valid_cid);             \
         if (s == Str::NullStr) return false;                             \
         values return false;                                             \
     }
 
 #define PARSE_ENUM_CASE(enum_type, sub) \
     {                                   \
-        Str cmp = LIT("\"" #sub "\"");  \
+        Str cmp = LIT(#sub);            \
         if (cmp == s) {                 \
             type = enum_type::sub;      \
             return true;                \

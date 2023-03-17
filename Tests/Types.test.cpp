@@ -51,11 +51,8 @@ PROC_PARSE_ENUM(TestEnum, {
 
 TEST_CASE("Lib/Types/Parsing", "Format & Parse simple enum works")
 {
-    auto test_strings = arr<Str>(
-        LIT("\"Zero\""),
-        LIT("\"One\""),
-        LIT("\"Two\""),
-        LIT("\"Three\""));
+    auto test_strings =
+        arr<Str>(LIT("Zero"), LIT("One"), LIT("Two"), LIT("Three"));
 
     for (u32 i = 0; i < test_strings.count(); ++i) {
         RawTape rt(test_strings[i]);
