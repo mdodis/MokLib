@@ -173,6 +173,7 @@ namespace Win32 {
         HMENU     menu,
         HINSTANCE instance,
         LPVOID    param);
+    extern "C" __declspec(dllimport) BOOL DestroyWindow(HWND window);
     extern "C" __declspec(dllimport) BOOL
         __stdcall ShowWindow(HWND handle, int cmd_show);
     extern "C" __declspec(dllimport) BOOL __stdcall DestroyWindow(HWND handle);
