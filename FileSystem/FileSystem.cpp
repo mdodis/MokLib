@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include "Traits.h"
 #include "Math/Base.h"
+#include "Containers/Array.h"
 
 Str directory_of(Str file_path) {
     u64 last_separator = file_path.last_of('/');

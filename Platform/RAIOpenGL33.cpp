@@ -12,7 +12,7 @@ X(Disable,                 void, gl::Enum cap) \
 X(BlendFunc,               void, gl::Enum sfactor, gl::Enum dfactor) \
 X(GenBuffers,              void, gl::Sizei n, gl::UInt *buffers) \
 X(BindBuffer,              void, gl::Enum target, gl::UInt buffer) \
-X(BindBufferBase,          void, GLenum target, GLuint index, GLuint buffer) \
+X(BindBufferBase,          void, gl::Enum target, gl::UInt index, gl::UInt buffer) \
 X(BindFramebuffer,         void, gl::Enum target, gl::UInt framebuffer) \
 X(Viewport,                void, gl::Int x, gl::Int y, gl::Sizei width, gl::Sizei height) \
 X(GenVertexArrays,         void, gl::Sizei n, gl::UInt *arrays) \
@@ -20,7 +20,7 @@ X(BindVertexArray,         void, gl::UInt array) \
 X(VertexAttribPointer,     void, gl::UInt index, gl::Int size, gl::Enum type, gl::Bool normalized, gl::Sizei stride, const void *pointer) \
 X(VertexAttribIPointer,    void, gl::UInt index, gl::Int size, gl::Enum type, gl::Sizei stride, const void *pointer) \
 X(EnableVertexAttribArray, void, gl::UInt array) \
-X(BufferData,              void, gl::Enum target, gl::Sizei size, const void *data, GLenum usage) \
+X(BufferData,              void, gl::Enum target, gl::Sizei size, const void *data, gl::Enum usage) \
 X(BufferSubData,           void, gl::Enum target, gl::IntPtr offset, gl::SizeiPtr size, const void *data) \
 X(GetError,                gl::Enum, void) \
 X(CreateShader,            gl::UInt, gl::Enum type) \

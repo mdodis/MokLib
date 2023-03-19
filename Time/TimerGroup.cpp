@@ -1,4 +1,4 @@
-#include "TimerGroup.h"
+#include "Time/TimerGroup.h"
 
 void TimerGroup::init(IAllocator &allocator) {
     entries = TArray<TimerGroup::Entry>(&allocator);
@@ -26,7 +26,7 @@ u32 TimerGroup::set_timer(
     entry->last_sample = now_time();
     entry->callback = callback;
     entry->enabled = true;
-    entry->elapsed = TimeSpec(0ull);
+    entry->elapsed = TimeSpec((u64)0);
 
     needs_update = true;
 

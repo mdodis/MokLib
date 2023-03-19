@@ -55,7 +55,7 @@
 #if COMPILER_MSVC
     #define _inline __forceinline
 #elif COMPILER_GCC || COMPILER_CLANG
-    #define _inline inline __attribute__((always_inline))
+    #define _inline inline
 #else
     #error "Unsupported compiler type for _inline!"
 #endif

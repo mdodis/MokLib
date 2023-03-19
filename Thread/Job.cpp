@@ -64,7 +64,7 @@ void JobQueue::add_job(ProcJob *job, void *data) {
     entry->job  = job;
     entry->data = data;
 
-    completion_target++;
+    completion_target = completion_target + 1;
 
     MEMORY_BARRIER();
 

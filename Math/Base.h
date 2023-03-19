@@ -90,7 +90,3 @@ static _inline float remap(
 {
     return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
 }
-
-static _inline f32 lerp(f32 a, f32 b, f32 t) {
-    return (1.f - t) * a + t * b;
-}

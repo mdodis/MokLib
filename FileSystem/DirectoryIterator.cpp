@@ -61,6 +61,8 @@ bool DirectoryIterator::next_file(FileData *result) {
 #include <sys/types.h>
 #include <dirent.h>
 #include "Compat/UnixFileSystem.h"
+#include "Debugging/Assertions.h"
+#include <errno.h>
 
 DirectoryIterator open_dir(Str filename) {
     ASSERT(filename.has_null_term);

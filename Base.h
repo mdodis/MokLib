@@ -31,13 +31,6 @@ typedef double f64;
 
 typedef char* CStr;
 
-#if COMPILER_MSVC
-#define _inline __forceinline
-#elif COMPILER_GCC || COMPILER_CLANG
-#define _inline inline __attribute__((always_inline))
-#else
-#error "Unsupported compiler type for _inline!"
-#endif
 
 // Signals that is function is not supposed to be used outside of the struct
 #define _internal

@@ -273,6 +273,7 @@ struct MOKLIB_API ParseReadTape : public ReadTape {
                 return self->tape.proc(0, 0, mode, self->tape.usr);
             } break;
         }
+        return 0;
     }
 
     void restore() { tape.seek(-num_read); }

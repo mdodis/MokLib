@@ -73,7 +73,7 @@ void wait_semaphore(Semaphore &sem) {
 }
 
 SemaphoreWaitExitReason wait_timeout_semaphore(Semaphore &sem, u32 ms) {
-    TimeSpec amount_to_wait(ms);
+    TimeSpec amount_to_wait((u64)ms);
     TimeSpec abs_time = now_time() + amount_to_wait;
 
     int reason = sem_timedwait(&sem.handle, &abs_time.time);

@@ -1,5 +1,5 @@
 #include "Test/Test.h"
-#include "Time/TImerGroup.h"
+#include "Time/TimerGroup.h"
 #include "Thread/Thread.h"
 #include "FileSystem/Extras.h"
 

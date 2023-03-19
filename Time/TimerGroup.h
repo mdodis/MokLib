@@ -1,8 +1,8 @@
 #pragma once
-#include "../Config.h"
+#include "Config.h"
 #include "Time.h"
-#include "../Containers/Array.h"
-#include "../Delegates.h"
+#include "Containers/Array.h"
+#include "Delegates.h"
 
 struct MOKLIB_API TimerGroup {
 public:
