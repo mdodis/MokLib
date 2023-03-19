@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "FileSystem/FileSystem.h"
 
+// @todo: this can be moved to Win32Base.h
 namespace Win32FileAttributes {
     enum Type : u32 {
         ReadOnly           = 0x1,
