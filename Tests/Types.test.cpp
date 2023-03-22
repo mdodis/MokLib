@@ -49,6 +49,17 @@ PROC_PARSE_ENUM(TestEnum, {
     PARSE_ENUM_CASE(TestEnum, Three);
 })
 
+TEST_CASE("Lib/Types/Enum", "Format enum outputs string")
+{
+    CREATE_SCOPED_ARENA(&System_Allocator, temp, KILOBYTES(1));
+
+    ETestEnum e      = TestEnum::One;
+    Str       result = format(temp, LIT("{}"), e);
+
+    REQUIRE(result == LIT("One"), "");
+    return MPASSED();
+}
+
 TEST_CASE("Lib/Types/Parsing", "Format & Parse simple enum works")
 {
     auto test_strings =

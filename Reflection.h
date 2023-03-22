@@ -139,12 +139,12 @@ struct EnumDescriptor : IEnumDescriptor {
 
     virtual void format_enum(Tape* out, umm ptr) override
     {
-        format(out, LIT("{}"), *(T*)ptr);
+        format(out, LIT("{}"), *((T*)ptr));
     }
 
     virtual bool parse_enum(Tape* in, IAllocator& allocator, umm ptr) override
     {
-        return parse<T>(in, *(T*)ptr, allocator);
+        return parse<T>(in, *((T*)ptr), allocator);
     }
 };
 
