@@ -194,9 +194,11 @@ static bool parse_string(Tape* in, IAllocator& alloc, DescPair pair)
         }
 
         return success;
+    } else {
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 static bool parse_array(Tape* in, IAllocator& alloc, DescPair pair)

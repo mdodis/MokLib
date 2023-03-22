@@ -10,6 +10,7 @@ set(SOURCES
     "./Types.test.cpp"
     "./TimerGroup.test.cpp"
     "./Sort.test.cpp"
+    "./JSON.test.cpp"
     "./Tests.cpp"
     )
 

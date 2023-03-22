@@ -66,7 +66,7 @@ struct IArrayDescriptor : IDescriptor {
 };
 
 /**
- * Internal use: differenciate between compound data types and primitive types
+ * Internal use: differentiate between compound data types and primitive types
  * like int, float...
  */
 struct IPrimitiveDescriptor : IDescriptor {
@@ -91,6 +91,12 @@ struct IEnumDescriptor : IDescriptor {
     virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
     Str                         type_name_str;
 };
+
+/**
+ * Fetch the descriptor instance of the object type
+ */
+template <typename T>
+static _inline IDescriptor* descriptor_of(T* what);
 
 /**
  * Describes a primitive value that has a fmt parameter
@@ -143,6 +149,64 @@ struct EnumDescriptor : IEnumDescriptor {
 };
 
 /**
+ * A fixed array descriptor that can be used on structs with only one
+ * type of member; as if it was an array (for example a Vector of 3 floats)
+ *
+ * @param StorageType    The actual storage type of the whole struct
+ * @param StorageSubType The type of each element
+ * @param Count          The max count of elements
+ *
+ * @remark StorageType needs to have implemented the following:
+ * - Array index operator
+ * - Default constructor
+ */
+template <typename StorageType, typename StorageSubType, u64 Count>
+struct FixedArrayDescriptor : IArrayDescriptor {
+    constexpr FixedArrayDescriptor(u64 offset, Str name)
+        : IArrayDescriptor(offset, name)
+        , type_name_str(Str(typeid(StorageType).name()))
+    {}
+
+    virtual IDescriptor* get_subtype_descriptor() override
+    {
+        return descriptor_of(((StorageSubType*)0));
+    }
+
+    virtual void init(umm self, IAllocator& alloc) override
+    {
+        i               = 0;
+        StorageType* ar = (StorageType*)self;
+        *ar             = StorageType();
+    }
+
+    virtual umm add(umm self) override
+    {
+        if (i >= Count) return 0;
+
+        StorageType&    ar  = *((StorageType*)self);
+        StorageSubType* sub = &ar[i];
+
+        i++;
+        return (umm)sub;
+    }
+
+    virtual u64 size(umm self) override { return i; }
+
+    virtual umm get(umm self, u64 index) override
+    {
+        if (index >= Count) return 0;
+
+        StorageType* ar = (StorageType*)self;
+        return (umm)&ar[index];
+    }
+
+    virtual Str type_name() override { return type_name_str; }
+
+    int i;
+    Str type_name_str;
+};
+
+/**
  * Descriptor for TArray<T>
  */
 template <typename T>
@@ -182,12 +246,6 @@ struct ArrayDescriptor : IArrayDescriptor {
 
     virtual Str type_name() override { return LIT("Array <>"); }
 };
-
-/**
- * Fetch the descriptor instance of the object type
- */
-template <typename T>
-static _inline IDescriptor* descriptor_of(T* what);
 
 /**
  * Define the descriptor function and variable for the corresponding type.
