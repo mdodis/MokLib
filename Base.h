@@ -29,8 +29,8 @@ typedef int64_t  i64;
 typedef float  f32;
 typedef double f64;
 
-typedef char* CStr;
-
+typedef char*       CStr;
+typedef const char* ConstCStr;
 
 // Signals that is function is not supposed to be used outside of the struct
 #define _internal
