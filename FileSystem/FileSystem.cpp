@@ -641,6 +641,59 @@ StreamTape get_stream(Console::Handle kind)
     return StreamTape(FileHandle{(int)kind});
 }
 
+PROC_READ_TAPE_READ(StreamReadTape::read_proc)
+{
+    StreamReadTape* self = (StreamReadTape*)usr;
+    switch (mode) {
+        case ReadTapeMode::Read: {
+            int fd = self->stream_file.internal_handle;
+            return ::read(fd, dst, size);
+        } break;
+
+        case ReadTapeMode::Seek: {
+            int fd = self->stream_file.internal_handle;
+            lseek(fd, SEEK_CUR, size);
+        } break;
+
+        case ReadTapeMode::End: {
+            int  fd = self->stream_file.internal_handle;
+            char c;
+            return ::read(fd, &c, 1) == -1;
+        } break;
+
+        default: {
+            return 0;
+        } break;
+    }
+}
+
+PROC_WRITE_TAPE_WRITE(StreamWriteTape::write_proc)
+{
+    StreamWriteTape* self = (StreamWriteTape*)usr;
+    switch (mode) {
+        case WriteTapeMode::Write: {
+            int     fd      = self->stream_file.internal_handle;
+            ssize_t written = ::write(fd, src, size);
+            return (written == size);
+        } break;
+
+        case WriteTapeMode::Seek: {
+            int fd = self->stream_file.internal_handle;
+            lseek(fd, SEEK_CUR, size);
+        } break;
+
+        case WriteTapeMode::End: {
+            int  fd = self->stream_file.internal_handle;
+            char c;
+            return ::read(fd, &c, 1) == -1;
+        } break;
+
+        default: {
+            return 0;
+        } break;
+    }
+}
+
 u64 StreamTape::read(void* destination, u64 amount)
 {
     int fd = stream_file.internal_handle;

@@ -97,6 +97,8 @@ struct TArray {
         }
     }
 
+    void pop() { size--; }
+
     void empty() { size = 0; }
 
     void release()

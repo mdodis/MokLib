@@ -9,8 +9,6 @@
 
 /**
  * A Simple Fixed-allocation Hashtable implementation, using Coalesced Chaining
- *
- * @todo: Key comparison
  */
 template <typename TKey, typename TValue>
 struct TMap {
@@ -47,7 +45,7 @@ struct TMap {
         if (!values[h].used) return 0;
 
         Bin* next = &values[h];
-        while ((next != 0) && (next->key != key)) {
+        while ((next != 0) && !(next->key == key)) {
             next = values[h].next;
         }
 
