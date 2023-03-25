@@ -234,3 +234,31 @@ TEST_CASE(
 
     return MPASSED();
 }
+
+TEST_CASE("Lib/Tape/MeasureWriteTape", "{num_written properly synchronized}")
+{
+    MeasureWriteTape tape;
+
+    for (u8 i = 0; i < 10; ++i) {
+        REQUIRE(tape.write(&i, 1) == 1, "");
+    }
+
+    REQUIRE(tape.num_written == 10, "");
+    REQUIRE(tape.current_offset == 10, "");
+
+    return MPASSED();
+}
+
+TEST_CASE("Lib/Tape/MeasureWriteTape", "{current_offset properly synchronized}")
+{
+    MeasureWriteTape tape;
+    REQUIRE(!tape.seek(-10), "");
+    REQUIRE(tape.seek(10), "");
+
+    REQUIRE(tape.write_str(LIT("hello")), "");
+
+    REQUIRE(tape.num_written == 5, "");
+    REQUIRE(tape.current_offset == 15, "");
+
+    return MPASSED();
+}

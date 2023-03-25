@@ -128,6 +128,13 @@ struct WriteTape {
 
     _inline bool write_str(const Str& str) { return write_raw((Raw)str); }
 
+    _inline bool seek(i64 offset) { return try_seek(offset) == offset; }
+
+    _inline i64 try_seek(i64 offset)
+    {
+        return proc(0, offset, WriteTapeMode::Seek, usr);
+    }
+
     ProcWriteTapeWrite* proc;
     void*               usr;
 };
@@ -280,6 +287,50 @@ struct MOKLIB_API ParseReadTape : public ReadTape {
 
     ReadTape& tape;
     i64       num_read;
+};
+
+struct MOKLIB_API MeasureWriteTape : public WriteTape {
+    MeasureWriteTape() : WriteTape(write_proc, (void*)this) {}
+
+    static PROC_WRITE_TAPE_WRITE(write_proc)
+    {
+        MeasureWriteTape* self = (MeasureWriteTape*)usr;
+
+        switch (mode) {
+            case WriteTapeMode::Write: {
+                if (size <= 0) return 0;
+
+                self->num_written += size;
+                self->current_offset += size;
+
+                return size;
+            } break;
+
+            case WriteTapeMode::Seek: {
+                if (size < 0) {
+                    u64 sizeu64 = (u64)(-size);
+                    if (sizeu64 > self->current_offset) {
+                        sizeu64 = self->current_offset;
+                    }
+
+                    self->current_offset -= sizeu64;
+                    return -((i64)sizeu64);
+                } else {
+                    self->current_offset += size;
+                    return size;
+                }
+            } break;
+
+            case WriteTapeMode::End: {
+                return 0;
+            } break;
+        }
+    }
+
+    /** The offset from the resulting writes + seeks */
+    u64 current_offset = 0;
+    /** The total number of bytes written */
+    u64 num_written    = 0;
 };
 
 struct MOKLIB_API Tape {
