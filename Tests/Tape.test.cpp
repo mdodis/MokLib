@@ -262,3 +262,12 @@ TEST_CASE("Lib/Tape/MeasureWriteTape", "{current_offset properly synchronized}")
 
     return MPASSED();
 }
+
+TEST_CASE("Lib/FileSystem/StreamWriteTape", "Test stdout")
+{
+    StreamWriteTape s = get_write_stream(Console::Output);
+
+    s.write_str(LIT("Some string\n"));
+
+    return MPASSED();
+}

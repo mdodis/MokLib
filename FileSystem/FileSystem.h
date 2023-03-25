@@ -122,6 +122,28 @@ bool read_struct(FileHandle& handle, T* destination, uint64 offset = 0)
     return read_file(handle, destination, sizeof(T), offset) == sizeof(T);
 }
 
+struct MOKLIB_API StreamReadTape : public ReadTape {
+    StreamReadTape() : stream_file({0}), ReadTape(read_proc, (void*)this) {}
+    StreamReadTape(FileHandle file)
+        : stream_file(file), ReadTape(read_proc, (void*)this)
+    {}
+
+    static PROC_READ_TAPE_READ(read_proc);
+
+    FileHandle stream_file;
+};
+
+struct MOKLIB_API StreamWriteTape : public WriteTape {
+    StreamWriteTape() : stream_file({0}), WriteTape(write_proc, (void*)this) {}
+    StreamWriteTape(FileHandle file)
+        : stream_file(file), WriteTape(write_proc, (void*)this)
+    {}
+
+    static PROC_WRITE_TAPE_WRITE(write_proc);
+
+    FileHandle stream_file;
+};
+
 struct MOKLIB_API StreamTape : public Tape {
     FileHandle stream_file;
 
@@ -236,7 +258,9 @@ struct TBufferedFileTape : TFileTape<AutoClose> {
 
 typedef TFileTape<false> FileTape;
 
-MOKLIB_API StreamTape get_stream(Console::Handle kind);
+MOKLIB_API StreamTape      get_stream(Console::Handle kind);
+MOKLIB_API StreamReadTape  get_read_stream(Console::Handle kind);
+MOKLIB_API StreamWriteTape get_write_stream(Console::Handle kind);
 
 static _inline TFileTape<true> open_write_tape(const Str& path)
 {
