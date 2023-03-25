@@ -271,3 +271,24 @@ TEST_CASE("Lib/FileSystem/StreamWriteTape", "Test stdout")
 
     return MPASSED();
 }
+
+TEST_CASE("Lib/FileSystem/FileTape", "Test file tape")
+{
+    {
+        FileWriteTape<true> ft(open_file_write(LIT("test.file.test")));
+        REQUIRE(ft.write_str(LIT("Hello, world!")), "");
+    }
+
+    {
+        CREATE_SCOPED_ARENA(&System_Allocator, temp, KILOBYTES(1));
+
+        FileReadTape<true> ft(open_file_read(LIT("test.file.test")));
+
+        Str s = ft.read_str(temp, 13);
+        REQUIRE(s != Str::NullStr, "");
+
+        REQUIRE(s == LIT("Hello, world!"), "");
+    }
+
+    return MPASSED();
+}

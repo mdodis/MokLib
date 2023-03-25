@@ -157,6 +157,154 @@ struct MOKLIB_API StreamTape : public Tape {
 };
 
 template <bool AutoClose>
+struct FileReadTape : public ReadTape {
+    FileReadTape() : ReadTape(read_proc, (void*)this) {}
+    FileReadTape(FileHandle file) : ReadTape(read_proc, (void*)this)
+    {
+        set_file(file);
+    }
+
+    ~FileReadTape()
+    {
+        if constexpr (AutoClose) {
+            close_file(file);
+        }
+    }
+
+    void set_file(FileHandle file)
+    {
+        this->file = file;
+        size       = get_file_size(file);
+        offset     = 0;
+    }
+
+    static PROC_READ_TAPE_READ(read_proc)
+    {
+        FileReadTape* self = (FileReadTape*)usr;
+        switch (mode) {
+            case ReadTapeMode::Read: {
+                if (size <= 0) return -1;
+
+                u64 sizeu64 = (u64)size;
+
+                i64 num_read = read_file(self->file, dst, size, self->offset);
+                if (num_read < 0) {
+                    return 0;
+                }
+
+                return num_read;
+            } break;
+
+            case ReadTapeMode::Seek: {
+                if (size < 0) {
+                    u64 sizeu64 = (u64)(-size);
+
+                    if (sizeu64 > self->offset) sizeu64 = self->offset;
+
+                    self->offset -= sizeu64;
+
+                    return -((i64)sizeu64);
+                } else {
+                    u64 sizeu64 = (u64)size;
+
+                    if ((sizeu64 + self->offset) > self->size)
+                        sizeu64 = self->size - self->offset;
+
+                    self->offset += sizeu64;
+
+                    return (i64)sizeu64;
+                }
+            } break;
+
+            case ReadTapeMode::End: {
+                return (self->offset == self->size);
+            } break;
+
+            default: {
+                return 0;
+            } break;
+        }
+    }
+
+    u64        offset = 0;
+    u64        size;
+    FileHandle file;
+};
+
+template <bool AutoClose>
+struct FileWriteTape : public WriteTape {
+    FileWriteTape() : WriteTape(write_proc, (void*)this) {}
+    FileWriteTape(FileHandle file) : WriteTape(write_proc, (void*)this)
+    {
+        set_file(file);
+    }
+
+    ~FileWriteTape()
+    {
+        if constexpr (AutoClose) {
+            close_file(file);
+        }
+    }
+
+    void set_file(FileHandle file)
+    {
+        this->file = file;
+        offset     = 0;
+    }
+
+    static PROC_WRITE_TAPE_WRITE(write_proc)
+    {
+        FileWriteTape* self = (FileWriteTape*)usr;
+
+        switch (mode) {
+            case WriteTapeMode::Write: {
+                if (size <= 0) return -1;
+                u64 sizeu64 = (u64)size;
+
+                u64  bytes_written;
+                bool success = write_file(
+                    self->file,
+                    src,
+                    size,
+                    &bytes_written,
+                    self->offset);
+                self->offset += success ? bytes_written : 0;
+                return (i64)sizeu64;
+            } break;
+
+            case WriteTapeMode::Seek: {
+                if (size < 0) {
+                    u64 sizeu64 = (u64)(-size);
+
+                    if (sizeu64 > self->offset) sizeu64 = self->offset;
+
+                    self->offset -= sizeu64;
+
+                    return -((i64)sizeu64);
+                } else {
+                    u64 sizeu64 = (u64)size;
+
+                    self->offset += sizeu64;
+
+                    return (i64)sizeu64;
+                }
+            } break;
+
+            case WriteTapeMode::End: {
+                return 0;
+            } break;
+
+            default: {
+                return 0;
+            } break;
+        }
+    }
+
+    u64        offset = 0;
+    FileHandle file;
+};
+
+template <bool AutoClose>
 struct TFileTape : public SizedTape {
     FileHandle file;
 
