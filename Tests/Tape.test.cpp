@@ -292,3 +292,24 @@ TEST_CASE("Lib/FileSystem/FileTape", "Test file tape")
 
     return MPASSED();
 }
+
+TEST_CASE("Lib/FileSystem/BufferedFileTape", "Test buffered read/write")
+{
+    {
+        BufferedWriteTape<true>
+            ft(open_file_write(LIT("test.file.test")), System_Allocator, 3);
+        REQUIRE(ft.write_str(LIT("Hello, world!")), "");
+    }
+
+    {
+        CREATE_SCOPED_ARENA(&System_Allocator, temp, KILOBYTES(1));
+
+        BufferedReadTape<true>
+            ft(open_file_read(LIT("test.file.test")), System_Allocator, 3);
+
+        Str s = ft.read_str(temp, 13);
+        REQUIRE(s != Str::NullStr, "");
+
+        REQUIRE(s == LIT("Hello, world!"), "");
+    }
+}

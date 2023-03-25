@@ -164,6 +164,13 @@ struct FileReadTape : public ReadTape {
         set_file(file);
     }
 
+    FileReadTape(ProcReadTapeRead* proc, void* usr) : ReadTape(proc, usr) {}
+    FileReadTape(ProcReadTapeRead* proc, void* usr, FileHandle file)
+        : FileReadTape(proc, usr)
+    {
+        set_file(file);
+    }
+
     ~FileReadTape()
     {
         if constexpr (AutoClose) {
@@ -178,46 +185,58 @@ struct FileReadTape : public ReadTape {
         offset     = 0;
     }
 
+    i64 _read(void* dst, i64 size)
+    {
+        if (size <= 0) return -1;
+
+        u64 sizeu64 = (u64)size;
+
+        i64 num_read = read_file(file, dst, size, offset);
+        if (num_read < 0) {
+            return 0;
+        }
+
+        offset += num_read;
+        return num_read;
+    }
+
+    i64 _seek(i64 off)
+    {
+        if (off < 0) {
+            u64 sizeu64 = (u64)(-off);
+
+            if (sizeu64 > offset) sizeu64 = offset;
+
+            offset -= sizeu64;
+
+            return -((i64)sizeu64);
+        } else {
+            u64 sizeu64 = (u64)off;
+
+            if ((sizeu64 + offset) > size) sizeu64 = size - offset;
+
+            offset += sizeu64;
+
+            return (i64)sizeu64;
+        }
+    }
+
+    bool _end() { return offset == size; }
+
     static PROC_READ_TAPE_READ(read_proc)
     {
         FileReadTape* self = (FileReadTape*)usr;
         switch (mode) {
             case ReadTapeMode::Read: {
-                if (size <= 0) return -1;
-
-                u64 sizeu64 = (u64)size;
-
-                i64 num_read = read_file(self->file, dst, size, self->offset);
-                if (num_read < 0) {
-                    return 0;
-                }
-
-                return num_read;
+                return self->_read(dst, size);
             } break;
 
             case ReadTapeMode::Seek: {
-                if (size < 0) {
-                    u64 sizeu64 = (u64)(-size);
-
-                    if (sizeu64 > self->offset) sizeu64 = self->offset;
-
-                    self->offset -= sizeu64;
-
-                    return -((i64)sizeu64);
-                } else {
-                    u64 sizeu64 = (u64)size;
-
-                    if ((sizeu64 + self->offset) > self->size)
-                        sizeu64 = self->size - self->offset;
-
-                    self->offset += sizeu64;
-
-                    return (i64)sizeu64;
-                }
+                return self->_seek(size);
             } break;
 
             case ReadTapeMode::End: {
-                return (self->offset == self->size);
+                return self->_end();
             } break;
 
             default: {
@@ -239,6 +258,13 @@ struct FileWriteTape : public WriteTape {
         set_file(file);
     }
 
+    FileWriteTape(ProcWriteTapeWrite* proc, void* usr) : WriteTape(proc, usr) {}
+    FileWriteTape(ProcWriteTapeWrite* proc, void* usr, FileHandle file)
+        : FileWriteTape(proc, usr)
+    {
+        set_file(file);
+    }
+
     ~FileWriteTape()
     {
         if constexpr (AutoClose) {
@@ -252,42 +278,47 @@ struct FileWriteTape : public WriteTape {
         offset     = 0;
     }
 
+    i64 _write(void* src, i64 size)
+    {
+        if (size <= 0) return -1;
+        u64 sizeu64 = (u64)size;
+
+        u64  bytes_written;
+        bool success = write_file(file, src, size, &bytes_written, offset);
+        offset += success ? bytes_written : 0;
+        return (i64)sizeu64;
+    }
+
+    i64 _seek(i64 off)
+    {
+        if (off < 0) {
+            u64 sizeu64 = (u64)(-off);
+
+            if (sizeu64 > offset) sizeu64 = offset;
+
+            offset -= sizeu64;
+
+            return -((i64)sizeu64);
+        } else {
+            u64 sizeu64 = (u64)off;
+
+            offset += sizeu64;
+
+            return (i64)sizeu64;
+        }
+    }
+
     static PROC_WRITE_TAPE_WRITE(write_proc)
     {
         FileWriteTape* self = (FileWriteTape*)usr;
 
         switch (mode) {
             case WriteTapeMode::Write: {
-                if (size <= 0) return -1;
-                u64 sizeu64 = (u64)size;
-
-                u64  bytes_written;
-                bool success = write_file(
-                    self->file,
-                    src,
-                    size,
-                    &bytes_written,
-                    self->offset);
-                self->offset += success ? bytes_written : 0;
-                return (i64)sizeu64;
+                return self->_write(src, size);
             } break;
 
             case WriteTapeMode::Seek: {
-                if (size < 0) {
-                    u64 sizeu64 = (u64)(-size);
-
-                    if (sizeu64 > self->offset) sizeu64 = self->offset;
-
-                    self->offset -= sizeu64;
-
-                    return -((i64)sizeu64);
-                } else {
-                    u64 sizeu64 = (u64)size;
-
-                    self->offset += sizeu64;
-
-                    return (i64)sizeu64;
-                }
+                return self->_seek(size);
             } break;
 
             case WriteTapeMode::End: {
@@ -302,6 +333,163 @@ struct FileWriteTape : public WriteTape {
 
     u64        offset = 0;
     FileHandle file;
+};
+
+template <bool AutoClose>
+struct BufferedReadTape : public FileReadTape<AutoClose> {
+    using Super = FileReadTape<AutoClose>;
+
+    BufferedReadTape(
+        FileHandle file, IAllocator& allocator, u64 size = KILOBYTES(1))
+        : Super(read_proc, (void*)this, file), size(size), allocator(allocator)
+    {
+        buffer = allocator.reserve(size);
+    }
+
+    ~BufferedReadTape() { allocator.release(buffer); }
+
+    void flush(void* dst, u64 count)
+    {
+        memcpy(dst, buffer, count);
+        accumulated -= count;
+    }
+
+    static PROC_READ_TAPE_READ(read_proc)
+    {
+        BufferedReadTape* self = (BufferedReadTape*)usr;
+
+        switch (mode) {
+            case ReadTapeMode::Read: {
+                if (size <= 0) return 0;
+
+                u64 sizeu64 = (u64)size;
+
+                u64 num_read = 0;
+                while (num_read != sizeu64) {
+                    if (self->accumulated == 0) {
+                        self->accumulated =
+                            self->_read(self->buffer, self->size);
+
+                        if (self->accumulated == 0) return num_read;
+                    }
+
+                    // Finish any pending reads
+                    u64 max_bytes_to_read = sizeu64 - num_read;
+                    u64 min_bytes_to_read = self->accumulated;
+
+                    u64 bytes_to_read = max_bytes_to_read > min_bytes_to_read
+                                          ? min_bytes_to_read
+                                          : max_bytes_to_read;
+
+                    if (bytes_to_read > 0) {
+                        self->flush(umm(dst) + num_read, bytes_to_read);
+                    }
+
+                    num_read += bytes_to_read;
+                }
+
+                return num_read;
+            } break;
+
+            case ReadTapeMode::Seek: {
+                self->accumulated = 0;
+                return self->_seek(size);
+            } break;
+
+            case ReadTapeMode::End: {
+                return self->_end();
+            } break;
+
+            default: {
+                return 0;
+            } break;
+        }
+    }
+
+    umm         buffer      = 0;
+    u64         size        = 0;
+    u64         accumulated = 0;
+    IAllocator& allocator;
+};
+
+template <bool AutoClose>
+struct BufferedWriteTape : public FileWriteTape<AutoClose> {
+    using Super = FileWriteTape<AutoClose>;
+
+    BufferedWriteTape(
+        FileHandle file, IAllocator& allocator, u64 size = KILOBYTES(1))
+        : Super(write_proc, (void*)this, file), size(size), allocator(allocator)
+    {
+        buffer = allocator.reserve(size);
+    }
+
+    ~BufferedWriteTape()
+    {
+        flush();
+        allocator.release(buffer);
+    }
+
+    static PROC_WRITE_TAPE_WRITE(write_proc)
+    {
+        BufferedWriteTape* self = (BufferedWriteTape*)usr;
+
+        switch (mode) {
+            case WriteTapeMode::Write: {
+                i64 num_written = 0;
+                while (num_written != size) {
+                    if (self->accumulated == self->size) {
+                        if (!self->flush()) return 0;
+                    }
+
+                    u64 remaining      = self->size - self->accumulated;
+                    u64 bytes_to_write = remaining < (size - num_written)
+                                           ? remaining
+                                           : (size - num_written);
+
+                    memcpy(
+                        self->buffer + self->accumulated,
+                        umm(src) + num_written,
+                        bytes_to_write);
+
+                    self->accumulated += bytes_to_write;
+                    num_written += bytes_to_write;
+                }
+
+                if (self->accumulated == self->size) {
+                    if (!self->flush()) return 0;
+                }
+
+                return (i64)num_written;
+            } break;
+
+            case WriteTapeMode::Seek: {
+                self->flush();
+                return self->_seek(size);
+            } break;
+
+            case WriteTapeMode::End: {
+                return 0;
+            } break;
+
+            default: {
+                return 0;
+            } break;
+        }
+    }
+
+    bool flush()
+    {
+        if (Super::_write(buffer, accumulated) != accumulated) {
+            return false;
+        }
+        accumulated = 0;
+        return true;
+    }
+
+    umm         buffer      = 0;
+    u64         size        = 0;
+    u64         accumulated = 0;
+    IAllocator& allocator;
 };
 
 template <bool AutoClose>
