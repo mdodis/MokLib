@@ -11,6 +11,12 @@ struct MOKLIB_API AllocWriteTape : public WriteTape {
     {
         if (new_size <= size) return;
 
+        if (!ptr) {
+            ptr  = allocator.reserve(new_size);
+            size = new_size;
+            return;
+        }
+
         umm new_ptr = allocator.resize(ptr, size, new_size);
         ptr         = new_ptr;
         size        = new_size;
@@ -25,13 +31,15 @@ struct MOKLIB_API AllocWriteTape : public WriteTape {
                 if (size <= 0) return 0;
 
                 u64 sizeu64 = (u64)size;
+                u64 add     = sizeu64 + self->offset;
 
-                if ((sizeu64 + self->offset) > self->size) {
-                    u64 by = self->size - (sizeu64 + self->offset);
+                if (add > self->size) {
+                    u64 by = add - self->size;
                     self->grow(self->size + by);
                 }
 
                 memcpy(self->ptr + self->offset, src, sizeu64);
+                self->offset += sizeu64;
 
                 return size;
             } break;
@@ -47,9 +55,10 @@ struct MOKLIB_API AllocWriteTape : public WriteTape {
                     return -((i64)sizeu64);
                 } else {
                     u64 sizeu64 = (u64)size;
+                    u64 add     = sizeu64 + self->offset;
 
-                    if ((sizeu64 + self->offset) > self->size) {
-                        u64 by = self->size - (sizeu64 + self->offset);
+                    if (add > self->size) {
+                        u64 by = add - self->size;
                         self->grow(self->size + by);
                     }
 
