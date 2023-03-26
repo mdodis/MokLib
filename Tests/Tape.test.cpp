@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "AllocTape.h"
 #include "FileSystem/FileSystem.h"
 #include "Memory/Arena.h"
 #include "SliceTape.h"
@@ -312,4 +313,18 @@ TEST_CASE("Lib/FileSystem/BufferedFileTape", "Test buffered read/write")
 
         REQUIRE(s == LIT("Hello, world!"), "");
     }
+}
+
+TEST_CASE("Lib/Tape/AllocTape", "AllocTape nominal behavior")
+{
+    AllocWriteTape t(System_Allocator);
+
+    Str test = LIT("Hello, world!");
+
+    REQUIRE(t.write_str(test), "");
+
+    Str s(t.ptr, t.offset);
+    REQUIRE(s == test, "");
+
+    return MPASSED();
 }

@@ -2,6 +2,80 @@
 #include "Math/Base.h"
 #include "Tape.h"
 
+struct MOKLIB_API AllocWriteTape : public WriteTape {
+    AllocWriteTape(IAllocator& allocator)
+        : WriteTape(write_proc, (void*)this), allocator(allocator)
+    {}
+
+    void grow(u64 new_size)
+    {
+        if (new_size <= size) return;
+
+        umm new_ptr = allocator.resize(ptr, size, new_size);
+        ptr         = new_ptr;
+        size        = new_size;
+    }
+
+    static PROC_WRITE_TAPE_WRITE(write_proc)
+    {
+        AllocWriteTape* self = (AllocWriteTape*)usr;
+
+        switch (mode) {
+            case WriteTapeMode::Write: {
+                if (size <= 0) return 0;
+
+                u64 sizeu64 = (u64)size;
+
+                if ((sizeu64 + self->offset) > self->size) {
+                    u64 by = self->size - (sizeu64 + self->offset);
+                    self->grow(self->size + by);
+                }
+
+                memcpy(self->ptr + self->offset, src, sizeu64);
+
+                return size;
+            } break;
+
+            case WriteTapeMode::Seek: {
+                if (size < 0) {
+                    u64 sizeu64 = (u64)(-size);
+
+                    if (sizeu64 > self->offset) sizeu64 = self->offset;
+
+                    self->offset -= sizeu64;
+
+                    return -((i64)sizeu64);
+                } else {
+                    u64 sizeu64 = (u64)size;
+
+                    if ((sizeu64 + self->offset) > self->size) {
+                        u64 by = self->size - (sizeu64 + self->offset);
+                        self->grow(self->size + by);
+                    }
+
+                    memset(self->ptr + self->offset, 0, sizeu64);
+                    self->offset += sizeu64;
+
+                    return (i64)sizeu64;
+                }
+            } break;
+
+            case WriteTapeMode::End: {
+                return self->offset == self->size;
+            } break;
+
+            default: {
+                return 0;
+            } break;
+        }
+    }
+
+    umm         ptr    = 0;
+    u64         size   = 0;
+    u64         offset = 0;
+    IAllocator& allocator;
+};
+
 /**
  *
  */
