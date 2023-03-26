@@ -127,6 +127,8 @@ struct TMap {
             num_total_bins);
     }
 
+    void release() { alloc.release(values); }
+
     static constexpr uint32 Hash_Seed            = 0x1337;
     static constexpr uint32 Num_Total_Bins       = 256;
     static constexpr float  Bucket_Cellar_Factor = 0.86f;
