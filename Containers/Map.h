@@ -1,11 +1,16 @@
 #pragma once
 #include <string.h>
 
+#include <iterator>
+
 #include "../Base.h"
 #include "Containers/Array.h"
 #include "Containers/List.h"
 #include "Hashing.h"
 #include "Memory/Base.h"
+
+template <typename TKey, typename TVal>
+struct TMapIterator;
 
 /**
  * A Simple Fixed-allocation Hashtable implementation, using Coalesced Chaining
@@ -22,6 +27,7 @@ struct TMap {
     _inline TMap() : alloc(System_Allocator) {}
 
     _inline TMap(IAllocator& alloc, uint32 init_size = Num_Total_Bins)
+        : alloc(alloc)
     {
         init(alloc, init_size);
     }
@@ -103,12 +109,77 @@ struct TMap {
 
     const TValue& operator[](const TKey& key) const { return at(key); }
 
-    Bin*   values;
-    uint32 num_bins;
-    uint32 num_total_bins;
+    Bin*        values;
+    uint32      num_bins;
+    uint32      num_total_bins;
+    IAllocator& alloc;
 
-    IAllocator&             alloc;
+    TMapIterator<TKey, TValue> begin() const
+    {
+        return TMapIterator<TKey, TValue>(values, num_total_bins, 0);
+    }
+
+    TMapIterator<TKey, TValue> end() const
+    {
+        return TMapIterator<TKey, TValue>(
+            values,
+            num_total_bins,
+            num_total_bins);
+    }
+
     static constexpr uint32 Hash_Seed            = 0x1337;
     static constexpr uint32 Num_Total_Bins       = 256;
     static constexpr float  Bucket_Cellar_Factor = 0.86f;
+};
+
+template <typename TKey, typename TVal>
+struct TMapPair {
+    TKey& key;
+    TVal& val;
+};
+
+template <typename TKey, typename TVal>
+struct TMapIterator {
+    using Map = TMap<TKey, TVal>;
+
+    using iterator_category = std::forward_iterator_tag;
+    using difference_type   = std::ptrdiff_t;
+    using Val               = TMapPair<TKey, TVal>;
+    using Ptr               = Val*;
+
+    TMapIterator(Map::Bin* bin, u32 total, u32 offset = 0)
+        : b(bin), total(total), offset(offset)
+    {
+        move_next();
+    }
+
+    Val operator*() const { return Val{b->key, b->val}; }
+
+    TMapIterator& operator++()
+    {
+        move_next();
+        return *this;
+    }
+
+    void move_next()
+    {
+        do {
+            b++;
+            offset++;
+        } while ((offset < total) && !b->used);
+    }
+
+    friend bool operator==(const TMapIterator& a, const TMapIterator& b)
+    {
+        return a.offset == b.offset;
+    }
+
+    friend bool operator!=(const TMapIterator& a, const TMapIterator& b)
+    {
+        return !(a == b);
+    }
+
+    Map::Bin* b;
+    u32       total;
+    u32       offset;
 };

@@ -11,6 +11,7 @@ set(SOURCES
     "./TimerGroup.test.cpp"
     "./Sort.test.cpp"
     "./JSON.test.cpp"
+    "./Map.test.cpp"
     "./Tests.cpp"
     )
 
