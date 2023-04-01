@@ -308,6 +308,8 @@ struct FileWriteTape : public WriteTape {
         }
     }
 
+    void seek_to_end() { offset = get_file_size(file); }
+
     static PROC_WRITE_TAPE_WRITE(write_proc)
     {
         FileWriteTape* self = (FileWriteTape*)usr;
@@ -417,7 +419,9 @@ struct BufferedWriteTape : public FileWriteTape<AutoClose> {
     using Super = FileWriteTape<AutoClose>;
 
     BufferedWriteTape(
-        FileHandle file, IAllocator& allocator, u64 size = KILOBYTES(1))
+        FileHandle  file,
+        IAllocator& allocator = System_Allocator,
+        u64         size      = KILOBYTES(1))
         : Super(write_proc, (void*)this, file), size(size), allocator(allocator)
     {
         buffer = allocator.reserve(size);
@@ -592,18 +596,15 @@ struct TBufferedFileTape : TFileTape<AutoClose> {
     }
 };
 
-typedef TFileTape<false> FileTape;
-
-MOKLIB_API StreamTape      get_stream(Console::Handle kind);
 MOKLIB_API StreamReadTape  get_read_stream(Console::Handle kind);
 MOKLIB_API StreamWriteTape get_write_stream(Console::Handle kind);
 
-static _inline TFileTape<true> open_write_tape(const Str& path)
+static _inline FileWriteTape<true> open_write_tape(const Str& path)
 {
-    return TFileTape<true>(open_file_write(path));
+    return FileWriteTape<true>(open_file_write(path));
 }
 
-static _inline TFileTape<true> open_read_tape(const Str& path)
+static _inline FileReadTape<true> open_read_tape(const Str& path)
 {
-    return TFileTape<true>(open_file_read(path));
+    return FileReadTape<true>(open_file_read(path));
 }

@@ -8,6 +8,8 @@
 #include "Str.h"
 #include "StringFormat.h"
 #include "Tape.h"
+#include "Traits.h"
+
 /**
  * Describes the abstract type class of a type. Used for (de)serialization
  */
@@ -74,7 +76,8 @@ struct IPrimitiveDescriptor : IDescriptor {
         : IDescriptor(offset, name, TypeClass::Primitive)
     {}
 
-    virtual void                format_primitive(Tape* out, umm ptr) = 0;
+    virtual u32                 get_size()                                = 0;
+    virtual void                format_primitive(WriteTape* out, umm ptr) = 0;
     virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
 };
 
@@ -84,8 +87,8 @@ struct IEnumDescriptor : IDescriptor {
         , type_name_str(type_name)
     {}
 
-    virtual void format_enum(Tape* out, umm ptr)                      = 0;
-    virtual bool parse_enum(Tape* in, IAllocator& allocator, umm ptr) = 0;
+    virtual void format_enum(WriteTape* out, umm ptr)                     = 0;
+    virtual bool parse_enum(ReadTape* in, IAllocator& allocator, umm ptr) = 0;
 
     virtual Str                 type_name() override { return type_name_str; }
     virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
@@ -98,6 +101,16 @@ struct IEnumDescriptor : IDescriptor {
 template <typename T>
 static _inline IDescriptor* descriptor_of(T* what);
 
+template <typename T>
+static _inline IDescriptor* descriptor_of_or_zero(T* what)
+{
+    if constexpr (HasDescriptor<T>::value) {
+        return descriptor_of(what);
+    } else {
+        return nullptr;
+    }
+}
+
 /**
  * Describes a primitive value that has a fmt parameter
  */
@@ -109,7 +122,9 @@ struct PrimitiveDescriptor : IPrimitiveDescriptor {
         : IPrimitiveDescriptor(offset, name), type_name_str(type_name)
     {}
 
-    virtual void format_primitive(Tape* out, umm ptr) override
+    virtual u32 get_size() override { return sizeof(T); }
+
+    virtual void format_primitive(WriteTape* out, umm ptr) override
     {
         format(out, LIT("{}"), *((T*)ptr));
     }
@@ -137,12 +152,13 @@ struct EnumDescriptor : IEnumDescriptor {
         : IEnumDescriptor(offset, name, type_name)
     {}
 
-    virtual void format_enum(Tape* out, umm ptr) override
+    virtual void format_enum(WriteTape* out, umm ptr) override
     {
         format(out, LIT("{}"), *((T*)ptr));
     }
 
-    virtual bool parse_enum(Tape* in, IAllocator& allocator, umm ptr) override
+    virtual bool parse_enum(
+        ReadTape* in, IAllocator& allocator, umm ptr) override
     {
         return parse<T>(in, *((T*)ptr), allocator);
     }
@@ -260,6 +276,7 @@ struct ArrayDescriptor : IArrayDescriptor {
  * @param  T  The type descriptor
  */
 #define DECLARE_DESCRIPTOR_OF(T)                              \
+    ENABLE_DESCRIPTOR(T);                                     \
     extern MCONCAT(T, Descriptor) MCONCAT2(T, _, Descriptor); \
     template <>                                               \
     IDescriptor* descriptor_of(T* what)                       \
@@ -268,6 +285,7 @@ struct ArrayDescriptor : IArrayDescriptor {
     }
 
 #define DEFINE_DESCRIPTOR_OF_INL(T)                           \
+    ENABLE_DESCRIPTOR(T);                                     \
     static MCONCAT(T, Descriptor) MCONCAT2(T, _, Descriptor); \
     template <>                                               \
     IDescriptor* descriptor_of(T* what)                       \
@@ -283,6 +301,21 @@ struct ArrayDescriptor : IArrayDescriptor {
     Type(u64 offset = 0, Str name = Str::NullStr)      \
         : IDescriptor(offset, name, TypeClass::Object) \
     {}
+
+#define CUSTOM_DESC_OBJECT_DEFAULT_(Type) MCONCAT(Type, Descriptor)
+#define CUSTOM_DESC_OBJECT_DEFAULT(Type, descs)                   \
+    CUSTOM_DESC_OBJECT_DEFAULT_(Type)                             \
+    (u64 offset = 0, Str name = Str::NullStr)                     \
+        : IDescriptor(offset, name, TypeClass::Object)            \
+    {}                                                            \
+    virtual Str type_name() override                              \
+    {                                                             \
+        return LIT(MSTR(Type));                                   \
+    }                                                             \
+    virtual Slice<IDescriptor*> subdescriptors(umm self) override \
+    {                                                             \
+        return Slice<IDescriptor*>(descs, ARRAY_COUNT(descs));    \
+    }
 
 /**
  * Internal use: define descriptor for primitive types

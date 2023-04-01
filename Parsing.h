@@ -148,23 +148,23 @@ MOKLIB_API u64 parse_cid(const Str& s, u64 i, Str& out);
 /**
  * Tape parsing
  */
-static _inline bool expect(Tape* tape, char character)
+static _inline bool expect(ReadTape* tape, char character)
 {
     char c = tape->read_char();
     if (character != c) {
-        if (c != EOF) tape->move(-1);
+        if (c != EOF) tape->seek(-1);
         return false;
     }
     return true;
 }
 
-static _inline bool expect(Tape* tape, Str str)
+static _inline bool expect(ReadTape* tape, Str str)
 {
     i64 count = 0;
     while (count != str.len) {
         char c = tape->read_char();
         if (c == EOF || c != str[count]) {
-            tape->move(-count);
+            tape->seek(-count);
             return false;
         }
         count++;
@@ -173,7 +173,7 @@ static _inline bool expect(Tape* tape, Str str)
     return true;
 }
 
-static u32 eat_whitespace(struct Tape* tape)
+static u32 eat_whitespace(struct ReadTape* tape)
 {
     char c              = tape->read_char();
     u32  num_whitespace = 0;
@@ -182,11 +182,11 @@ static u32 eat_whitespace(struct Tape* tape)
         c = tape->read_char();
     }
 
-    if (c != EOF) tape->move(-1);
+    if (c != EOF) tape->seek(-1);
     return num_whitespace;
 }
 
-static void eat_line(struct Tape* tape)
+static void eat_line(struct ReadTape* tape)
 {
     char c = tape->read_char();
 
@@ -194,20 +194,20 @@ static void eat_line(struct Tape* tape)
         c = tape->read_char();
     }
 
-    if (c != EOF) tape->move(-1);
+    if (c != EOF) tape->seek(-1);
 }
 
-static void eat_space(struct Tape* tape)
+static void eat_space(struct ReadTape* tape)
 {
     char c = tape->read_char();
     while ((c != EOF) && (is_space(c))) {
         c = tape->read_char();
     }
 
-    if (c != EOF) tape->move(-1);
+    if (c != EOF) tape->seek(-1);
 }
 
-static bool match_string(struct Tape* tape, const Str& string)
+static bool match_string(struct ReadTape* tape, const Str& string)
 {
     char  c;
     int32 i = 0;
@@ -224,11 +224,11 @@ static bool match_string(struct Tape* tape, const Str& string)
         if (i == string.len) return true;
     }
 
-    tape->move(-i);
+    tape->seek(-i);
     return false;
 }
 
-static u32 match_strings(struct Tape* tape, Str* strings, u32 num_strings)
+static u32 match_strings(struct ReadTape* tape, Str* strings, u32 num_strings)
 {
     for (u32 i = 0; i < num_strings; ++i) {
         if (match_string(tape, strings[i])) {
@@ -240,11 +240,11 @@ static u32 match_strings(struct Tape* tape, Str* strings, u32 num_strings)
 }
 
 MOKLIB_API Str parse_string(
-    struct Tape*     tape,
+    struct ReadTape* tape,
     IAllocator&      alloc,
     ProcCharClassIs* predicate = isnt_whitespace);
 
-static _inline Str parse_string_no_quotes(Tape* tape, IAllocator& allocator)
+static _inline Str parse_string_no_quotes(ReadTape* tape, IAllocator& allocator)
 {
     char fc        = tape->read_char();
     bool has_quote = false;
@@ -267,7 +267,7 @@ static _inline Str parse_string_no_quotes(Tape* tape, IAllocator& allocator)
     return result;
 }
 
-static bool parse_num(struct Tape* tape, float& result)
+static bool parse_num(struct ReadTape* tape, float& result)
 {
     char c;
     char buf[16];
@@ -283,7 +283,7 @@ static bool parse_num(struct Tape* tape, float& result)
         }
     }
 
-    tape->move(-1);
+    tape->seek(-1);
 
     if (i == 0) {
         return false;
@@ -295,7 +295,7 @@ static bool parse_num(struct Tape* tape, float& result)
     return true;
 }
 
-static bool parse_num(struct Tape* tape, u32& result)
+static bool parse_num(struct ReadTape* tape, u32& result)
 {
     char c;
     char buf[16];
@@ -311,7 +311,7 @@ static bool parse_num(struct Tape* tape, u32& result)
         }
     }
 
-    if (c != EOF) tape->move(-1);
+    if (c != EOF) tape->seek(-1);
 
     if (i == 0) {
         return false;
@@ -350,6 +350,6 @@ static _inline void hex_of_byte(u8 byte, char& chi, char& clo)
     clo = table[lo];
 }
 
-MOKLIB_API Str  parse_cid(struct Tape* tape, IAllocator& alloc);
+MOKLIB_API Str  parse_cid(struct ReadTape* tape, IAllocator& alloc);
 MOKLIB_API bool parse_escaped_string(
-    struct Tape* tape, Str& result, IAllocator& allocator);
+    struct ReadTape* tape, Str& result, IAllocator& allocator);

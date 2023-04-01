@@ -73,7 +73,7 @@ TEST_CASE(
 }
 )";
 
-    RawTape        t(json);
+    RawReadTape    t(json);
     CompoundStruct c;
     REQUIRE(deserialize(&t, System_Allocator, c, json_deserialize), "");
 

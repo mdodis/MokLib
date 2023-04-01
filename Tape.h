@@ -86,6 +86,12 @@ struct ReadTape {
 
         return Str(ptr, (u64)num_read, false);
     }
+
+    template <typename T>
+    _inline bool read_struct(T& out)
+    {
+        return read(&out, sizeof(T)) == sizeof(T);
+    }
 };
 
 enum class WriteTapeMode : u32
@@ -322,6 +328,10 @@ struct MOKLIB_API MeasureWriteTape : public WriteTape {
             } break;
 
             case WriteTapeMode::End: {
+                return 0;
+            } break;
+
+            default: {
                 return 0;
             } break;
         }

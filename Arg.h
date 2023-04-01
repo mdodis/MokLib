@@ -13,8 +13,8 @@ struct IArg {
     Str           id;
     Str           description;
     Str           type;
-    virtual void* ptr()                                    = 0;
-    virtual bool  parse(Tape* tape, IAllocator& allocator) = 0;
+    virtual void* ptr()                                        = 0;
+    virtual bool  parse(ReadTape* tape, IAllocator& allocator) = 0;
 };
 
 template <typename T>
@@ -23,7 +23,7 @@ struct TArg : IArg {
 
     virtual void* ptr() override { return &current; }
 
-    virtual bool parse(Tape* tape, IAllocator& allocator) override
+    virtual bool parse(ReadTape* tape, IAllocator& allocator) override
     {
         return ::parse<T>(tape, current, allocator);
     }
@@ -40,20 +40,23 @@ struct TArg<Str> : IArg {
 
     virtual void* ptr() override { return &current; }
 
-    virtual bool parse(Tape* tape, IAllocator& allocator) override
+    virtual bool parse(ReadTape* tape, IAllocator& allocator) override
     {
-        if (IS_A(tape, RawTape)) {
-            RawTape* rtape = (RawTape*)tape;
-            Raw      raw   = rtape->raw;
-
-            current =
-                Str((char*)raw.buffer,
-                    raw.size,
-                    ((char*)raw.buffer)[raw.size - 1] == 0);
-            return true;
-        } else {
-            return parse_str(tape, current, allocator);
+        char c     = 0;
+        u64  count = 0;
+        while (tape->read(&c, 1) == 1) {
+            count++;
         }
+
+        if (!tape->seek(-((i64)count))) return false;
+
+        char* data = (char*)allocator.reserve(count);
+        if (!data) return false;
+
+        if (tape->read(data, count) != count) return false;
+
+        current = Str(data, count);
+        return true;
     }
 };
 
@@ -63,7 +66,7 @@ struct TArg<bool> : IArg {
 
     virtual void* ptr() override { return &current; }
 
-    virtual bool parse(Tape* tape, IAllocator& allocator) override
+    virtual bool parse(ReadTape* tape, IAllocator& allocator) override
     {
         return ::parse(tape, current, allocator);
     }

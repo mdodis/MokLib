@@ -2,22 +2,24 @@
 #include "FileSystem/FileSystem.h"
 #include "Reflection.h"
 
-#define PROC_SERIALIZE(name) void name(Tape* out, IDescriptor* desc, umm ptr)
+#define PROC_SERIALIZE(name) \
+    bool name(WriteTape* out, IDescriptor* desc, umm ptr)
 
 #define PROC_DESERIALIZE(name) \
-    bool name(Tape* in, IAllocator& alloc, IDescriptor* desc, umm ptr)
+    bool name(ReadTape* in, IAllocator& alloc, IDescriptor* desc, umm ptr)
 
 typedef PROC_SERIALIZE(ProcSerialize);
 typedef PROC_DESERIALIZE(ProcDeserialize);
 
 template <typename T>
-void serialize(Tape* in, T& object, ProcSerialize* proc)
+bool serialize(WriteTape* in, T& object, ProcSerialize* proc)
 {
-    proc(in, descriptor_of<T>(object), (umm)&object);
+    return proc(in, descriptor_of<T>(&object), (umm)&object);
 }
 
 template <typename T>
-bool deserialize(Tape* in, IAllocator& alloc, T& object, ProcDeserialize* proc)
+bool deserialize(
+    ReadTape* in, IAllocator& alloc, T& object, ProcDeserialize* proc)
 {
     return proc(in, alloc, descriptor_of<T>(&object), (umm)&object);
 }
@@ -75,7 +77,7 @@ struct SerializedObject {
 
         DEFER(close_file(fh));
 
-        FileTape ft(fh);
+        FileReadTape ft(fh);
         ASSERT(deserialize(&ft, *allocator, descriptor, (umm)&object));
     }
 
@@ -85,7 +87,7 @@ struct SerializedObject {
             open_file(file_path, FileMode::Write | FileMode::Truncate);
         DEFER(close_file(fh));
 
-        FileTape ft(fh);
+        FileWriteTape ft(fh);
         serialize(&ft, descriptor, (umm)&object);
     }
 };

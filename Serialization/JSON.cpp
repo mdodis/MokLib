@@ -10,13 +10,13 @@
 #pragma warning(disable : 4533)
 #endif
 
-static bool parse_object(Tape* in, IAllocator& alloc, DescPair pair);
-static bool parse_qstr(Tape* in, IAllocator& alloc, Str& result);
-static bool parse_value(Tape* in, IAllocator& alloc, DescPair pair);
-static bool parse_number(Tape* in, IAllocator& alloc, DescPair pair);
-static bool parse_bool(Tape* in, IAllocator& alloc, DescPair pair);
-static bool parse_string(Tape* in, IAllocator& alloc, DescPair pair);
-static bool parse_array(Tape* in, IAllocator& alloc, DescPair pair);
+static bool parse_object(ReadTape* in, IAllocator& alloc, DescPair pair);
+static bool parse_qstr(ReadTape* in, IAllocator& alloc, Str& result);
+static bool parse_value(ReadTape* in, IAllocator& alloc, DescPair pair);
+static bool parse_number(ReadTape* in, IAllocator& alloc, DescPair pair);
+static bool parse_bool(ReadTape* in, IAllocator& alloc, DescPair pair);
+static bool parse_string(ReadTape* in, IAllocator& alloc, DescPair pair);
+static bool parse_array(ReadTape* in, IAllocator& alloc, DescPair pair);
 
 PROC_DESERIALIZE(json_deserialize)
 {
@@ -31,10 +31,10 @@ PROC_DESERIALIZE(json_deserialize)
     return parse_array(in, alloc, DescPair{desc, ptr});
 }
 
-static bool parse_object(Tape* in, IAllocator& alloc, DescPair pair)
+static bool parse_object(ReadTape* in, IAllocator& alloc, DescPair pair)
 {
-    ParseTape tape(in);
-    bool      should_exit = false;
+    ParseReadTape tape(*in);
+    bool          should_exit = false;
 
     eat_whitespace(&tape);
 
@@ -84,13 +84,13 @@ P_FAIL:
     return false;
 }
 
-static bool parse_qstr(Tape* in, IAllocator& alloc, Str& result)
+static bool parse_qstr(ReadTape* in, IAllocator& alloc, Str& result)
 {
     StrFormatter format_result(result, &alloc);
     return parse<StrFormatter>(in, format_result);
 }
 
-static bool parse_value(Tape* in, IAllocator& alloc, DescPair pair)
+static bool parse_value(ReadTape* in, IAllocator& alloc, DescPair pair)
 {
     eat_whitespace(in);
 
@@ -98,12 +98,12 @@ static bool parse_value(Tape* in, IAllocator& alloc, DescPair pair)
 
     switch (c) {
         case '{': {
-            in->move(-1);
+            in->seek(-1);
             return parse_object(in, alloc, pair);
         } break;
 
         case '\"': {
-            in->move(-1);
+            in->seek(-1);
             return parse_string(in, alloc, pair);
         } break;
 
@@ -117,18 +117,18 @@ static bool parse_value(Tape* in, IAllocator& alloc, DescPair pair)
         case '7':
         case '8':
         case '9': {
-            in->move(-1);
+            in->seek(-1);
             return parse_number(in, alloc, pair);
         } break;
 
         case 't':
         case 'f': {
-            in->move(-1);
+            in->seek(-1);
             return parse_bool(in, alloc, pair);
         } break;
 
         case '[': {
-            in->move(-1);
+            in->seek(-1);
             return parse_array(in, alloc, pair);
         } break;
 
@@ -140,7 +140,7 @@ static bool parse_value(Tape* in, IAllocator& alloc, DescPair pair)
 }
 
 template <typename NumType>
-bool try_parse_primitive_type(Tape* in, DescPair pair)
+bool try_parse_primitive_type(ReadTape* in, DescPair pair)
 {
     if constexpr (HasFmt<NumType>::value) {
         if (dynamic_cast<PrimitiveDescriptor<NumType>*>(pair.desc)) {
@@ -150,7 +150,7 @@ bool try_parse_primitive_type(Tape* in, DescPair pair)
     return false;
 }
 
-static bool parse_number(Tape* in, IAllocator& alloc, DescPair pair)
+static bool parse_number(ReadTape* in, IAllocator& alloc, DescPair pair)
 {
     if (try_parse_primitive_type<i64>(in, pair)) return true;
     if (try_parse_primitive_type<u64>(in, pair)) return true;
@@ -165,7 +165,7 @@ static bool parse_number(Tape* in, IAllocator& alloc, DescPair pair)
     return false;
 }
 
-static bool parse_bool(Tape* in, IAllocator& alloc, DescPair pair)
+static bool parse_bool(ReadTape* in, IAllocator& alloc, DescPair pair)
 {
     if (IS_A(pair.desc, PrimitiveDescriptor<bool>)) {
         return parse<bool>(in, (*(bool*)pair.ptr));
@@ -173,7 +173,7 @@ static bool parse_bool(Tape* in, IAllocator& alloc, DescPair pair)
     return false;
 }
 
-static bool parse_string(Tape* in, IAllocator& alloc, DescPair pair)
+static bool parse_string(ReadTape* in, IAllocator& alloc, DescPair pair)
 {
     if (IS_A(pair.desc, StrDescriptor)) {
         Str  result;
@@ -201,7 +201,7 @@ static bool parse_string(Tape* in, IAllocator& alloc, DescPair pair)
     return true;
 }
 
-static bool parse_array(Tape* in, IAllocator& alloc, DescPair pair)
+static bool parse_array(ReadTape* in, IAllocator& alloc, DescPair pair)
 {
     if (!IS_A(pair.desc, IArrayDescriptor)) {
         return false;
@@ -234,7 +234,7 @@ static bool parse_array(Tape* in, IAllocator& alloc, DescPair pair)
             break;
         }
 
-        in->move(-1);
+        in->seek(-1);
 
         umm sub_ptr = desc.add(pair.ptr);
 
@@ -256,11 +256,11 @@ PARSE_EXIT:
     return true;
 }
 
-static void json_serialize_pretty_space(
-    Tape* out, IDescriptor* desc, umm ptr, u32 space);
+static bool json_serialize_pretty_space(
+    WriteTape* out, IDescriptor* desc, umm ptr, u32 space);
 
-static void json_output_pretty_value(
-    Tape* output, IDescriptor* desc, umm ptr, u32 space)
+static bool json_output_pretty_value(
+    WriteTape* output, IDescriptor* desc, umm ptr, u32 space)
 {
     auto print_spaces = [&](u32 s) {
         for (u32 i = 0; i < s; ++i) {
@@ -312,15 +312,17 @@ static void json_output_pretty_value(
             json_serialize_pretty_space(output, desc, ptr, space);
         } break;
     }
+
+    return true;
 }
 
 PROC_SERIALIZE(json_serialize_pretty)
 {
-    json_serialize_pretty_space(out, desc, ptr, 0);
+    return json_serialize_pretty_space(out, desc, ptr, 0);
 }
 
-static void json_serialize_pretty_space(
-    Tape* out, IDescriptor* desc, umm ptr, u32 space)
+static bool json_serialize_pretty_space(
+    WriteTape* out, IDescriptor* desc, umm ptr, u32 space)
 {
     Slice<IDescriptor*> descs = desc->subdescriptors(ptr);
 
@@ -344,6 +346,8 @@ static void json_serialize_pretty_space(
     }
     print_spaces(space);
     format(out, LIT("}"));
+
+    return true;
 }
 
 #if COMPILER_MSVC

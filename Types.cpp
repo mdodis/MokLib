@@ -1,10 +1,13 @@
 #include "Types.h"
-#include "Parsing.h"
-#include "Defer.h"
-#include "Memory/AllocTape.h"
+
 #include <stdio.h>
 
-bool parse_quoted_string(Tape *tape, Str &result, IAllocator &allocator) {
+#include "Defer.h"
+#include "Memory/AllocTape.h"
+#include "Parsing.h"
+
+bool parse_quoted_string(ReadTape* tape, Str& result, IAllocator& allocator)
+{
     // @todo: At some point, for some reason I don't quite see now, we'll need
     // to support escape characters, but for now, we'll resort to a simple
     // substring of "This Part" that excludes the quotes
@@ -13,7 +16,7 @@ bool parse_quoted_string(Tape *tape, Str &result, IAllocator &allocator) {
     char c = tape->read_char();
 
     if (c != '\'') {
-        tape->move(-1);
+        tape->seek(-1);
         allocator.release(output.ptr);
         return false;
     }
@@ -25,9 +28,9 @@ bool parse_quoted_string(Tape *tape, Str &result, IAllocator &allocator) {
         c = tape->read_char();
 
         if ((c == EOF) || is_newline(c)) {
-            tape->move(-1);
+            tape->seek(-1);
             allocator.release(output.ptr);
-            tape->move(-i64(output.wr_offset));
+            tape->seek(-i64(output.wr_offset));
             return false;
         }
     }
@@ -36,14 +39,14 @@ bool parse_quoted_string(Tape *tape, Str &result, IAllocator &allocator) {
     return true;
 }
 
-bool parse_str(Tape *tape, Str &result, IAllocator &allocator) {
-
+bool parse_str(ReadTape* tape, Str& result, IAllocator& allocator)
+{
     char c = tape->read_char();
     if (c == '\'') {
-        tape->move(-1);
+        tape->seek(-1);
         return parse_quoted_string(tape, result, allocator);
     } else if (!is_valid_cid(c)) {
-        tape->move(-1);
+        tape->seek(-1);
         return false;
     }
     AllocTape output(allocator);
@@ -53,17 +56,17 @@ bool parse_str(Tape *tape, Str &result, IAllocator &allocator) {
         c = tape->read_char();
     } while (is_valid_cid(c));
 
-    if (c != EOF)
-        tape->move(-1);
+    if (c != EOF) tape->seek(-1);
 
     result = Str((char*)output.ptr, output.wr_offset);
     return true;
 }
 
-void format_u64(Tape *tape, const u64 &type) {
-    constexpr u64 max_digits = 20ull;
+void format_u64(WriteTape* tape, const u64& type)
+{
+    constexpr u64     max_digits = 20ull;
     thread_local char digits[max_digits + 1];
-    u32 i = max_digits;
+    u32               i = max_digits;
 
     if (type == 0) {
         tape->write_str(LIT("0"));
@@ -84,11 +87,12 @@ void format_u64(Tape *tape, const u64 &type) {
     tape->write_str(Str(digits + i + 1, max_digits - i));
 }
 
-bool parse_u64(Tape *tape, u64 &result) {
+bool parse_u64(ReadTape* tape, u64& result)
+{
     result = 0;
 
     char c = tape->read_char();
-    DEFER(tape->move(-1););
+    DEFER(tape->seek(-1););
 
     if (!is_digit(c)) {
         return false;
@@ -98,12 +102,13 @@ bool parse_u64(Tape *tape, u64 &result) {
         result *= 10;
         result += c - '0';
         c = tape->read_char();
-    } while(is_digit(c));
+    } while (is_digit(c));
 
     return true;
 }
 
-void format_i64(Tape *tape, const i64 &type) {
+void format_i64(WriteTape* tape, const i64& type)
+{
     i64 num = type;
 
     if (num < 0) {
@@ -115,28 +120,28 @@ void format_i64(Tape *tape, const i64 &type) {
     fmt<u64>(tape, unum);
 }
 
-bool parse_i64(Tape *tape, i64 &result) {
+bool parse_i64(ReadTape* tape, i64& result)
+{
     char c = tape->read_char();
 
     bool parsed_symbol = false;
-    bool negate = false;
+    bool negate        = false;
 
     switch (c) {
         case '+':
         case '-': {
-            negate = c == '-';
+            negate        = c == '-';
             parsed_symbol = true;
         } break;
 
         default: {
-            tape->move(-1);
+            tape->seek(-1);
         } break;
     }
 
     u64 result_u64;
     if (!parse<u64>(tape, result_u64)) {
-        if (parsed_symbol)
-            tape->move(-1);
+        if (parsed_symbol) tape->seek(-1);
         return false;
     }
 
@@ -144,8 +149,9 @@ bool parse_i64(Tape *tape, i64 &result) {
     return true;
 }
 
-void format_f64(Tape *tape, const f64 &type) {
-    constexpr u32 buffer_size = 16;
+void format_f64(WriteTape* tape, const f64& type)
+{
+    constexpr u32     buffer_size = 16;
     thread_local char buffer[buffer_size];
 
     snprintf(buffer, buffer_size, "%f", type);
@@ -155,38 +161,39 @@ void format_f64(Tape *tape, const f64 &type) {
     tape->write_str(s);
 }
 
-bool parse_f64(Tape *tape, f64 &result) {
-    i32 back_amount = 0u;
+bool parse_f64(ReadTape* tape, f64& result)
+{
+    i32  back_amount   = 0u;
     bool decimal_point = false;
-    char c = tape->read_char();
+    char c             = tape->read_char();
 
     char buffer[32];
-    i32 i = 0;
+    i32  i = 0;
 
     switch (c) {
         case '+':
         case '-': {
             buffer[i++] = c;
-            c = tape->read_char();
+            c           = tape->read_char();
             back_amount++;
         } break;
 
-        default: {} break;
+        default: {
+        } break;
     }
 
-    DEFER(tape->move(-1));
+    DEFER(tape->seek(-1));
 
     if (!(is_digit(c) || c == '.')) {
-        tape->move(-back_amount);
+        tape->seek(-back_amount);
         return false;
     }
 
     do {
-
         if (c == '.') {
             if (decimal_point) {
-                tape->move(-back_amount);
-                tape->move(-i);
+                tape->seek(-back_amount);
+                tape->seek(-i);
                 return false;
             } else {
                 decimal_point = true;
@@ -194,7 +201,7 @@ bool parse_f64(Tape *tape, f64 &result) {
         }
 
         buffer[i++] = c;
-        c = tape->read_char();
+        c           = tape->read_char();
     } while (is_digit(c) || (c == '.'));
 
     result = strtof(buffer, 0);

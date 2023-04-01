@@ -50,3 +50,15 @@ template <typename T>
 struct HasFmt {
     static constexpr bool value = false;
 };
+
+/** HasDescriptor */
+template <typename T>
+struct HasDescriptor {
+    static constexpr bool value = false;
+};
+
+#define ENABLE_DESCRIPTOR(T)                \
+    template <>                             \
+    struct HasDescriptor<T> {               \
+        static constexpr bool value = true; \
+    }

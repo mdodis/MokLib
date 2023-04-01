@@ -4,8 +4,8 @@
 #include "../Str.h"
 #include "../StringFormat.h"
 
-MOKLIB_API struct Tape* get_debug_tape();
-MOKLIB_API void         set_debug_tape(struct Tape* tape);
+MOKLIB_API struct WriteTape* get_debug_tape();
+MOKLIB_API void              set_debug_tape(struct WriteTape* tape);
 
 static _inline void debug_print(Str fmt_str)
 {

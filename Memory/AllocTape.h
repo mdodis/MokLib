@@ -22,6 +22,13 @@ struct MOKLIB_API AllocWriteTape : public WriteTape {
         size        = new_size;
     }
 
+    void release()
+    {
+        allocator.release(ptr);
+        ptr  = 0;
+        size = 0;
+    }
+
     static PROC_WRITE_TAPE_WRITE(write_proc)
     {
         AllocWriteTape* self = (AllocWriteTape*)usr;

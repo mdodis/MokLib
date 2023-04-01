@@ -24,7 +24,7 @@ MOKLIB_API PROC_DESERIALIZE(json_deserialize);
 
 /** Shorthand of json_serialize_pretty */
 template <typename T>
-static _inline void json_serialize_pretty(Tape* output, T* ptr)
+static _inline void json_serialize_pretty(WriteTape* output, T* ptr)
 {
     IDescriptor* descriptor = descriptor_of(ptr);
     json_serialize_pretty(output, descriptor, (umm)ptr);

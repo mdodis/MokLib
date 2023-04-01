@@ -11,20 +11,20 @@
 #include "Traits.h"
 
 template <typename T>
-static _inline void fmt(Tape* tape, const T& type);
+static _inline void fmt(WriteTape* tape, const T& type);
 
 template <typename T>
 static _inline bool parse(
-    Tape* tape, T& result, IAllocator& allocator = System_Allocator);
+    ReadTape* tape, T& result, IAllocator& allocator = System_Allocator);
 
 /** Declare an external template specialization for fmt */
 #define PROC_FMT(T) \
     template <>     \
-    MOKLIB_API void fmt(Tape* tape, const T& type)
+    MOKLIB_API void fmt(WriteTape* tape, const T& type)
 /** Define an external template specialization for fmt */
 #define PROC_FMT_IMPL(T) \
     template <>          \
-    MOKLIB_API void fmt(Tape* tape, const T& type)
+    MOKLIB_API void fmt(WriteTape* tape, const T& type)
 /** Define an inline template specialization for fmt */
 #define PROC_FMT_INL(T)                     \
     template <>                             \
@@ -32,23 +32,23 @@ static _inline bool parse(
         static constexpr bool value = true; \
     };                                      \
     template <>                             \
-    void fmt(Tape* tape, const T& type)
+    void fmt(WriteTape* tape, const T& type)
 
 /** Declare an external template specialization for parse */
 #define PROC_PARSE(T) \
     template <>       \
-    MOKLIB_API bool parse(Tape* tape, T& result, IAllocator& allocator)
+    MOKLIB_API bool parse(ReadTape* tape, T& result, IAllocator& allocator)
 /** Define an inline template specialization for parse */
 #define PROC_PARSE_IMPL(T) \
     template <>            \
-    MOKLIB_API bool parse(Tape* tape, T& result, IAllocator& allocator)
+    MOKLIB_API bool parse(ReadTape* tape, T& result, IAllocator& allocator)
 /** Define an inline template specialization for parse */
 #define PROC_PARSE_INL(T) \
     template <>           \
-    bool parse(Tape* tape, T& result, IAllocator& allocator)
+    bool parse(ReadTape* tape, T& result, IAllocator& allocator)
 
 template <typename From, typename To>
-bool _pass_parse(Tape* tape, To& to, IAllocator& allocator)
+bool _pass_parse(ReadTape* tape, To& to, IAllocator& allocator)
 {
     From from;
     if (!parse<From>(tape, from)) {
@@ -59,19 +59,19 @@ bool _pass_parse(Tape* tape, To& to, IAllocator& allocator)
     return true;
 }
 
-MOKLIB_API void format_u64(Tape* tape, const u64& type);
-MOKLIB_API void format_i64(Tape* tape, const i64& type);
-MOKLIB_API void format_f64(Tape* tape, const f64& type);
-MOKLIB_API bool parse_u64(Tape* tape, u64& result);
-MOKLIB_API bool parse_i64(Tape* tape, i64& result);
-MOKLIB_API bool parse_f64(Tape* tape, f64& result);
-MOKLIB_API bool parse_str(Tape* tape, Str& result, IAllocator& allocator);
+MOKLIB_API void format_u64(WriteTape* tape, const u64& type);
+MOKLIB_API void format_i64(WriteTape* tape, const i64& type);
+MOKLIB_API void format_f64(WriteTape* tape, const f64& type);
+MOKLIB_API bool parse_u64(ReadTape* tape, u64& result);
+MOKLIB_API bool parse_i64(ReadTape* tape, i64& result);
+MOKLIB_API bool parse_f64(ReadTape* tape, f64& result);
+MOKLIB_API bool parse_str(ReadTape* tape, Str& result, IAllocator& allocator);
 
 PROC_FMT_INL(CStr) { tape->write_str(Str(type)); }
 PROC_FMT_INL(ConstCStr) { tape->write_str(Str(type)); }
 
 template <size_t N>
-static _inline void fmt(Tape* tape, const char (&ar)[N])
+static _inline void fmt(WriteTape* tape, const char (&ar)[N])
 {
     tape->write_str(Str(ar, N, true));
 }
@@ -87,7 +87,7 @@ PROC_FMT_INL(u64) { format_u64(tape, type); }
 PROC_FMT_INL(i64) { format_i64(tape, type); }
 PROC_FMT_INL(f64) { format_f64(tape, type); }
 PROC_FMT_INL(bool) { tape->write_str(type ? LIT("true") : LIT("false")); }
-PROC_FMT_INL(char) { tape->write(&type, 1); }
+PROC_FMT_INL(char) { tape->write((void*)&type, 1); }
 
 PROC_PARSE_INL(Str) { return parse_str(tape, result, allocator); }
 PROC_PARSE_INL(u64) { return parse_u64(tape, result); }
@@ -113,16 +113,16 @@ PROC_PARSE_INL(bool)
     return true;
 }
 
-#define PROC_FMT_ENUM(enum_type, values)              \
-    template <>                                       \
-    struct HasFmt<enum_type::Type> {                  \
-        static constexpr bool value = true;           \
-    };                                                \
-    template <>                                       \
-    void fmt(Tape* tape, const enum_type::Type& type) \
-    {                                                 \
-        switch (type)                                 \
-            values                                    \
+#define PROC_FMT_ENUM(enum_type, values)                   \
+    template <>                                            \
+    struct HasFmt<enum_type::Type> {                       \
+        static constexpr bool value = true;                \
+    };                                                     \
+    template <>                                            \
+    void fmt(WriteTape* tape, const enum_type::Type& type) \
+    {                                                      \
+        switch (type)                                      \
+            values                                         \
     }
 
 #define FMT_ENUM_CASE(enum_type, sub) \
@@ -139,13 +139,13 @@ PROC_PARSE_INL(bool)
     default:                                \
         break
 
-#define PROC_PARSE_ENUM(enum_type, values)                               \
-    template <>                                                          \
-    bool parse(Tape* tape, enum_type::Type& type, IAllocator& allocator) \
-    {                                                                    \
-        Str s = parse_string(tape, allocator, is_valid_cid);             \
-        if (s == Str::NullStr) return false;                             \
-        values return false;                                             \
+#define PROC_PARSE_ENUM(enum_type, values)                                   \
+    template <>                                                              \
+    bool parse(ReadTape* tape, enum_type::Type& type, IAllocator& allocator) \
+    {                                                                        \
+        Str s = parse_string(tape, allocator, is_valid_cid);                 \
+        if (s == Str::NullStr) return false;                                 \
+        values return false;                                                 \
     }
 
 #define PARSE_ENUM_CASE(enum_type, sub) \

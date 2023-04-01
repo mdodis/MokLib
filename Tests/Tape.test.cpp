@@ -8,7 +8,7 @@
 #include "SliceTape.h"
 #include "Test/Test.h"
 
-static bool read_tape_cmp(Tape* tape, Str expect, IAllocator& allocator)
+static bool read_tape_cmp(ReadTape* tape, Str expect, IAllocator& allocator)
 {
     umm ptr = allocator.reserve(expect.len);
     DEFER(allocator.release(ptr));
@@ -31,7 +31,7 @@ TEST_CASE(
         LIT("World"),
     };
 
-    SliceTape tape(slice(strings));
+    SliceReadTape tape(slice(strings));
 
     REQUIRE(read_tape_cmp(&tape, LIT("Hell"), temp), "Can read partial");
     REQUIRE(read_tape_cmp(&tape, LIT("oWorld"), temp), "Can read multiple");
@@ -49,7 +49,7 @@ TEST_CASE("Lib/Tape/Slice", "Any string array, Sequential read, Can't overread")
             LIT("World"),
         };
 
-        SliceTape tape(slice(strings));
+        SliceReadTape tape(slice(strings));
 
         read_tape_cmp(&tape, LIT("HelloWorld"), temp);
 
@@ -75,9 +75,9 @@ TEST_CASE(
             LIT("World"),
         };
 
-        SliceTape tape(slice(strings));
+        SliceReadTape tape(slice(strings));
 
-        tape.move(+5);
+        tape.seek(+5);
         REQUIRE(read_tape_cmp(&tape, LIT("World"), temp), "");
     }
 
@@ -88,9 +88,9 @@ TEST_CASE(
             LIT("World"),
         };
 
-        SliceTape tape(slice(strings));
-        tape.move(10);
-        tape.move(-5);
+        SliceReadTape tape(slice(strings));
+        tape.seek(10);
+        tape.seek(-5);
         REQUIRE(read_tape_cmp(&tape, LIT("World"), temp), "");
     }
 
@@ -101,10 +101,10 @@ TEST_CASE(
             LIT("World"),
         };
 
-        SliceTape tape(slice(strings));
+        SliceReadTape tape(slice(strings));
 
-        tape.move(10);
-        tape.move(-6);
+        tape.seek(10);
+        tape.seek(-6);
 
         REQUIRE(read_tape_cmp(&tape, LIT("oWorld"), temp), "");
     }

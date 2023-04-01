@@ -13,7 +13,7 @@ TEST_CASE(
 {
     Str s = LIT("1000");
 
-    RawTape tape((Raw)s);
+    RawReadTape tape((Raw)s);
 
     i64 result = 0;
     REQUIRE(parse<i64>(&tape, result), "");
@@ -66,7 +66,7 @@ TEST_CASE("Lib/Types/Parsing", "Format & Parse simple enum works")
         arr<Str>(LIT("Zero"), LIT("One"), LIT("Two"), LIT("Three"));
 
     for (u32 i = 0; i < test_strings.count(); ++i) {
-        RawTape rt(test_strings[i]);
+        RawReadTape rt(test_strings[i]);
 
         ETestEnum test;
         REQUIRE(parse(&rt, test), "");

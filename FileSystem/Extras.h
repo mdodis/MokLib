@@ -51,13 +51,13 @@ static _inline Raw dump_file(
 
 static _inline void print(Str fmt_str)
 {
-    auto tape = get_stream(Console::Output);
+    auto tape = get_write_stream(Console::Output);
     tape.write_str(fmt_str);
 }
 
 template <typename First, typename... Rest>
 static _inline void print(Str fmt_str, const First& first, const Rest&... rest)
 {
-    auto tape = get_stream(Console::Output);
+    auto tape = get_write_stream(Console::Output);
     format(&tape, fmt_str, first, rest...);
 }
