@@ -60,6 +60,7 @@ struct IArrayDescriptor : IDescriptor {
     {}
 
     virtual IDescriptor*        get_subtype_descriptor()          = 0;
+    virtual void                init_read()                       = 0;
     virtual void                init(umm self, IAllocator& alloc) = 0;
     virtual umm                 add(umm self)                     = 0;
     virtual u64                 size(umm self)                    = 0;
@@ -189,6 +190,8 @@ struct FixedArrayDescriptor : IArrayDescriptor {
         return descriptor_of(((StorageSubType*)0));
     }
 
+    virtual void init_read() override { i = Count; }
+
     virtual void init(umm self, IAllocator& alloc) override
     {
         i               = 0;
@@ -236,6 +239,8 @@ struct ArrayDescriptor : IArrayDescriptor {
     {
         return descriptor_of(((T*)0));
     }
+
+    virtual void init_read() override {}
 
     virtual void init(umm self, IAllocator& alloc) override
     {

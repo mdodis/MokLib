@@ -276,6 +276,7 @@ static bool json_output_pretty_value(
         case TypeClass::Array: {
             auto&        ar           = as<IArrayDescriptor>(desc);
             IDescriptor* subtype_desc = ar.get_subtype_descriptor();
+            ar.init_read();
 
             format(output, LIT("[\n"));
             for (u64 i = 0; i < ar.size(ptr); ++i) {

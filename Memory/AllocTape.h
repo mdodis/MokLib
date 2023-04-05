@@ -65,11 +65,13 @@ struct MOKLIB_API AllocWriteTape : public WriteTape {
                     u64 add     = sizeu64 + self->offset;
 
                     if (add > self->size) {
-                        u64 by = add - self->size;
+                        u64 by        = add - self->size;
+                        u64 prev_size = self->size;
                         self->grow(self->size + by);
+
+                        memset(self->ptr + prev_size, 0, by);
                     }
 
-                    memset(self->ptr + self->offset, 0, sizeu64);
                     self->offset += sizeu64;
 
                     return (i64)sizeu64;
