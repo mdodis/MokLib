@@ -315,7 +315,7 @@ TEST_CASE("Lib/FileSystem/BufferedFileTape", "Test buffered read/write")
     }
 }
 
-TEST_CASE("Lib/Tape/AllocTape", "AllocTape nominal behavior")
+TEST_CASE("Lib/Tape/AllocWriteTape", "AllocTape nominal behavior")
 {
     AllocWriteTape t(System_Allocator);
 

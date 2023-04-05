@@ -49,6 +49,26 @@ static _inline Str format(
     return Str((CStr)ptr, size, fmt_str[fmt_str.len - 1] == '\0');
 }
 
+template <typename First, typename... Rest>
+static _inline char* format_cstr(
+    IAllocator& alloc, Str fmt_str, const First& first, const Rest&... rest)
+{
+    MeasureWriteTape measurement;
+    format(&measurement, fmt_str, first, rest...);
+
+    const u64 size = measurement.num_written;
+    umm       ptr  = alloc.reserve(size + 1);
+    if (!ptr) return 0;
+
+    RawWriteTape output(Raw{ptr, size});
+    format(&output, fmt_str, first, rest...);
+
+    char* data = (char*)ptr;
+
+    data[size] = 0;
+    return (char*)data;
+}
+
 template <typename T>
 struct TFmtHex {
     const T& value;

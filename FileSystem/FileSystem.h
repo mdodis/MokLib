@@ -342,7 +342,9 @@ struct BufferedReadTape : public FileReadTape<AutoClose> {
     using Super = FileReadTape<AutoClose>;
 
     BufferedReadTape(
-        FileHandle file, IAllocator& allocator, u64 size = KILOBYTES(1))
+        FileHandle  file,
+        IAllocator& allocator = System_Allocator,
+        u64         size      = KILOBYTES(1))
         : Super(read_proc, (void*)this, file), size(size), allocator(allocator)
     {
         buffer = allocator.reserve(size);

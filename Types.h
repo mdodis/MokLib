@@ -98,6 +98,17 @@ PROC_FMT_INL(u32) { fmt<u64>(tape, (u64)type); }
 PROC_PARSE_INL(u32) { return _pass_parse<u64, u32>(tape, result, allocator); }
 PROC_FMT_INL(i32) { fmt<i64>(tape, (i64)type); }
 PROC_PARSE_INL(i32) { return _pass_parse<i64, i32>(tape, result, allocator); }
+
+PROC_FMT_INL(u16) { fmt<u64>(tape, (u64)type); }
+PROC_PARSE_INL(u16) { return _pass_parse<u64, u16>(tape, result, allocator); }
+PROC_FMT_INL(i16) { fmt<i64>(tape, (i64)type); }
+PROC_PARSE_INL(i16) { return _pass_parse<i64, i16>(tape, result, allocator); }
+
+PROC_FMT_INL(u8) { fmt<u64>(tape, (u64)type); }
+PROC_PARSE_INL(u8) { return _pass_parse<u64, u8>(tape, result, allocator); }
+PROC_FMT_INL(i8) { fmt<i64>(tape, (i64)type); }
+PROC_PARSE_INL(i8) { return _pass_parse<i64, i8>(tape, result, allocator); }
+
 PROC_FMT_INL(f32) { fmt<f64>(tape, (f64)type); }
 PROC_PARSE_INL(f32) { return _pass_parse<f64, f32>(tape, result, allocator); }
 PROC_PARSE_INL(bool)

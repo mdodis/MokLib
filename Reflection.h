@@ -44,7 +44,7 @@ struct MOKLIB_API IDescriptor {
         : offset(offset), name(name), type_class(type_class)
     {}
 
-    virtual Str                 type_name()              = 0;
+    virtual Str                 type_name() const        = 0;
     virtual Slice<IDescriptor*> subdescriptors(umm self) = 0;
 
     IDescriptor* find_descriptor(umm self, Str name);
@@ -90,7 +90,7 @@ struct IEnumDescriptor : IDescriptor {
     virtual void format_enum(WriteTape* out, umm ptr)                     = 0;
     virtual bool parse_enum(ReadTape* in, IAllocator& allocator, umm ptr) = 0;
 
-    virtual Str                 type_name() override { return type_name_str; }
+    virtual Str type_name() const override { return type_name_str; }
     virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
     Str                         type_name_str;
 };
@@ -129,7 +129,7 @@ struct PrimitiveDescriptor : IPrimitiveDescriptor {
         format(out, LIT("{}"), *((T*)ptr));
     }
 
-    virtual Str                 type_name() override { return type_name_str; }
+    virtual Str type_name() const override { return type_name_str; }
     virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
 };
 
@@ -141,7 +141,7 @@ struct StrDescriptor : IDescriptor {
         : IDescriptor(offset, name, TypeClass::String)
     {}
 
-    virtual Str                 type_name() override { return LIT("Str"); }
+    virtual Str type_name() const override { return LIT("Str"); }
     virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
 };
 
@@ -181,6 +181,7 @@ struct FixedArrayDescriptor : IArrayDescriptor {
     constexpr FixedArrayDescriptor(u64 offset, Str name)
         : IArrayDescriptor(offset, name)
         , type_name_str(Str(typeid(StorageType).name()))
+        , i(Count)
     {}
 
     virtual IDescriptor* get_subtype_descriptor() override
@@ -212,11 +213,11 @@ struct FixedArrayDescriptor : IArrayDescriptor {
     {
         if (index >= Count) return 0;
 
-        StorageType* ar = (StorageType*)self;
-        return (umm)&ar[index];
+        StorageType& ar = *(StorageType*)self;
+        return (umm)(&ar[(int)index]);
     }
 
-    virtual Str type_name() override { return type_name_str; }
+    virtual Str type_name() const override { return type_name_str; }
 
     int i;
     Str type_name_str;
@@ -260,7 +261,7 @@ struct ArrayDescriptor : IArrayDescriptor {
         return (umm)&ar[index];
     }
 
-    virtual Str type_name() override { return LIT("Array <>"); }
+    virtual Str type_name() const override { return LIT("Array <>"); }
 };
 
 /**
@@ -308,7 +309,7 @@ struct ArrayDescriptor : IArrayDescriptor {
     (u64 offset = 0, Str name = Str::NullStr)                     \
         : IDescriptor(offset, name, TypeClass::Object)            \
     {}                                                            \
-    virtual Str type_name() override                              \
+    virtual Str type_name() const override                        \
     {                                                             \
         return LIT(MSTR(Type));                                   \
     }                                                             \
@@ -362,8 +363,14 @@ struct ArrayDescriptor : IArrayDescriptor {
     }
 
 DEFINE_PRIMITIVE_DESCRIPTOR(f32)
+DEFINE_PRIMITIVE_DESCRIPTOR(i64)
+DEFINE_PRIMITIVE_DESCRIPTOR(u64)
 DEFINE_PRIMITIVE_DESCRIPTOR(i32)
 DEFINE_PRIMITIVE_DESCRIPTOR(u32)
+DEFINE_PRIMITIVE_DESCRIPTOR(i16)
+DEFINE_PRIMITIVE_DESCRIPTOR(u16)
+DEFINE_PRIMITIVE_DESCRIPTOR(i8)
+DEFINE_PRIMITIVE_DESCRIPTOR(u8)
 DEFINE_PRIMITIVE_DESCRIPTOR(bool)
 
 static StrDescriptor Str_Descriptor = {0, Str::NullStr};

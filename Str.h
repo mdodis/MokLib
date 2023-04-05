@@ -7,9 +7,7 @@
 
 /**
  * An immutable utf8 string, that allocates NO memory, and thus doesn't
- * own it. See @StringBuilder to find out how to use it for creating strings
- *
- * @todo: Actual utf8 support (especially for .len)
+ * own it.
  */
 struct MOKLIB_API Str {
     Str() : data(0), len(0) {}

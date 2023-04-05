@@ -53,7 +53,7 @@ struct CompoundStructDescriptor : IDescriptor {
     };
 
     CUSTOM_DESC_DEFAULT(CompoundStructDescriptor)
-    virtual Str type_name() override { return LIT("CompoundStruct"); }
+    virtual Str type_name() const override { return LIT("CompoundStruct"); }
     virtual Slice<IDescriptor*> subdescriptors(umm self) override
     {
         return Slice<IDescriptor*>(descs, ARRAY_COUNT(descs));
