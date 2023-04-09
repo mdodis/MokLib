@@ -99,6 +99,15 @@ struct MOKLIB_API Str {
      */
     u64 first_of(const Str& s, u64 start = 0) const;
 
+    _inline u64 count_of(char c, u64 start = 0) const
+    {
+        u64 result = 0;
+        for (u64 i = start; i < len; ++i) {
+            if (data[i] == c) result++;
+        }
+        return result;
+    }
+
     /** Shorthand for chop_left(last_of(c) - 1) */
     _inline Str chop_left_last_of(char c) const
     {
@@ -118,6 +127,11 @@ struct MOKLIB_API Str {
 
     /** Converts letter characters to upper-case in-place. */
     Str& to_upper();
+
+    _inline Str part(u64 begin, u64 end) const
+    {
+        return Str(data + begin, end - begin);
+    }
 
     Str clone(IAllocator& alloc) const;
 
