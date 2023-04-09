@@ -1,18 +1,24 @@
 #pragma once
 #include <utility>
-
+#include <functional>
 #include "Containers/Slice.h"
+#include "Containers/Array.h"
+#include "Delegates.h"
 
 namespace sort {
 
     template <typename T>
-    static _inline i64 quicksort_partition(Slice<T>& slice, i64 low, i64 high)
+    using CompareFunc = Delegate<bool, const T&, const T&>;
+
+    template <typename T>
+    static _inline i64 quicksort_partition(
+        Slice<T>& slice, i64 low, i64 high, CompareFunc<T> predicate)
     {
         T   pivot = slice[high];
         i64 i     = low - 1;
 
         for (i64 j = low; j < high; ++j) {
-            if (slice[j] < pivot) {
+            if (predicate.call(slice[j], pivot)) {
                 i++;
                 std::swap(slice[i], slice[j]);
             }
@@ -23,19 +29,27 @@ namespace sort {
     }
 
     template <typename T>
-    static _inline void quicksort_impl(Slice<T>& slice, i64 low, i64 high)
+    static _inline void quicksort_impl(Slice<T>& slice, i64 low, i64 high, CompareFunc<T> predicate)
     {
         if (low < high) {
-            i64 pivot = quicksort_partition(slice, low, high);
-            quicksort_impl(slice, low, pivot - 1);
-            quicksort_impl(slice, pivot + 1, high);
+            i64 pivot = quicksort_partition(slice, low, high, predicate);
+            quicksort_impl(slice, low, pivot - 1, predicate);
+            quicksort_impl(slice, pivot + 1, high, predicate);
         }
     }
 
     template <typename T>
-    static _inline void quicksort(Slice<T>& slice)
+    static _inline bool operator_compare(const T& left, const T& right)
     {
-        quicksort_impl(slice, 0, i64(slice.count) - 1);
+        return left < right;
+    }
+
+    template <typename T>
+    static _inline void quicksort(
+        Slice<T>& slice,
+        CompareFunc<T> predicate = CompareFunc<T>::create_static(operator_compare<T>))
+    {
+        quicksort_impl(slice, 0, i64(slice.count) - 1, predicate);
     }
 
 }  // namespace sort
