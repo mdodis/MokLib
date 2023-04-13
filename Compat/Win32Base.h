@@ -52,8 +52,8 @@ namespace Win32 {
     typedef void*            PVOID;
     typedef PVOID            HANDLE;
     typedef ULONG_PTR        DWORD_PTR, *PDWORD_PTR;
-
-    typedef WORD ATOM;
+    typedef LONG             HRESULT;
+    typedef WORD             ATOM;
 
     WIN32_DECLARE_HANDLE(HICON);
     WIN32_DECLARE_HANDLE(HBRUSH);
@@ -376,5 +376,10 @@ namespace Win32 {
         constexpr UINT MouseMove = 0x0200;
         constexpr UINT Input     = 0x00FF;
     }  // namespace Message
+
+    namespace HResult {
+        constexpr HRESULT Ok    = ((HRESULT)0L);
+        constexpr HRESULT False = ((HRESULT)1L);
+    }  // namespace HResult
 
 }  // namespace Win32
