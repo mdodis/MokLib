@@ -81,7 +81,7 @@ namespace Win32 {
     typedef struct tagPOINT {
         LONG x;
         LONG y;
-    } POINT, *PPOINT;
+    } POINT, *PPOINT, *LPPOINT;
 
     typedef struct tagMSG {
         HWND   hwnd;
@@ -218,6 +218,8 @@ namespace Win32 {
         __stdcall DispatchMessageW(const MSG* msg);
     extern "C" BOOL GetWindowRect(HWND hWnd, LPRECT lpRect);
     extern "C" BOOL GetClientRect(HWND hWnd, LPRECT lpRect);
+    extern "C" BOOL ClientToScreen(HWND hWnd, LPPOINT lpPoint);
+    extern "C" BOOL ScreenToClient(HWND hWnd, LPPOINT lpPoint);
     extern "C" BOOL AdjustWindowRect(LPRECT rect, DWORD style, BOOL menu);
     extern "C" BOOL SetCursorPos(int X, int Y);
     extern "C" int  ShowCursor(BOOL bShow);
