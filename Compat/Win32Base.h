@@ -235,6 +235,8 @@ namespace Win32 {
         PUINT     pcbSize,
         UINT      cbSizeHeader);
 
+    extern "C" BOOL SetProcessDPIAware();
+
 #endif  // MOK_WIN32_NO_FUNCTIONS
 
     constexpr int DefaultWindowPos = ((int)0x80000000);
