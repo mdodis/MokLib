@@ -32,6 +32,18 @@ static _inline void format(
     format(tape, fmt_str.chop_left(idx), rest...);
 }
 
+static _inline Str format(IAllocator& allocator, Str fmt_str)
+{
+    const u64 size = fmt_str.len;
+    umm       ptr  = allocator.reserve(size);
+    if (!ptr) return Str::NullStr;
+
+    RawWriteTape output(Raw{ptr, size});
+    format(&output, fmt_str);
+
+    return Str((CStr)ptr, size, fmt_str[fmt_str.len - 1] == '\0');
+}
+
 template <typename First, typename... Rest>
 static _inline Str format(
     IAllocator& alloc, Str fmt_str, const First& first, const Rest&... rest)
