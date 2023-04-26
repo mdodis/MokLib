@@ -1,18 +1,19 @@
 #pragma once
 #include "Config.h"
 #include "FileSystem.h"
-#include "Str.h"
 #include "Host.h"
+#include "Str.h"
 
 struct FileData {
-    Str filename;
+    Str             filename;
     EFileAttributes attributes;
 };
 
 struct MOKLIB_API DirectoryIterator {
-    Str directory;
-    bool next_file(FileData *result);
-    void *handle;
+    Str   directory;
+    bool  next_file(FileData* result);
+    void  close();
+    void* handle;
 #if OS_MSWINDOWS
     bool has_first_file = false;
 #endif

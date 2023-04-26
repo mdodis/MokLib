@@ -141,6 +141,11 @@ PROC_PARSE_INL(bool)
         tape->write_str(LIT(#sub));   \
         break
 
+#define FMT_ENUM_CASE2(enum_type, sub, str) \
+    case enum_type::sub:                    \
+        tape->write_str(LIT(str));          \
+        break
+
 #define FMT_ENUM_DEFAULT_CASE(sub)  \
     default:                        \
         tape->write_str(LIT(#sub)); \
@@ -166,4 +171,13 @@ PROC_PARSE_INL(bool)
             type = enum_type::sub;      \
             return true;                \
         }                               \
+    }
+
+#define PARSE_ENUM_CASE2(enum_type, sub, str) \
+    {                                         \
+        Str cmp = LIT(str);                   \
+        if (cmp == s) {                       \
+            type = enum_type::sub;            \
+            return true;                      \
+        }                                     \
     }

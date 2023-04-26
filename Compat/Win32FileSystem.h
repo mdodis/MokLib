@@ -4,7 +4,8 @@
 
 // @todo: this can be moved to Win32Base.h
 namespace Win32FileAttributes {
-    enum Type : u32 {
+    enum Type : u32
+    {
         ReadOnly           = 0x1,
         Hidden             = 0x2,
         System             = 0x4,
@@ -27,17 +28,15 @@ namespace Win32FileAttributes {
     };
 };
 
-static _inline EFileAttributes win32_file_attribs_to_file_attribs(Win32FileAttributes::Type attrib) {
+static _inline EFileAttributes win32_file_attribs_to_file_attribs(
+    Win32FileAttributes::Type attrib)
+{
     EFileAttributes result;
 
-    switch (attrib) {
-
-        case Win32FileAttributes::Normal:    result = FileAttributes::File; break;
-        case Win32FileAttributes::Directory: result = FileAttributes::Directory; break;
-
-        default: {
-            result = 0;
-        } break;
+    if (attrib & Win32FileAttributes::Directory) {
+        result = FileAttributes::Directory;
+    } else {
+        result = FileAttributes::File;
     }
 
     return result;
