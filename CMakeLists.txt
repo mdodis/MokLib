@@ -62,7 +62,7 @@ if (MOKLIB_COMPILE_STATIC)
 
 endif()
 
-target_include_directories(MokLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(MokLib PUBLIC ".")
 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" CACHE INTERNAL "")

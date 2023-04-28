@@ -239,6 +239,13 @@ namespace Win32 {
 
 #endif  // MOK_WIN32_NO_FUNCTIONS
 
+    struct WndProcParameters {
+        HWND   hwnd;
+        UINT   msg;
+        WPARAM wparam;
+        LPARAM lparam;
+    };
+
     constexpr int DefaultWindowPos = ((int)0x80000000);
     namespace HIDUsage {
         constexpr unsigned short Mouse = 0x02;
