@@ -42,3 +42,25 @@ TEST_CASE("Lib/Memory/Arena", "Ensure dynamic arena resets okay") {
 
     return MPASSED();
 }
+
+TEST_CASE("Lib/Memory/Arena", "Ensure save arena works") {
+    NullAllocator   null;
+    SystemAllocator system;
+
+    Arena<ArenaMode::Dynamic> arena(system, 10);
+    arena.init();
+
+    {
+        SAVE_ARENA(arena);
+
+        arena.push(10);
+        arena.push(10);
+    }
+
+    arena.base = null;
+
+    arena.push(10);
+    arena.push(10);
+
+    return MPASSED();
+}
