@@ -4,7 +4,7 @@
 #include "Slice.h"
 
 template <typename T>
-Slice<T> alloc_slice(IAllocator& allocator, size_t count)
+Slice<T> alloc_slice(Allocator& allocator, size_t count)
 {
     T* ptr = alloc_array<T>(allocator, count);
     return slice(ptr, count);

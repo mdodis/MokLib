@@ -16,9 +16,9 @@ struct TArray {
     using FwdIter = SliceIterator<T>;
     using RevIter = SliceIterator<T, false>;
 
-    T*          data;
-    IAllocator* alloc;
-    u64         capacity, size;
+    T*         data;
+    Allocator* alloc;
+    u64        capacity, size;
 
     static constexpr u64 Init_Capacity = 4;
 
@@ -29,7 +29,7 @@ struct TArray {
         this->size     = 0;
     }
 
-    _inline TArray(IAllocator* alloc)
+    _inline TArray(Allocator* alloc)
     {
         this->alloc    = alloc;
         this->data     = 0;
@@ -38,10 +38,10 @@ struct TArray {
     }
 
     _inline TArray(std::initializer_list<T> init_list)
-        : TArray(get_system_allocator(), init_list)
+        : TArray(System_Allocator, init_list)
     {}
 
-    _inline TArray(IAllocator* alloc, std::initializer_list<T> init_list)
+    _inline TArray(Allocator* alloc, std::initializer_list<T> init_list)
         : TArray(alloc)
     {
         for (const T& elem : init_list) {
@@ -187,25 +187,6 @@ struct TArray {
     FwdIter end() const { return FwdIter(data, (i32)size); }
     RevIter rbegin() const { return RevIter(data, size - 1); }
     RevIter rend() const { return RevIter(data, -1); }
-};
-
-template <typename T, uint32 Count>
-struct TInlineArray : TArray<T> {
-    TInlineArray()
-        : alloc_arena(memory, (sizeof(T) * Count)), TArray<T>(&alloc_arena)
-    {
-        this->init(Count);
-    }
-
-    TInlineArray(std::initializer_list<T> init_list) : TInlineArray()
-    {
-        for (const T& elem : init_list) {
-            add(elem);
-        }
-    }
-
-    u8    memory[(sizeof(T) * Count)];
-    Arena alloc_arena;
 };
 
 template <typename T, u32 Count>

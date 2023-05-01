@@ -115,7 +115,7 @@ void print_backtrace(WriteTape* tape)
             Str(line->FileName),
             (u32)line->LineNumber,
             Str(((char*)&symbol->Name), symbol->NameLen));
-        // StringBuilder result = StringBuilder(get_system_allocator())
+        // StringBuilder result = StringBuilder(System_Allocator)
         //     .add(LIT("At "))
         //     .add(Str(line->FileName))
         //     .add(LIT(" in "))

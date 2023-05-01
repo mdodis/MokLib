@@ -25,11 +25,11 @@ static _inline bool write_file(FileHandle& handle, const Str& str)
     return (!result) || (bytes_written != str.len);
 }
 
-static _inline Raw dump_file(FileHandle& handle, IAllocator& alloc)
+static _inline Raw dump_file(FileHandle& handle, Allocator& alloc)
 {
     u64 file_size = get_file_size(handle);
 
-    umm file_data = alloc.reserve(file_size);
+    void* file_data = alloc.reserve(file_size);
     if (!file_data) return Raw{0};
 
     if (read_file(handle, file_data, file_size) != file_size) {
@@ -41,10 +41,10 @@ static _inline Raw dump_file(FileHandle& handle, IAllocator& alloc)
 }
 
 static _inline Raw dump_file(
-    Str filename, IAllocator& alloc = *get_system_allocator())
+    Str filename, Allocator& allocator = System_Allocator)
 {
     FileHandle handle = open_file(filename, FileMode::Read);
-    Raw        result = dump_file(handle, alloc);
+    Raw        result = dump_file(handle, allocator);
     close_file(handle);
     return result;
 }

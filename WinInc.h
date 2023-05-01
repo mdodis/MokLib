@@ -62,3 +62,7 @@
 #ifdef RGB
     #undef RGB
 #endif
+
+#ifdef FIXED
+#undef FIXED
+#endif

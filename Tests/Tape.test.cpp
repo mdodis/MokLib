@@ -8,9 +8,9 @@
 #include "SliceTape.h"
 #include "Test/Test.h"
 
-static bool read_tape_cmp(ReadTape* tape, Str expect, IAllocator& allocator)
+static bool read_tape_cmp(ReadTape* tape, Str expect, Allocator& allocator)
 {
-    umm ptr = allocator.reserve(expect.len);
+    umm ptr = (umm)allocator.reserve(expect.len);
     DEFER(allocator.release(ptr));
     ASSERT(ptr);
 
@@ -24,7 +24,7 @@ static bool read_tape_cmp(ReadTape* tape, Str expect, IAllocator& allocator)
 TEST_CASE(
     "Lib/Tape/Slice", "{'Hello', 'World'}, Sequential read, In-order read")
 {
-    CREATE_SCOPED_ARENA(&System_Allocator, temp, 1024);
+    CREATE_SCOPED_ARENA(System_Allocator, temp, 1024);
 
     TArr<Str, 2> strings = {
         LIT("Hello"),
@@ -41,7 +41,7 @@ TEST_CASE(
 
 TEST_CASE("Lib/Tape/Slice", "Any string array, Sequential read, Can't overread")
 {
-    CREATE_SCOPED_ARENA(&System_Allocator, temp, 1024);
+    CREATE_SCOPED_ARENA(System_Allocator, temp, 1024);
 
     {
         TArr<Str, 2> strings = {
@@ -66,7 +66,7 @@ TEST_CASE(
     "Read string and move cursor one back and read string, "
     "Reads correctly")
 {
-    CREATE_SCOPED_ARENA(&System_Allocator, temp, 1024);
+    CREATE_SCOPED_ARENA(System_Allocator, temp, 1024);
 
     // Move Forwards
     {
@@ -135,7 +135,7 @@ TEST_CASE(
     "Lib/Tape/RawReadTape",
     "{0123456789}, consecutive out of range reads, reads correctly")
 {
-    CREATE_SCOPED_ARENA(&System_Allocator, temp, KILOBYTES(1))
+    CREATE_SCOPED_ARENA(System_Allocator, temp, KILOBYTES(1));
 
     Str s   = LIT("0123456789");
     Raw raw = s;
@@ -157,7 +157,7 @@ TEST_CASE(
     "Lib/Tape/RawReadTape",
     "{0123456789}, rd 9, seek -20, rd 1, reads correctly")
 {
-    CREATE_SCOPED_ARENA(&System_Allocator, temp, KILOBYTES(1))
+    CREATE_SCOPED_ARENA(System_Allocator, temp, KILOBYTES(1));
 
     Str         s   = LIT("0123456789");
     Raw         raw = s;
@@ -281,7 +281,7 @@ TEST_CASE("Lib/FileSystem/FileTape", "Test file tape")
     }
 
     {
-        CREATE_SCOPED_ARENA(&System_Allocator, temp, KILOBYTES(1));
+        CREATE_SCOPED_ARENA(System_Allocator, temp, KILOBYTES(1));
 
         FileReadTape<true> ft(open_file_read(LIT("test.file.test")));
 
@@ -303,7 +303,7 @@ TEST_CASE("Lib/FileSystem/BufferedFileTape", "Test buffered read/write")
     }
 
     {
-        CREATE_SCOPED_ARENA(&System_Allocator, temp, KILOBYTES(1));
+        CREATE_SCOPED_ARENA(System_Allocator, temp, KILOBYTES(1));
 
         BufferedReadTape<true>
             ft(open_file_read(LIT("test.file.test")), System_Allocator, 3);

@@ -19,7 +19,7 @@ u64 parse_cid(const Str& s, u64 i, Str& out)
     return i;
 }
 
-Str parse_cid(ReadTape* tape, IAllocator& alloc)
+Str parse_cid(ReadTape* tape, Allocator& alloc)
 {
     TArray<char> result(&alloc);
 
@@ -41,7 +41,7 @@ Str parse_cid(ReadTape* tape, IAllocator& alloc)
     }
 }
 
-Str parse_string(ReadTape* tape, IAllocator& alloc, ProcCharClassIs* predicate)
+Str parse_string(ReadTape* tape, Allocator& alloc, ProcCharClassIs* predicate)
 {
     int32 i = 0;
     char  c;
@@ -59,7 +59,7 @@ Str parse_string(ReadTape* tape, IAllocator& alloc, ProcCharClassIs* predicate)
     return Str(result.data, result.size);
 }
 
-bool parse_escaped_string(ReadTape* tape, Str& result, IAllocator& allocator)
+bool parse_escaped_string(ReadTape* tape, Str& result, Allocator& allocator)
 {
     ParseReadTape pt(*tape);
     TArray<char>  array(&allocator);

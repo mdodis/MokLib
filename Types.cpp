@@ -6,7 +6,7 @@
 #include "Memory/AllocTape.h"
 #include "Parsing.h"
 
-bool parse_quoted_string(ReadTape* tape, Str& result, IAllocator& allocator)
+bool parse_quoted_string(ReadTape* tape, Str& result, Allocator& allocator)
 {
     // @todo: At some point, for some reason I don't quite see now, we'll need
     // to support escape characters, but for now, we'll resort to a simple
@@ -39,7 +39,7 @@ bool parse_quoted_string(ReadTape* tape, Str& result, IAllocator& allocator)
     return true;
 }
 
-bool parse_str(ReadTape* tape, Str& result, IAllocator& allocator)
+bool parse_str(ReadTape* tape, Str& result, Allocator& allocator)
 {
     char c = tape->read_char();
     if (c == '\'') {

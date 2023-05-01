@@ -33,7 +33,7 @@ struct MulticastDelegate : DelegateBase {
     };
 
     constexpr MulticastDelegate() : locks(0), pairs(&System_Allocator) {}
-    constexpr MulticastDelegate(IAllocator& alloc) : locks(0), pairs(&alloc) {}
+    constexpr MulticastDelegate(Allocator& alloc) : locks(0), pairs(&alloc) {}
     MulticastDelegate(const MulticastDelegate& other) = default;
     ~MulticastDelegate()                              = default;
 

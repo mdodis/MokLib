@@ -10,13 +10,13 @@
 #pragma warning(disable : 4533)
 #endif
 
-static bool parse_object(ReadTape* in, IAllocator& alloc, DescPair pair);
-static bool parse_qstr(ReadTape* in, IAllocator& alloc, Str& result);
-static bool parse_value(ReadTape* in, IAllocator& alloc, DescPair pair);
-static bool parse_number(ReadTape* in, IAllocator& alloc, DescPair pair);
-static bool parse_bool(ReadTape* in, IAllocator& alloc, DescPair pair);
-static bool parse_string(ReadTape* in, IAllocator& alloc, DescPair pair);
-static bool parse_array(ReadTape* in, IAllocator& alloc, DescPair pair);
+static bool parse_object(ReadTape* in, Allocator& alloc, DescPair pair);
+static bool parse_qstr(ReadTape* in, Allocator& alloc, Str& result);
+static bool parse_value(ReadTape* in, Allocator& alloc, DescPair pair);
+static bool parse_number(ReadTape* in, Allocator& alloc, DescPair pair);
+static bool parse_bool(ReadTape* in, Allocator& alloc, DescPair pair);
+static bool parse_string(ReadTape* in, Allocator& alloc, DescPair pair);
+static bool parse_array(ReadTape* in, Allocator& alloc, DescPair pair);
 
 PROC_DESERIALIZE(json_deserialize)
 {
@@ -31,7 +31,7 @@ PROC_DESERIALIZE(json_deserialize)
     return parse_array(in, alloc, DescPair{desc, ptr});
 }
 
-static bool parse_object(ReadTape* in, IAllocator& alloc, DescPair pair)
+static bool parse_object(ReadTape* in, Allocator& alloc, DescPair pair)
 {
     ParseReadTape tape(*in);
     bool          should_exit = false;
@@ -84,13 +84,13 @@ P_FAIL:
     return false;
 }
 
-static bool parse_qstr(ReadTape* in, IAllocator& alloc, Str& result)
+static bool parse_qstr(ReadTape* in, Allocator& alloc, Str& result)
 {
     StrFormatter format_result(result, &alloc);
     return parse<StrFormatter>(in, format_result);
 }
 
-static bool parse_value(ReadTape* in, IAllocator& alloc, DescPair pair)
+static bool parse_value(ReadTape* in, Allocator& alloc, DescPair pair)
 {
     eat_whitespace(in);
 
@@ -150,7 +150,7 @@ bool try_parse_primitive_type(ReadTape* in, DescPair pair)
     return false;
 }
 
-static bool parse_number(ReadTape* in, IAllocator& alloc, DescPair pair)
+static bool parse_number(ReadTape* in, Allocator& alloc, DescPair pair)
 {
     if (try_parse_primitive_type<i64>(in, pair)) return true;
     if (try_parse_primitive_type<u64>(in, pair)) return true;
@@ -165,7 +165,7 @@ static bool parse_number(ReadTape* in, IAllocator& alloc, DescPair pair)
     return false;
 }
 
-static bool parse_bool(ReadTape* in, IAllocator& alloc, DescPair pair)
+static bool parse_bool(ReadTape* in, Allocator& alloc, DescPair pair)
 {
     if (IS_A(pair.desc, PrimitiveDescriptor<bool>)) {
         return parse<bool>(in, (*(bool*)pair.ptr));
@@ -173,7 +173,7 @@ static bool parse_bool(ReadTape* in, IAllocator& alloc, DescPair pair)
     return false;
 }
 
-static bool parse_string(ReadTape* in, IAllocator& alloc, DescPair pair)
+static bool parse_string(ReadTape* in, Allocator& alloc, DescPair pair)
 {
     if (IS_A(pair.desc, StrDescriptor)) {
         Str  result;
@@ -201,7 +201,7 @@ static bool parse_string(ReadTape* in, IAllocator& alloc, DescPair pair)
     return true;
 }
 
-static bool parse_array(ReadTape* in, IAllocator& alloc, DescPair pair)
+static bool parse_array(ReadTape* in, Allocator& alloc, DescPair pair)
 {
     if (!IS_A(pair.desc, IArrayDescriptor)) {
         return false;

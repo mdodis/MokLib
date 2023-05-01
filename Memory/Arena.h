@@ -1,83 +1,316 @@
 #pragma once
-#include "Base.h"
+#include <string.h>
+
 #include "../Defer.h"
+#include "Base.h"
 
-struct MOKLIB_API Arena : IAllocator {
-	static constexpr u64 Default_Block_Size = MEGABYTES(1);
-	static constexpr u64 Remaining 			= ~0ull;
+namespace ArenaMode {
+    enum Type
+    {
+        Fixed,
+        Dynamic
+    };
+}
+typedef ArenaMode::Type EArenaMode;
 
-	Arena() {}
-	constexpr Arena(umm data, u64 size)
-		: base(&Null_Allocator)
-		, memory(data)
-		, used(0)
-		, capacity(size)
-		, min_block_size(0) {}
-	Arena(IAllocator *base, u64 size = Default_Block_Size);
+template <EArenaMode Mode = ArenaMode::Dynamic>
+struct MOKLIB_API Arena;
 
-	~Arena() {
+template <EArenaMode Mode>
+struct MOKLIB_API ArenaSave;
 
-	}
+template <>
+struct MOKLIB_API Arena<ArenaMode::Fixed> : public Allocator {
+    Arena(Allocator& base, u64 capacity)
+        : Allocator(allocate_proc, (void*)this), capacity(capacity), base(base)
+    {}
+    Arena() : Arena(System_Allocator, KILOBYTES(1)) {}
 
-	virtual _inline PROC_MEMORY_RESERVE(reserve) override {
-	    return push(size);
-	}
+    static PROC_ALLOCATOR_ALLOCATE(allocate_proc)
+    {
+        Arena* self = (Arena*)usr;
 
-	virtual PROC_MEMORY_RESIZE(resize) override;
-	virtual PROC_MEMORY_RELEASE(release) override;
-	virtual PROC_MEMORY_RELEASE_BASE(release_base) override;
+        if (self->memory == nullptr) {
+            self->init();
+        }
 
-	umm push(u64 size);
-	IAllocator to_alloc();
+        switch (mode) {
+            case AllocatorMode::Reserve: {
+                return self->push(new_size);
+            } break;
 
-	bool stretch(u64 required_size);
+            case AllocatorMode::Resize: {
+                return self->copy_or_resize(ptr, prev_size, new_size);
+            } break;
 
-	umm get_block_data();
+            case AllocatorMode::Release: {
+                self->try_pop(ptr);
+                return 0;
+            } break;
+        }
+        return 0;
+    }
 
-	IAllocator *base;
-	umm memory;
-	u64 capacity, used;
-	u64 min_block_size;
+    void  init() { memory = base.reserve(capacity); }
+    void* push(u64 size)
+    {
+        if ((used + size) > capacity) {
+            return nullptr;
+        }
 
-	u64 last_offset = 0;
+        void* result = (u8*)memory + used;
+        last_offset  = used;
+        used += size;
+        return result;
+    }
+
+    void* copy_or_resize(void* ptr, u64 prev, u64 size)
+    {
+        u8* last_ptr = (u8*)memory + last_offset;
+
+        if ((last_ptr == ptr) && ((last_offset + size) <= capacity)) {
+            used = last_offset + size;
+            return last_ptr;
+        } else {
+            void* new_ptr = push(size);
+            if (new_ptr == nullptr) return nullptr;
+
+            memcpy(new_ptr, ptr, prev);
+            return new_ptr;
+        }
+    }
+
+    void try_pop(void* ptr)
+    {
+        u8* last_ptr = (u8*)memory + last_offset;
+
+        if (last_ptr == ptr) {
+            used        = last_offset;
+            last_offset = 0;
+        }
+    }
+
+    void deinit()
+    {
+        base.release(memory);
+        memory      = nullptr;
+        used        = 0;
+        last_offset = 0;
+    }
+
+    void reset()
+    {
+        used        = 0;
+        last_offset = 0;
+    }
+
+    void*      memory      = nullptr;
+    u64        used        = 0;
+    u64        last_offset = 0;
+    u64        capacity;
+    Allocator& base;
 };
 
-#define CREATE_SCOPED_ARENA(base, name, size) \
-	Arena name = Arena(base, (size)); \
-	DEFER(name.release_base());
+template <>
+struct MOKLIB_API ArenaSave<ArenaMode::Fixed> {
+    u64                      used;
+    u64                      last_offset;
+    Arena<ArenaMode::Fixed>* a;
 
-#define CREATE_GLOBAL_ARENA(name, size) \
-	static uint8 memory_of__##name[(size)]; \
-	static Arena name = { \
-		Null_Allocator, \
-		memory_of__##name, \
-		(size), \
-		0, \
-	};
+    ArenaSave(Arena<ArenaMode::Fixed>& arena)
+    {
+        a           = &arena;
+        used        = arena.used;
+        last_offset = arena.last_offset;
+    }
 
-#define CREATE_INLINE_ARENA(name, size) \
-	static uint8 memory_of__##name[(size)]; \
-	Arena name(memory_of__##name, size);
-
-#define SAVE_ARENA(arena) ArenaSave MJOIN2(_arena_save,__LINE__) (arena)
-
-struct MOKLIB_API ArenaSave {
-	Arena *arena;
-	u64 capacity, used, last_offset;
-	ArenaSave(Arena *a) {
-		arena = a;
-		capacity    = arena->capacity;
-		used        = arena->used;
-		last_offset = arena->last_offset;
-	}
-
-	ArenaSave(Arena &a)
-		: ArenaSave(&a)
-		{}
-
-	~ArenaSave() {
-		arena->capacity    = capacity;
-		arena->used        = used;
-		arena->last_offset = last_offset;
-	}
+    ~ArenaSave()
+    {
+        a->used        = used;
+        a->last_offset = last_offset;
+    }
 };
+
+template <>
+struct MOKLIB_API Arena<ArenaMode::Dynamic> : public Allocator {
+    Arena(Allocator& base, u64 capacity)
+        : Allocator(allocate_proc, (void*)this), capacity(capacity), base(base)
+    {}
+    Arena() : Arena(System_Allocator, KILOBYTES(1)) {}
+
+    struct BlockHeader {
+        void* prev;
+        void* next;
+        u64   used;
+        u64   count;
+    };
+
+    static PROC_ALLOCATOR_ALLOCATE(allocate_proc)
+    {
+        Arena* self = (Arena*)usr;
+
+        if (self->current_block == nullptr) {
+            self->init();
+        }
+
+        switch (mode) {
+            case AllocatorMode::Reserve: {
+                return self->push(new_size);
+            } break;
+
+            case AllocatorMode::Resize: {
+                return self->copy_or_resize(ptr, prev_size, new_size);
+            } break;
+
+            case AllocatorMode::Release: {
+                self->try_pop(ptr);
+                return 0;
+            } break;
+        }
+
+        return 0;
+    }
+
+    void init() { current_block = create_block(); }
+
+    void deinit()
+    {
+        while (current_block != nullptr) {
+            void* tmp     = current_block;
+            current_block = header()->prev;
+            base.release(tmp);
+        }
+        last_offset = 0;
+    }
+
+    void reset_to_block(void* block, u64 used = 0, u64 last_offset = 0)
+    {
+        current_block   = block;
+        header()->count = 0;
+        header()->used  = used;
+        last_offset     = last_offset;
+    }
+
+    void reset()
+    {
+        void* c = current_block;
+        void* p = header(c)->prev;
+
+        while (p != nullptr) {
+            c = header(c)->prev;
+            p = header(c)->prev;
+        }
+
+        reset_to_block(c);
+    }
+
+    void* create_block()
+    {
+        void* result = base.reserve(block_size());
+
+        BlockHeader* hdr = (BlockHeader*)result;
+        hdr->prev        = nullptr;
+        hdr->next        = nullptr;
+        hdr->used        = 0;
+        hdr->count       = 0;
+
+        return result;
+    }
+
+    void create_or_traverse_block()
+    {
+        if (header()->next != nullptr) {
+            switch_to_block(header()->next);
+        } else {
+            switch_to_block(create_block());
+        }
+    }
+
+    void switch_to_block(void* block)
+    {
+        header(current_block)->next = block;
+        header(block)->prev         = current_block;
+        header(block)->next         = nullptr;
+        last_offset                 = 0;
+        current_block               = block;
+    }
+
+    void* push(u64 size)
+    {
+        if (size > capacity) return nullptr;
+
+        if ((header()->used + size) > capacity) {
+            create_or_traverse_block();
+        }
+
+        u8* result  = block_start() + header()->used;
+        last_offset = header()->used;
+        header()->used += size;
+
+        return result;
+    }
+
+    void* copy_or_resize(void* ptr, u64 prev, u64 size)
+    {
+        u8* last_ptr = block_start() + last_offset;
+
+        if ((last_ptr == ptr) && ((last_offset + size) <= capacity)) {
+            header()->used = last_offset + size;
+            return last_ptr;
+        } else {
+            void* new_ptr = push(size);
+            if (new_ptr == nullptr) return nullptr;
+
+            memcpy(new_ptr, ptr, prev);
+            return new_ptr;
+        }
+    }
+
+    void try_pop(void* ptr)
+    {
+        u8* last_ptr = block_start() + last_offset;
+
+        if (last_ptr == ptr) {
+            header()->used = last_offset;
+            last_offset    = 0;
+        }
+    }
+
+    BlockHeader* header() const { return (BlockHeader*)(current_block); }
+    BlockHeader* header(void* b) const { return (BlockHeader*)(b); }
+
+    u8* block_start() const
+    {
+        return ((u8*)current_block) + sizeof(BlockHeader);
+    }
+
+    u64 block_size() const { return capacity + sizeof(BlockHeader); }
+
+    void*      current_block = nullptr;
+    u64        capacity;
+    u64        last_offset = 0;
+    Allocator& base;
+};
+
+template <>
+struct MOKLIB_API ArenaSave<ArenaMode::Dynamic> {
+    void*                      block;
+    u64                        used;
+    u64                        last_offset;
+    Arena<ArenaMode::Dynamic>* a;
+
+    ArenaSave(Arena<ArenaMode::Dynamic>& arena)
+    {
+        a           = &arena;
+        block       = arena.current_block;
+        used        = arena.header()->used;
+        last_offset = arena.last_offset;
+    }
+
+    ~ArenaSave() { a->reset_to_block(block, used, last_offset); }
+};
+
+#define SAVE_ARENA(arena) ArenaSave MJOIN2(_arena_save, __COUNTER__)(arena);
+#define CREATE_SCOPED_ARENA(base, name, capacity)       \
+    Arena<ArenaMode::Dynamic> name((base), (capacity)); \
+    name.init()

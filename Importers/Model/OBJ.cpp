@@ -1,14 +1,16 @@
 #include "OBJ.h"
+
 #include "Base.h"
 #include "Debugging/Base.h"
 #include "Importers/Import.h"
+#include "Memory/Arena.h"
 #include "Memory/Base.h"
 #include "Parsing.h"
-#include "Memory/Arena.h"
 #include "Traits.h"
 
 namespace OBJDeclaration {
-    enum Type {
+    enum Type
+    {
         Invalid = 0,
         VertexTexture,
         VertexNormal,
@@ -48,22 +50,27 @@ struct OBJIndex {
     u32 indices[3];
 };
 
-bool operator==(const OBJIndex &left, const OBJIndex &right) {
-    return (left.indices[0] == right.indices[0])
-        && (left.indices[1] == right.indices[1])
-        && (left.indices[2] == right.indices[2]);
+bool operator==(const OBJIndex& left, const OBJIndex& right)
+{
+    return (left.indices[0] == right.indices[0]) &&
+           (left.indices[1] == right.indices[1]) &&
+           (left.indices[2] == right.indices[2]);
 }
 
-PROC_IMPORTER_LOAD(import_obj_load) {
+PROC_IMPORTER_LOAD(import_obj_load)
+{
     FileTape tape(file_handle);
 
-    CREATE_SCOPED_ARENA(get_system_allocator(), temp_arena, Arena::Default_Block_Size);
+    CREATE_SCOPED_ARENA(
+        System_Allocator,
+        temp_arena,
+        Arena::Default_Block_Size);
 
-    TArray<Vec3> vertices(&temp_arena);
-    TArray<Vec2> textures(&temp_arena);
-    TArray<Vec3> normals(&temp_arena);
+    TArray<Vec3>     vertices(&temp_arena);
+    TArray<Vec2>     textures(&temp_arena);
+    TArray<Vec3>     normals(&temp_arena);
     TArray<OBJIndex> encoded_indices(&temp_arena);
-    TArray<u32> indices(&temp_arena);
+    TArray<u32>      indices(&temp_arena);
 
     TArray<OBJVertex> output_vertices(alloc);
 
@@ -76,7 +83,8 @@ PROC_IMPORTER_LOAD(import_obj_load) {
 
         Str declaration = parse_string(&tape, in_arena);
 
-        u32 match_result = match_strings(declaration, OBJ_Declarations, OBJDeclaration::Count);
+        u32 match_result =
+            match_strings(declaration, OBJ_Declarations, OBJDeclaration::Count);
         if (match_result == OBJDeclaration::Count) {
             return false;
         }
@@ -84,7 +92,6 @@ PROC_IMPORTER_LOAD(import_obj_load) {
         OBJDeclaration::Type match_decl = (OBJDeclaration::Type)match_result;
 
         switch (match_decl) {
-
             case OBJDeclaration::Vertex: {
                 eat_space(&tape);
 
@@ -95,7 +102,7 @@ PROC_IMPORTER_LOAD(import_obj_load) {
                 eat_space(&tape);
                 parse_num(&tape, z);
 
-                vertices.add(Vec3 {x , y, z});
+                vertices.add(Vec3{x, y, z});
             } break;
 
             case OBJDeclaration::VertexTexture: {
@@ -106,7 +113,7 @@ PROC_IMPORTER_LOAD(import_obj_load) {
                 eat_space(&tape);
                 parse_num(&tape, v);
 
-                textures.add(Vec2 {u, v});
+                textures.add(Vec2{u, v});
             } break;
 
             case OBJDeclaration::VertexNormal: {
@@ -119,7 +126,7 @@ PROC_IMPORTER_LOAD(import_obj_load) {
                 eat_space(&tape);
                 parse_num(&tape, w);
 
-                normals.add(Vec3 {u, v, w});
+                normals.add(Vec3{u, v, w});
             } break;
 
             case OBJDeclaration::Face: {
@@ -131,9 +138,12 @@ PROC_IMPORTER_LOAD(import_obj_load) {
                 u32 index_n[4];
 
                 for (i32 i = 0; i < 4; ++i) {
-                    parse_num(&tape, index_v[i]); tape.peek_char('/');
-                    parse_num(&tape, index_t[i]); tape.peek_char('/');
-                    parse_num(&tape, index_n[i]); tape.peek_char('/');
+                    parse_num(&tape, index_v[i]);
+                    tape.peek_char('/');
+                    parse_num(&tape, index_t[i]);
+                    tape.peek_char('/');
+                    parse_num(&tape, index_n[i]);
+                    tape.peek_char('/');
                     eat_space(&tape);
                 }
 
@@ -146,7 +156,6 @@ PROC_IMPORTER_LOAD(import_obj_load) {
                     {{index_v[0], index_t[0], index_n[0]}},
                 };
 
-
                 for (i32 i = 0; i < 6; ++i) {
                     u64 index_of = encoded_indices.index_of(faces[i]);
                     if (index_of == NumProps<u64>::max) {
@@ -154,7 +163,7 @@ PROC_IMPORTER_LOAD(import_obj_load) {
 
                         OBJVertex vertex;
                         vertex.v = vertices[faces[i].indices[0] - 1];
-                        vertex.t = textures[faces[i].indices[1]  - 1];
+                        vertex.t = textures[faces[i].indices[1] - 1];
                         vertex.n = normals[faces[i].indices[2] - 1];
 
                         output_vertices.add(vertex);
@@ -171,14 +180,16 @@ PROC_IMPORTER_LOAD(import_obj_load) {
                 eat_space(&tape);
 
                 Str material_name = parse_string(&tape, in_arena);
-                // DEBUG_PRINTF("UseMtl: %.*s", material_name.len, material_name.data);
+                // DEBUG_PRINTF("UseMtl: %.*s", material_name.len,
+                // material_name.data);
             } break;
 
             case OBJDeclaration::SetSmoothing: {
                 eat_space(&tape);
 
                 Str is_on_str = parse_string(&tape, in_arena);
-                // DEBUG_PRINTF("Set smoothing: %.*s", is_on_str.len, is_on_str.data);
+                // DEBUG_PRINTF("Set smoothing: %.*s", is_on_str.len,
+                // is_on_str.data);
             } break;
 
             case OBJDeclaration::Comment: {
@@ -202,7 +213,7 @@ PROC_IMPORTER_LOAD(import_obj_load) {
         }
     }
 
-    u64 copy_size = indices.size * sizeof(indices[0]);
+    u64 copy_size      = indices.size * sizeof(indices[0]);
     umm output_indices = alloc->reserve(copy_size);
 
     memcpy(output_indices, indices.data, copy_size);
@@ -212,6 +223,6 @@ PROC_IMPORTER_LOAD(import_obj_load) {
     result->model.num_indices  = (u32)indices.size;
     result->model.vertices     = (umm)output_vertices.data;
     result->model.indices      = output_indices;
-    result->kind = ImportKind::Model;
+    result->kind               = ImportKind::Model;
     return true;
 }

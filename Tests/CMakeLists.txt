@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.0.0)
 
 set(SOURCES
     "./Arg.test.cpp"
-    "./Cache.test.cpp"
     "./Result.test.cpp"
     "./Str.test.cpp"
     "./Tape.test.cpp"
@@ -12,6 +11,7 @@ set(SOURCES
     "./Sort.test.cpp"
     "./JSON.test.cpp"
     "./Map.test.cpp"
+    "./Arena.test.cpp"
     "./Tests.cpp"
     )
 

@@ -99,7 +99,7 @@ void TestRunner::run_benchmarks()
 TestRunner* get_test_runner()
 {
     if (Test_Runner == 0) {
-        Test_Runner = alloc<TestRunner>(System_Allocator, System_Allocator);
+        Test_Runner = new TestRunner();
     }
 
     return Test_Runner;

@@ -76,9 +76,9 @@ struct MOKLIB_API ReadTape {
         }
     }
 
-    _inline Str read_str(IAllocator& allocator, u64 len)
+    _inline Str read_str(Allocator& allocator, u64 len)
     {
-        umm ptr = allocator.reserve(len);
+        umm ptr = (umm)allocator.reserve(len);
         if (!ptr) return Str::NullStr;
 
         i64 num_read = read(ptr, (i64)len);
@@ -352,7 +352,7 @@ struct MOKLIB_API Tape {
 
     char read_char();
     bool peek_char(char match);
-    Str  read_line(IAllocator& alloc);
+    Str  read_line(Allocator& alloc);
 
     // Helpers
     template <typename T>

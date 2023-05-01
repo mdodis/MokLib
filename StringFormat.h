@@ -32,10 +32,10 @@ static _inline void format(
     format(tape, fmt_str.chop_left(idx), rest...);
 }
 
-static _inline Str format(IAllocator& allocator, Str fmt_str)
+static _inline Str format(Allocator& allocator, Str fmt_str)
 {
     const u64 size = fmt_str.len;
-    umm       ptr  = allocator.reserve(size);
+    umm       ptr  = (umm)allocator.reserve(size);
     if (!ptr) return Str::NullStr;
 
     RawWriteTape output(Raw{ptr, size});
@@ -46,13 +46,13 @@ static _inline Str format(IAllocator& allocator, Str fmt_str)
 
 template <typename First, typename... Rest>
 static _inline Str format(
-    IAllocator& alloc, Str fmt_str, const First& first, const Rest&... rest)
+    Allocator& alloc, Str fmt_str, const First& first, const Rest&... rest)
 {
     MeasureWriteTape measurement;
     format(&measurement, fmt_str, first, rest...);
 
     const u64 size = measurement.num_written;
-    umm       ptr  = alloc.reserve(size);
+    void*     ptr  = alloc.reserve(size);
     if (!ptr) return Str::NullStr;
 
     RawWriteTape output(Raw{ptr, size});
@@ -63,13 +63,13 @@ static _inline Str format(
 
 template <typename First, typename... Rest>
 static _inline char* format_cstr(
-    IAllocator& alloc, Str fmt_str, const First& first, const Rest&... rest)
+    Allocator& alloc, Str fmt_str, const First& first, const Rest&... rest)
 {
     MeasureWriteTape measurement;
     format(&measurement, fmt_str, first, rest...);
 
     const u64 size = measurement.num_written;
-    umm       ptr  = alloc.reserve(size + 1);
+    void*     ptr  = alloc.reserve(size + 1);
     if (!ptr) return 0;
 
     RawWriteTape output(Raw{ptr, size});
@@ -181,7 +181,7 @@ static _inline void fmt(WriteTape* tape, const TFmtStr<Policy>& type)
 }
 
 static _inline Str null_terminate(
-    const Str& str, IAllocator& alloc = System_Allocator)
+    const Str& str, Allocator& alloc = System_Allocator)
 {
     if (!str.has_null_term) {
         return format(alloc, LIT("{}\0"), str);
@@ -190,7 +190,7 @@ static _inline Str null_terminate(
 }
 
 static _inline Str make_folder_path(
-    const Str& str, IAllocator& alloc = System_Allocator)
+    const Str& str, Allocator& alloc = System_Allocator)
 {
     bool gen_slash = str[str.len - 1] != '/';
 
@@ -205,9 +205,9 @@ static _inline Str make_folder_path(
  * Format string with escaped characters
  */
 struct StrFormatter {
-    Str*        str;
-    IAllocator* alloc;
-    StrFormatter(Str& str, IAllocator* alloc = 0) : str(&str), alloc(alloc) {}
+    Str*       str;
+    Allocator* alloc;
+    StrFormatter(Str& str, Allocator* alloc = 0) : str(&str), alloc(alloc) {}
 };
 
 PROC_FMT_INL(StrFormatter)

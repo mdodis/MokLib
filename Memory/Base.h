@@ -1,66 +1,81 @@
 #pragma once
-#include "../Base.h"
-#include "../Config.h"
 #include <stdlib.h>
 
-#define PROC_MEMORY_RESERVE(name)       umm name(u64 size)
-#define PROC_MEMORY_RESIZE(name)        umm name(umm ptr, u64 prev_size, u64 new_size)
-#define PROC_MEMORY_RELEASE(name)       void name(umm ptr)
-#define PROC_MEMORY_RELEASE_BASE(name)  void name()
+#include "../Base.h"
+#include "../Config.h"
 
-struct MOKLIB_API IAllocator {
-    virtual PROC_MEMORY_RESERVE(reserve) = 0;
-    virtual PROC_MEMORY_RESIZE(resize) = 0;
-    virtual PROC_MEMORY_RELEASE(release) = 0;
-    virtual PROC_MEMORY_RELEASE_BASE(release_base) = 0;
-
-    template <typename T>
-    _inline T *reserve(u64 count) {
-        return (T*)reserve(count * sizeof(T));
-    }
-
-    _inline void release(void *ptr) { release((umm)ptr); }
-};
-
-struct SystemAllocator : IAllocator {
-    virtual _inline PROC_MEMORY_RESERVE(reserve) override {
-        return (umm)malloc(size);
-    }
-
-    virtual _inline PROC_MEMORY_RESIZE(resize) override {
-        return (umm)realloc(ptr, new_size);
-    }
-
-    virtual _inline PROC_MEMORY_RELEASE(release) override {
-        free(ptr);
-    }
-
-    virtual _inline PROC_MEMORY_RELEASE_BASE(release_base) override {
-        return;
-    }
-};
-
-struct NullAllocator : IAllocator {
-    virtual _inline PROC_MEMORY_RESERVE(reserve) override {
-        return 0;
-    }
-
-    virtual _inline PROC_MEMORY_RESIZE(resize) override {
-        return 0;
-    }
-
-    virtual _inline PROC_MEMORY_RELEASE(release) override {
-        return;
-    }
-
-    virtual _inline PROC_MEMORY_RELEASE_BASE(release_base) override {
-        return;
-    }
-};
-
-static SystemAllocator  System_Allocator;
-static NullAllocator    Null_Allocator;
-
-constexpr IAllocator *get_system_allocator(void) {
-    return (IAllocator*)(&System_Allocator);
+namespace AllocatorMode {
+    enum Type
+    {
+        Reserve,
+        Resize,
+        Release,
+    };
 }
+typedef AllocatorMode::Type EAllocatorMode;
+
+#define PROC_ALLOCATOR_ALLOCATE(name) \
+    void* name(                       \
+        void*          ptr,           \
+        u64            prev_size,     \
+        u64            new_size,      \
+        EAllocatorMode mode,          \
+        void*          usr)
+typedef PROC_ALLOCATOR_ALLOCATE(ProcAllocatorAllocate);
+
+struct MOKLIB_API Allocator {
+    Allocator(ProcAllocatorAllocate* proc, void* usr) : proc(proc), usr(usr) {}
+
+    ProcAllocatorAllocate* proc;
+    void*                  usr;
+
+    _inline void* reserve(u64 size)
+    {
+        return proc(nullptr, 0ull, size, AllocatorMode::Reserve, usr);
+    }
+
+    _inline void* resize(void* ptr, u64 prev_size, u64 new_size)
+    {
+        return proc(ptr, prev_size, new_size, AllocatorMode::Resize, usr);
+    }
+
+    _inline void release(void* ptr)
+    {
+        proc(ptr, 0ull, 0ull, AllocatorMode::Release, usr);
+    }
+};
+
+struct MOKLIB_API SystemAllocator : public Allocator {
+    SystemAllocator() : Allocator(allocate_proc, (void*)this) {}
+
+    static PROC_ALLOCATOR_ALLOCATE(allocate_proc)
+    {
+        switch (mode) {
+            case AllocatorMode::Reserve: {
+                return malloc(new_size);
+            } break;
+
+            case AllocatorMode::Resize: {
+                return realloc(ptr, new_size);
+            } break;
+
+            case AllocatorMode::Release: {
+                free(ptr);
+                return nullptr;
+            } break;
+        }
+
+        return nullptr;
+    }
+};
+
+struct MOKLIB_API NullAllocator : public Allocator {
+    NullAllocator() : Allocator(allocate_proc, (void*)this) {}
+
+    static PROC_ALLOCATOR_ALLOCATE(allocate_proc)
+    {
+        return nullptr;
+    }
+};
+
+extern SystemAllocator System_Allocator;

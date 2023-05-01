@@ -24,22 +24,20 @@ Str directory_of(Str file_path)
         last_separator == 0 ? last_separator : last_separator - 1);
 }
 
-CREATE_INLINE_ARENA(Print_Arena, 2048);
-
 #if OS_MSWINDOWS
 #include "Compat/Win32Internal.inc"
 
 TEnum<IOError> copy_file(Str source, Str destination)
 {
-    IAllocator* alloc = get_system_allocator();
+    Allocator& allocator = System_Allocator;
 
     u32      wsource_len;
-    wchar_t* wsource = multibyte_to_wstr(source, &wsource_len, *alloc);
-    DEFER(alloc->release(wsource));
+    wchar_t* wsource = multibyte_to_wstr(source, &wsource_len, allocator);
+    DEFER(allocator.release(wsource));
 
     u32      wdest_len;
-    wchar_t* wdest = multibyte_to_wstr(destination, &wdest_len, *alloc);
-    DEFER(alloc->release(wdest));
+    wchar_t* wdest = multibyte_to_wstr(destination, &wdest_len, allocator);
+    DEFER(allocator.release(wdest));
 
     if (!CopyFileW(wsource, wdest, FALSE)) {
         return to_io_error(GetLastError());
@@ -255,7 +253,7 @@ bool create_dir(const Str& pathname)
     return true;
 }
 
-Str get_cwd(IAllocator& alloc)
+Str get_cwd(Allocator& alloc)
 {
     static thread_local wchar_t buf[MAX_PATH];
     DWORD                       num_chars = GetCurrentDirectoryW(MAX_PATH, buf);
@@ -265,7 +263,7 @@ Str get_cwd(IAllocator& alloc)
 
 bool is_dir(const Str& path)
 {
-    IAllocator& alloc = *get_system_allocator();
+    Allocator& alloc = System_Allocator;
 
     wchar_t* wpath = multibyte_to_wstr(path, 0, alloc);
     DEFER(alloc.release((umm)wpath););
@@ -278,7 +276,7 @@ bool is_dir(const Str& path)
 
 // @todo: account for this horrible API allocate wchar_t using TArray since path
 // names can be larger than MAX_PATH
-Str get_base_path(IAllocator& alloc)
+Str get_base_path(Allocator& alloc)
 {
     wchar_t* ptr = (wchar_t*)alloc.reserve(MAX_PATH * sizeof(wchar_t));
     DEFER(alloc.release((umm)ptr));
@@ -290,7 +288,7 @@ Str get_base_path(IAllocator& alloc)
     return result.chop_right_last_of(LIT("\\"));
 }
 
-Str to_absolute_path(Str relative, IAllocator& alloc)
+Str to_absolute_path(Str relative, Allocator& alloc)
 {
     u32      wrelative_len;
     wchar_t* wrelative = multibyte_to_wstr(relative, &wrelative_len, alloc);
@@ -298,7 +296,7 @@ Str to_absolute_path(Str relative, IAllocator& alloc)
 
     u32 wabsolute_len = GetFullPathNameW(wrelative, 0, 0, 0);
 
-    wchar_t* wptr = alloc.reserve<wchar_t>(wabsolute_len);
+    wchar_t* wptr = (wchar_t*)alloc.reserve(wabsolute_len);
     DEFER(alloc.release(wptr));
 
     GetFullPathNameW(wrelative, wabsolute_len, wptr, 0);
@@ -609,7 +607,7 @@ bool create_dir(const Str& pathname)
     return mkdir(dirname, 0755) == 0;
 }
 
-Str get_base_path(IAllocator& alloc)
+Str get_base_path(Allocator& alloc)
 {
     umm     ptr = alloc.reserve(PATH_MAX);
     ssize_t len = readlink("/proc/self/exe", (char*)ptr, PATH_MAX);
@@ -618,7 +616,7 @@ Str get_base_path(IAllocator& alloc)
     return result.chop_right(result.last_of(LIT("/")));
 }
 
-Str get_cwd(IAllocator& alloc)
+Str get_cwd(Allocator& alloc)
 {
     // @note: And here I thought that just winapi had some terrible parts
     TArray<char> result(&alloc);
@@ -730,7 +728,7 @@ bool is_dir(const Str& path)
     return (statbuf.st_mode & S_IFDIR);
 }
 
-Str to_absolute_path(Str relative, IAllocator& alloc)
+Str to_absolute_path(Str relative, Allocator& alloc)
 {
     ASSERT(relative.has_null_term);
 

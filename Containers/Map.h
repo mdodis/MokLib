@@ -26,13 +26,13 @@ struct TMap {
 
     _inline TMap() : alloc(System_Allocator) {}
 
-    _inline TMap(IAllocator& alloc, uint32 init_size = Num_Total_Bins)
+    _inline TMap(Allocator& alloc, uint32 init_size = Num_Total_Bins)
         : alloc(alloc)
     {
         init(alloc, init_size);
     }
 
-    void init(IAllocator& allocator, u32 init_size = Num_Total_Bins)
+    void init(Allocator& allocator, u32 init_size = Num_Total_Bins)
     {
         alloc  = allocator;
         values = (Bin*)alloc.reserve(init_size * sizeof(Bin));
@@ -111,10 +111,10 @@ struct TMap {
 
     const TValue& operator[](const TKey& key) const { return at(key); }
 
-    Bin*        values;
-    uint32      num_bins;
-    uint32      num_total_bins;
-    IAllocator& alloc;
+    Bin*       values;
+    uint32     num_bins;
+    uint32     num_total_bins;
+    Allocator& alloc;
 
     TMapIterator<TKey, TValue> begin() const
     {

@@ -133,7 +133,7 @@ struct MOKLIB_API Str {
         return Str(data + begin, end - begin);
     }
 
-    Str clone(IAllocator& alloc) const;
+    Str clone(Allocator& alloc) const;
 
     _inline char& operator[](u64 index)
     {

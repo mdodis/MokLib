@@ -1,9 +1,10 @@
 #pragma once
 #include "Math/Base.h"
 #include "Tape.h"
+#include "Memory/Base.h"
 
 struct MOKLIB_API AllocWriteTape : public WriteTape {
-    AllocWriteTape(IAllocator& allocator)
+    AllocWriteTape(Allocator& allocator)
         : WriteTape(write_proc, (void*)this), allocator(allocator)
     {}
 
@@ -12,12 +13,12 @@ struct MOKLIB_API AllocWriteTape : public WriteTape {
         if (new_size <= size) return;
 
         if (!ptr) {
-            ptr  = allocator.reserve(new_size);
+            ptr  = (umm)allocator.reserve(new_size);
             size = new_size;
             return;
         }
 
-        umm new_ptr = allocator.resize(ptr, size, new_size);
+        umm new_ptr = (umm)allocator.resize(ptr, size, new_size);
         ptr         = new_ptr;
         size        = new_size;
     }
@@ -88,10 +89,10 @@ struct MOKLIB_API AllocWriteTape : public WriteTape {
         }
     }
 
-    umm         ptr    = 0;
-    u64         size   = 0;
-    u64         offset = 0;
-    IAllocator& allocator;
+    umm        ptr    = 0;
+    u64        size   = 0;
+    u64        offset = 0;
+    Allocator& allocator;
 };
 
 /**
@@ -103,7 +104,7 @@ struct MOKLIB_API AllocTape : public Tape {
     u64 rd_offset;
     umm ptr;
 
-    AllocTape(IAllocator& alloc)
+    AllocTape(Allocator& alloc)
         : alloc(alloc), size(0ul), wr_offset(0ul), rd_offset(0ul), ptr(0)
     {}
 
@@ -121,13 +122,13 @@ struct MOKLIB_API AllocTape : public Tape {
     bool write(const void* src, u64 num_bytes) override
     {
         if (!ptr) {
-            ptr  = alloc.reserve(num_bytes);
+            ptr  = (umm)alloc.reserve(num_bytes);
             size = num_bytes;
         }
 
         if (wr_offset + num_bytes > size) {
             u64 extra   = (wr_offset + num_bytes) - size;
-            umm new_ptr = alloc.resize(ptr, size, size + extra);
+            umm new_ptr = (umm)alloc.resize(ptr, size, size + extra);
             if (!new_ptr) {
                 alloc.release(ptr);
                 return false;
@@ -145,7 +146,7 @@ struct MOKLIB_API AllocTape : public Tape {
 
     bool end() override { return rd_offset == size; }
 
-    void        move(i64 offset) override {}
-    void        release() { alloc.release(ptr); }
-    IAllocator& alloc;
+    void       move(i64 offset) override {}
+    void       release() { alloc.release(ptr); }
+    Allocator& alloc;
 };

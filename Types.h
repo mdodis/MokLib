@@ -15,7 +15,7 @@ static _inline void fmt(WriteTape* tape, const T& type);
 
 template <typename T>
 static _inline bool parse(
-    ReadTape* tape, T& result, IAllocator& allocator = System_Allocator);
+    ReadTape* tape, T& result, Allocator& allocator = System_Allocator);
 
 /** Declare an external template specialization for fmt */
 #define PROC_FMT(T) \
@@ -37,18 +37,18 @@ static _inline bool parse(
 /** Declare an external template specialization for parse */
 #define PROC_PARSE(T) \
     template <>       \
-    MOKLIB_API bool parse(ReadTape* tape, T& result, IAllocator& allocator)
+    MOKLIB_API bool parse(ReadTape* tape, T& result, Allocator& allocator)
 /** Define an inline template specialization for parse */
 #define PROC_PARSE_IMPL(T) \
     template <>            \
-    MOKLIB_API bool parse(ReadTape* tape, T& result, IAllocator& allocator)
+    MOKLIB_API bool parse(ReadTape* tape, T& result, Allocator& allocator)
 /** Define an inline template specialization for parse */
 #define PROC_PARSE_INL(T) \
     template <>           \
-    bool parse(ReadTape* tape, T& result, IAllocator& allocator)
+    bool parse(ReadTape* tape, T& result, Allocator& allocator)
 
 template <typename From, typename To>
-bool _pass_parse(ReadTape* tape, To& to, IAllocator& allocator)
+bool _pass_parse(ReadTape* tape, To& to, Allocator& allocator)
 {
     From from;
     if (!parse<From>(tape, from)) {
@@ -65,7 +65,7 @@ MOKLIB_API void format_f64(WriteTape* tape, const f64& type);
 MOKLIB_API bool parse_u64(ReadTape* tape, u64& result);
 MOKLIB_API bool parse_i64(ReadTape* tape, i64& result);
 MOKLIB_API bool parse_f64(ReadTape* tape, f64& result);
-MOKLIB_API bool parse_str(ReadTape* tape, Str& result, IAllocator& allocator);
+MOKLIB_API bool parse_str(ReadTape* tape, Str& result, Allocator& allocator);
 
 PROC_FMT_INL(CStr) { tape->write_str(Str(type)); }
 PROC_FMT_INL(ConstCStr) { tape->write_str(Str(type)); }
@@ -155,13 +155,13 @@ PROC_PARSE_INL(bool)
     default:                                \
         break
 
-#define PROC_PARSE_ENUM(enum_type, values)                                   \
-    template <>                                                              \
-    bool parse(ReadTape* tape, enum_type::Type& type, IAllocator& allocator) \
-    {                                                                        \
-        Str s = parse_string(tape, allocator, is_valid_cid);                 \
-        if (s == Str::NullStr) return false;                                 \
-        values return false;                                                 \
+#define PROC_PARSE_ENUM(enum_type, values)                                  \
+    template <>                                                             \
+    bool parse(ReadTape* tape, enum_type::Type& type, Allocator& allocator) \
+    {                                                                       \
+        Str s = parse_string(tape, allocator, is_valid_cid);                \
+        if (s == Str::NullStr) return false;                                \
+        values return false;                                                \
     }
 
 #define PARSE_ENUM_CASE(enum_type, sub) \

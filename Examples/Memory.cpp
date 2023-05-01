@@ -6,12 +6,11 @@
 
 void example_arena(void);
 
-int main(int argc, char *argv[]) {
-    example_arena();
-}
+int main(int argc, char* argv[]) { example_arena(); }
 
-void example_arena(void) {
-    CREATE_SCOPED_ARENA(get_system_allocator(), arena, Arena::Default_Block_Size);
+void example_arena(void)
+{
+    CREATE_SCOPED_ARENA(System_Allocator, arena, Arena::Default_Block_Size);
 
     umm allocations[5];
 
@@ -24,7 +23,8 @@ void example_arena(void) {
     allocations[1][0]    = 3;
     allocations[1][1023] = 4;
 
-    allocations[0] = arena.resize(allocations[0], MEGABYTES(1) - 1024, MEGABYTES(1));
+    allocations[0] =
+        arena.resize(allocations[0], MEGABYTES(1) - 1024, MEGABYTES(1));
 
     ASSERT(allocations[0][0] == 1);
 

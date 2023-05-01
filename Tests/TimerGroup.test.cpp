@@ -1,19 +1,22 @@
-#include "Test/Test.h"
 #include "Time/TimerGroup.h"
-#include "Thread/Thread.h"
+
 #include "FileSystem/Extras.h"
+#include "Test/Test.h"
+#include "Thread/Thread.h"
 
 TEST_CASE(
-    "Lib/Time/TimerGroup", 
+    "Lib/Time/TimerGroup",
     "0.2s Repeat timer, sleep for 0.3s twice, calls twice")
 {
-    TimerGroup group(System_Allocator);
+    TimerGroup group;
+    group.init(System_Allocator);
+
     int times_called = 0;
 
-    auto callback = TimerGroup::Callback::create_lambda([&times_called](){
+    auto callback = TimerGroup::Callback::create_lambda([&times_called]() {
         times_called++;
     });
-    u32 id = group.set_timer(0.2f, true, callback);
+    u32  id       = group.set_timer(0.2f, true, callback);
 
     REQUIRE(id != 0, "Timer ID must be valid");
 

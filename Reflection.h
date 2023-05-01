@@ -59,12 +59,12 @@ struct IArrayDescriptor : IDescriptor {
         : IDescriptor(offset, name, TypeClass::Array)
     {}
 
-    virtual IDescriptor*        get_subtype_descriptor()          = 0;
-    virtual void                init_read()                       = 0;
-    virtual void                init(umm self, IAllocator& alloc) = 0;
-    virtual umm                 add(umm self)                     = 0;
-    virtual u64                 size(umm self)                    = 0;
-    virtual umm                 get(umm self, u64 index)          = 0;
+    virtual IDescriptor*        get_subtype_descriptor()         = 0;
+    virtual void                init_read()                      = 0;
+    virtual void                init(umm self, Allocator& alloc) = 0;
+    virtual umm                 add(umm self)                    = 0;
+    virtual u64                 size(umm self)                   = 0;
+    virtual umm                 get(umm self, u64 index)         = 0;
     virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
 };
 
@@ -88,8 +88,8 @@ struct IEnumDescriptor : IDescriptor {
         , type_name_str(type_name)
     {}
 
-    virtual void format_enum(WriteTape* out, umm ptr)                     = 0;
-    virtual bool parse_enum(ReadTape* in, IAllocator& allocator, umm ptr) = 0;
+    virtual void format_enum(WriteTape* out, umm ptr)                    = 0;
+    virtual bool parse_enum(ReadTape* in, Allocator& allocator, umm ptr) = 0;
 
     virtual Str type_name() const override { return type_name_str; }
     virtual Slice<IDescriptor*> subdescriptors(umm self) override { return {}; }
@@ -159,7 +159,7 @@ struct EnumDescriptor : IEnumDescriptor {
     }
 
     virtual bool parse_enum(
-        ReadTape* in, IAllocator& allocator, umm ptr) override
+        ReadTape* in, Allocator& allocator, umm ptr) override
     {
         return parse<T>(in, *((T*)ptr), allocator);
     }
@@ -192,7 +192,7 @@ struct FixedArrayDescriptor : IArrayDescriptor {
 
     virtual void init_read() override { i = Count; }
 
-    virtual void init(umm self, IAllocator& alloc) override
+    virtual void init(umm self, Allocator& alloc) override
     {
         i               = 0;
         StorageType* ar = (StorageType*)self;
@@ -242,7 +242,7 @@ struct ArrayDescriptor : IArrayDescriptor {
 
     virtual void init_read() override {}
 
-    virtual void init(umm self, IAllocator& alloc) override
+    virtual void init(umm self, Allocator& alloc) override
     {
         TArray<T>* ar = (TArray<T>*)self;
         *ar           = TArray<T>(&alloc);

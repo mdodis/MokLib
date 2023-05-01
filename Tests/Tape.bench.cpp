@@ -6,7 +6,7 @@ BENCHMARK("Lib/Tape/BufferedFileTape", "IO Throughput", 1, 1, 6) {
     result.units_processed = num_bytes;
 
     // auto tape = open_write_tape("./tmp.txt");
-    auto tape = TBufferedFileTape<true>(open_file_write("./tmp.txt"));
+    auto tape = BufferedWriteTape<true>(open_file_write("./tmp.txt"));
 
     for (u64 i = 0; i < num_bytes; ++i) {
         char c = 'H';

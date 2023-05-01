@@ -37,7 +37,7 @@ if (WIN32)
     )
 endif()
 
-option(MOKLIB_COMPILE_STATIC "Build static library" OFF)
+option(MOKLIB_COMPILE_STATIC "Build static library" ON)
 
 if (MOKLIB_COMPILE_STATIC)
     add_library(MokLib STATIC ${SOURCES} ${HEADERS})

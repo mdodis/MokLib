@@ -83,7 +83,7 @@ MOKLIB_API void flush_file_buffers(FileHandle& handle);
 MOKLIB_API bool create_dir(const Str& pathname);
 
 /** Get current working directory */
-MOKLIB_API Str get_cwd(IAllocator& alloc);
+MOKLIB_API Str get_cwd(Allocator& alloc);
 
 /**
  * Checks whether the file designated by @path is a directory
@@ -93,7 +93,7 @@ MOKLIB_API Str get_cwd(IAllocator& alloc);
 MOKLIB_API bool is_dir(const Str& path);
 
 /** Returns the path of the currently executing process */
-MOKLIB_API Str get_base_path(IAllocator& alloc);
+MOKLIB_API Str get_base_path(Allocator& alloc);
 
 /**
  * Converts a relative path to an absolute, canonicalized path. Resolves
@@ -102,7 +102,7 @@ MOKLIB_API Str get_base_path(IAllocator& alloc);
  * @param  alloc    Allocator for the absolute path
  * @return          The absolute path, owned by @alloc.
  */
-MOKLIB_API Str to_absolute_path(Str relative, IAllocator& alloc);
+MOKLIB_API Str to_absolute_path(Str relative, Allocator& alloc);
 
 MOKLIB_API Str directory_of(Str file_path);
 
@@ -342,12 +342,12 @@ struct BufferedReadTape : public FileReadTape<AutoClose> {
     using Super = FileReadTape<AutoClose>;
 
     BufferedReadTape(
-        FileHandle  file,
-        IAllocator& allocator = System_Allocator,
-        u64         size      = KILOBYTES(1))
+        FileHandle file,
+        Allocator& allocator = System_Allocator,
+        u64        size      = KILOBYTES(1))
         : Super(read_proc, (void*)this, file), size(size), allocator(allocator)
     {
-        buffer = allocator.reserve(size);
+        buffer = (umm)allocator.reserve(size);
     }
 
     ~BufferedReadTape() { allocator.release(buffer); }
@@ -410,10 +410,10 @@ struct BufferedReadTape : public FileReadTape<AutoClose> {
         }
     }
 
-    umm         buffer      = 0;
-    u64         size        = 0;
-    u64         accumulated = 0;
-    IAllocator& allocator;
+    umm        buffer      = 0;
+    u64        size        = 0;
+    u64        accumulated = 0;
+    Allocator& allocator;
 };
 
 template <bool AutoClose>
@@ -421,12 +421,12 @@ struct BufferedWriteTape : public FileWriteTape<AutoClose> {
     using Super = FileWriteTape<AutoClose>;
 
     BufferedWriteTape(
-        FileHandle  file,
-        IAllocator& allocator = System_Allocator,
-        u64         size      = KILOBYTES(1))
+        FileHandle file,
+        Allocator& allocator = System_Allocator,
+        u64        size      = KILOBYTES(1))
         : Super(write_proc, (void*)this, file), size(size), allocator(allocator)
     {
-        buffer = allocator.reserve(size);
+        buffer = (umm)allocator.reserve(size);
     }
 
     ~BufferedWriteTape()
@@ -492,10 +492,10 @@ struct BufferedWriteTape : public FileWriteTape<AutoClose> {
         return true;
     }
 
-    umm         buffer      = 0;
-    u64         size        = 0;
-    u64         accumulated = 0;
-    IAllocator& allocator;
+    umm        buffer      = 0;
+    u64        size        = 0;
+    u64        accumulated = 0;
+    Allocator& allocator;
 };
 
 template <bool AutoClose>
@@ -542,17 +542,17 @@ struct TFileTape : public SizedTape {
 template <bool AutoClose>
 struct TBufferedFileTape : TFileTape<AutoClose> {
     using Super = TFileTape<AutoClose>;
-    umm         buffer;
-    u64         size;
-    u64         accumulated;
-    IAllocator& allocator;
+    umm        buffer;
+    u64        size;
+    u64        accumulated;
+    Allocator& allocator;
     TBufferedFileTape(
         FileHandle file_handle,
         u64 size = KILOBYTES(1),  // 1-8Kb buffer size shows good perf readings
-        IAllocator& allocator = System_Allocator)
+        Allocator& allocator = System_Allocator)
         : Super(file_handle), size(size), accumulated(0), allocator(allocator)
     {
-        buffer = allocator.reserve(size);
+        buffer = (umm)allocator.reserve(size);
     }
 
     ~TBufferedFileTape()

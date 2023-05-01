@@ -241,10 +241,10 @@ static u32 match_strings(struct ReadTape* tape, Str* strings, u32 num_strings)
 
 MOKLIB_API Str parse_string(
     struct ReadTape* tape,
-    IAllocator&      alloc,
+    Allocator&       alloc,
     ProcCharClassIs* predicate = isnt_whitespace);
 
-static _inline Str parse_string_no_quotes(ReadTape* tape, IAllocator& allocator)
+static _inline Str parse_string_no_quotes(ReadTape* tape, Allocator& allocator)
 {
     char fc        = tape->read_char();
     bool has_quote = false;
@@ -350,6 +350,6 @@ static _inline void hex_of_byte(u8 byte, char& chi, char& clo)
     clo = table[lo];
 }
 
-MOKLIB_API Str  parse_cid(struct ReadTape* tape, IAllocator& alloc);
+MOKLIB_API Str  parse_cid(struct ReadTape* tape, Allocator& alloc);
 MOKLIB_API bool parse_escaped_string(
-    struct ReadTape* tape, Str& result, IAllocator& allocator);
+    struct ReadTape* tape, Str& result, Allocator& allocator);

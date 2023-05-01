@@ -12,9 +12,9 @@ struct Set {
     };
 
     Set() {}
-    Set(IAllocator& allocator) { init(allocator); }
+    Set(Allocator& allocator) { init(allocator); }
 
-    void init(IAllocator& allocator)
+    void init(Allocator& allocator)
     {
         this->allocator = &allocator;
         num_bins        = InitialBinCount;
@@ -36,7 +36,7 @@ struct Set {
         return (bin->node.next == 0) && (bin->node.prev == 0);
     }
 
-    IAllocator*             allocator = 0;
+    Allocator*              allocator = 0;
     Bin*                    bins      = 0;
     u32                     num_bins  = 0;
     static constexpr uint32 Hash_Seed = 0x1337;

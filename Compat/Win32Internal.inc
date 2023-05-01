@@ -13,7 +13,7 @@
 static inline Str wstr_to_multibyte(
     wchar_t *wstring,
     DWORD string_size,
-    IAllocator &alloc)
+    Allocator &alloc)
 {
     bool has_null_term = wstring[string_size - 1] == 0;
 
@@ -27,7 +27,7 @@ static inline Str wstr_to_multibyte(
         string_size,
         0, 0, 0, 0);
 
-    umm ptr = alloc.reserve(num_bytes);
+    void* ptr = alloc.reserve(num_bytes);
     if (!ptr)
         return Str::NullStr;
 
@@ -68,7 +68,7 @@ static _inline u32 multibyte_to_wstr(
 static _inline wchar_t *multibyte_to_wstr(
     const Str &string,
     u32 *out_len,
-    IAllocator &alloc)
+    Allocator &alloc)
 {
     ASSERT(string.len < NumProps<u64>::max);
 
@@ -82,7 +82,7 @@ static _inline wchar_t *multibyte_to_wstr(
         0);
 
     // Include null-term because a lot of bad APIs need it
-    wchar_t *wstr = alloc.reserve<wchar_t>(len + 1);
+    wchar_t *wstr = (wchar_t*)alloc.reserve(len + 1);
 
     MultiByteToWideChar(
         CP_UTF8,

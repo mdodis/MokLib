@@ -6,7 +6,7 @@
     bool name(WriteTape* out, IDescriptor* desc, umm ptr)
 
 #define PROC_DESERIALIZE(name) \
-    bool name(ReadTape* in, IAllocator& alloc, IDescriptor* desc, umm ptr)
+    bool name(ReadTape* in, Allocator& alloc, IDescriptor* desc, umm ptr)
 
 typedef PROC_SERIALIZE(ProcSerialize);
 typedef PROC_DESERIALIZE(ProcDeserialize);
@@ -19,7 +19,7 @@ bool serialize(WriteTape* in, T& object, ProcSerialize* proc)
 
 template <typename T>
 bool deserialize(
-    ReadTape* in, IAllocator& alloc, T& object, ProcDeserialize* proc)
+    ReadTape* in, Allocator& alloc, T& object, ProcDeserialize* proc)
 {
     return proc(in, alloc, descriptor_of<T>(&object), (umm)&object);
 }
@@ -49,7 +49,7 @@ struct SerializedObject {
     ProcSerialize*   serialize;
     ProcDeserialize* deserialize;
     IDescriptor*     descriptor;
-    IAllocator*      allocator;
+    Allocator*       allocator;
 
     SerializedObject()
         : file_path(Str::NullStr), serialize(0), deserialize(0), allocator(0)

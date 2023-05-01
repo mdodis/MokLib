@@ -13,8 +13,8 @@ struct IArg {
     Str           id;
     Str           description;
     Str           type;
-    virtual void* ptr()                                        = 0;
-    virtual bool  parse(ReadTape* tape, IAllocator& allocator) = 0;
+    virtual void* ptr()                                       = 0;
+    virtual bool  parse(ReadTape* tape, Allocator& allocator) = 0;
 };
 
 template <typename T>
@@ -23,7 +23,7 @@ struct TArg : IArg {
 
     virtual void* ptr() override { return &current; }
 
-    virtual bool parse(ReadTape* tape, IAllocator& allocator) override
+    virtual bool parse(ReadTape* tape, Allocator& allocator) override
     {
         return ::parse<T>(tape, current, allocator);
     }
@@ -40,7 +40,7 @@ struct TArg<Str> : IArg {
 
     virtual void* ptr() override { return &current; }
 
-    virtual bool parse(ReadTape* tape, IAllocator& allocator) override
+    virtual bool parse(ReadTape* tape, Allocator& allocator) override
     {
         char c     = 0;
         u64  count = 0;
@@ -66,19 +66,19 @@ struct TArg<bool> : IArg {
 
     virtual void* ptr() override { return &current; }
 
-    virtual bool parse(ReadTape* tape, IAllocator& allocator) override
+    virtual bool parse(ReadTape* tape, Allocator& allocator) override
     {
         return ::parse(tape, current, allocator);
     }
 };
 
 struct MOKLIB_API ArgCollection {
-    ArgCollection(IAllocator& allocator = System_Allocator)
+    ArgCollection(Allocator& allocator = System_Allocator)
         : allocator(allocator), args(&allocator)
     {}
 
     TArray<IArg*> args;
-    IAllocator&   allocator;
+    Allocator&    allocator;
 
     template <typename T>
     bool register_arg(

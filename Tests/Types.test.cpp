@@ -51,7 +51,7 @@ PROC_PARSE_ENUM(TestEnum, {
 
 TEST_CASE("Lib/Types/Enum", "Format enum outputs string")
 {
-    CREATE_SCOPED_ARENA(&System_Allocator, temp, KILOBYTES(1));
+    CREATE_SCOPED_ARENA(System_Allocator, temp, KILOBYTES(1));
 
     ETestEnum e      = TestEnum::One;
     Str       result = format(temp, LIT("{}"), e);

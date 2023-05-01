@@ -1,21 +1,21 @@
 #define MOK_LIB_STATIC 1
 #include "Containers/Array.h"
+#include "Containers/Bitset.h"
 #include "Containers/Map.h"
 #include "Log.h"
 #include "Memory/Base.h"
 #include "Str.h"
-#include "Containers/Bitset.h"
 
-void example_str(void);         // Strings
-void example_arrays(void);      // Arrays 1
-void example_arrays2(void);     // Arrays 2
-void example_maps(void);        // Maps
-void example_bitsets(void);     // Bitsets
+void example_str(void);      // Strings
+void example_arrays(void);   // Arrays 1
+void example_arrays2(void);  // Arrays 2
+void example_maps(void);     // Maps
+void example_bitsets(void);  // Bitsets
 
-int main(int argc, char const *argv[])
+int main(int argc, char const* argv[])
 {
     Str a = LIT("77Mitch Taylor77");
-    a = a.chop_middle(2, 14);
+    a     = a.chop_middle(2, 14);
 
     PRINTLN("Hello, " + a + "!");
 
@@ -28,7 +28,8 @@ int main(int argc, char const *argv[])
 }
 
 // Example - Strings
-void example_str(void) {
+void example_str(void)
+{
     // Strings are modelled as immutable buffer + length containers
     // and nothing more
 
@@ -36,7 +37,7 @@ void example_str(void) {
     Str a = LIT("1337hay hay hay hay hay7331");
 
     // Finding stuff!
-    int32 last_hay = a.last_of(LIT("hay"));
+    int32 last_hay  = a.last_of(LIT("hay"));
     int32 first_hay = a.first_of(LIT("hay"));
 
     PRINTLN("Last hay:  " + last_hay);
@@ -44,20 +45,20 @@ void example_str(void) {
 }
 
 // Example - Arrays 1
-void example_arrays(void) {
-
+void example_arrays(void)
+{
     // Everything that would normally deal with allocations requires a ref to
     // an allocator.
-    // get_system_allocator() is a very thin wrapper around stdlib's malloc
-    TArray<int> integers = {get_system_allocator(), {1, 2, 3, 4}};
+    // System_Allocator is a very thin wrapper around stdlib's malloc
+    TArray<int> integers = {System_Allocator, {1, 2, 3, 4}};
 
     integers.add(5);
 
-    int *last_int = integers.add();
-    *last_int = 6;
+    int* last_int = integers.add();
+    *last_int     = 6;
 
     int accumulator = 0;
-    for (int &i : integers) {
+    for (int& i : integers) {
         accumulator += i;
     }
 
@@ -79,8 +80,8 @@ struct ExampleArray2Struct {
     TInlineArray<int, 16> inline_array;
 };
 
-void example_arrays2(void) {
-
+void example_arrays2(void)
+{
     // Capacity is handled up front
     ExampleArray2Struct the_struct;
     PRINTLN("Inline Array Capacity: " + the_struct.inline_array.capacity);
@@ -94,32 +95,34 @@ void example_arrays2(void) {
     ASSERT(last_index == -1);
 
     PRINTLN("Elements = {");
-    for (const int32 &elem : the_struct.inline_array) {
+    for (const int32& elem : the_struct.inline_array) {
         PRINTLN("  " + elem + ",");
     }
     PRINTLN("}");
 
     PRINTLN("In reverse order:");
 
-    for (const i32 &elem : reverse(the_struct.inline_array)) {
+    for (const i32& elem : reverse(the_struct.inline_array)) {
         PRINTLN("  " + elem + ",");
     }
 }
 
 // Example - Maps
-void example_maps(void) {
-    TMap<Str, int32> map(*get_system_allocator(), 5);
+void example_maps(void)
+{
+    TMap<Str, int32> map(*System_Allocator, 5);
 
-    map.add(LIT("Mitch"),    45);
-    map.add(LIT("Kenny"),    12);
-    map.add(LIT("Haley"),    25);
-    map.add(LIT("Michael"),  23);
+    map.add(LIT("Mitch"), 45);
+    map.add(LIT("Kenny"), 12);
+    map.add(LIT("Haley"), 25);
+    map.add(LIT("Michael"), 23);
     map.add(LIT("Achilles"), 23);
 
     ASSERT(map[LIT("Michael")] == 23);
 }
 
-void example_bitsets(void) {
+void example_bitsets(void)
+{
     Bitset<32> a = 32;
 
     PRINTLN("Bitset: " + a.to_integral());

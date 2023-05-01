@@ -28,7 +28,7 @@ bool Tape::peek_char(char match)
     }
 }
 
-Str Tape::read_line(IAllocator& alloc)
+Str Tape::read_line(Allocator& alloc)
 {
     const u32 initial_buffer_size = 1024;
 
