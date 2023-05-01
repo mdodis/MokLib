@@ -1,0 +1,38 @@
+---
+Language: Cpp
+BasedOnStyle: "Google"
+BreakBeforeBraces: "Custom"
+BraceWrapping:
+  AfterEnum: "true"
+  AfterStruct: "false"
+  SplitEmptyFunction: "false"
+  AfterFunction: "true"
+  AfterControlStatement: "MultiLine"
+AlignAfterOpenBracket: "AlwaysBreak"
+IndentWidth: 4
+TabWidth: 4
+BreakConstructorInitializers: "BeforeComma"
+BreakBeforeTernaryOperators: "true"
+UseTab: "false"
+PointerAlignment: "Left"
+ReferenceAlignment: "Left"
+DerivePointerAlignment: "false"
+AlignConsecutiveDeclarations:
+  Enabled: "true"
+  AcrossEmptyLines: "false"
+  AcrossComments: "true"
+AlignConsecutiveAssignments:
+  Enabled: "true"
+  AcrossEmptyLines: "false"
+  AcrossComments: "true"
+AllowAllArgumentsOnNextLine: "false"
+BinPackArguments: "false"
+BinPackParameters: "false"
+ColumnLimit: 80
+NamespaceIndentation: "All"
+ExperimentalAutoDetectBinPacking: "false"
+AlignOperands: "AlignAfterOperator"
+AlignEscapedNewlines: "Left"
+AccessModifierOffset: -4
+PenaltyBreakBeforeFirstCallParameter: 100
+PenaltyIndentedWhitespace: 1

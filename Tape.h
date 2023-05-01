@@ -31,7 +31,7 @@ enum class ReadTapeMode : u32
     i64 name(void* dst, i64 size, ReadTapeMode mode, void* usr)
 typedef PROC_READ_TAPE_READ(ProcReadTapeRead);
 
-struct ReadTape {
+struct MOKLIB_API ReadTape {
     ReadTape(ProcReadTapeRead* proc, void* usr) : proc(proc), usr(usr) {}
 
     ProcReadTapeRead* proc;
@@ -117,7 +117,7 @@ enum class WriteTapeMode : u32
     i64 name(void* src, i64 size, WriteTapeMode mode, void* usr)
 typedef PROC_WRITE_TAPE_WRITE(ProcWriteTapeWrite);
 
-struct WriteTape {
+struct MOKLIB_API WriteTape {
     WriteTape(ProcWriteTapeWrite* proc, void* usr) : proc(proc), usr(usr) {}
 
     _inline i64 write(void* src, i64 size)

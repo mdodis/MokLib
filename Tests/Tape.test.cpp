@@ -313,6 +313,8 @@ TEST_CASE("Lib/FileSystem/BufferedFileTape", "Test buffered read/write")
 
         REQUIRE(s == LIT("Hello, world!"), "");
     }
+
+    return MPASSED();
 }
 
 TEST_CASE("Lib/Tape/AllocWriteTape", "AllocTape nominal behavior")

@@ -1,7 +1,5 @@
 # Output folders
-Binaries
-Intermediate
-
+Build
 # Visual Studio files
 .vs
 *.vcxproj*
@@ -23,3 +21,4 @@ compile_commands.json
 
 # ImGui
 imgui.ini
+
