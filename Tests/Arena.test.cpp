@@ -36,7 +36,7 @@ TEST_CASE("Lib/Memory/Arena", "Ensure dynamic arena resets okay") {
 
     arena.reset();
 
-    arena.base = null;
+    arena.base = &null;
     arena.push(10);
     arena.push(10);
 
@@ -57,7 +57,7 @@ TEST_CASE("Lib/Memory/Arena", "Ensure save arena works") {
         arena.push(10);
     }
 
-    arena.base = null;
+    arena.base = &null;
 
     arena.push(10);
     arena.push(10);

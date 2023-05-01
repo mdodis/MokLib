@@ -1,6 +1,8 @@
 #pragma once
 #include <string.h>
 
+#include <utility>
+
 #include "../Defer.h"
 #include "Base.h"
 
@@ -22,7 +24,7 @@ struct MOKLIB_API ArenaSave;
 template <>
 struct MOKLIB_API Arena<ArenaMode::Fixed> : public Allocator {
     Arena(Allocator& base, u64 capacity)
-        : Allocator(allocate_proc, (void*)this), capacity(capacity), base(base)
+        : Allocator(allocate_proc, (void*)this), capacity(capacity), base(&base)
     {}
     Arena() : Arena(System_Allocator, KILOBYTES(1)) {}
 
@@ -51,7 +53,7 @@ struct MOKLIB_API Arena<ArenaMode::Fixed> : public Allocator {
         return 0;
     }
 
-    void  init() { memory = base.reserve(capacity); }
+    void  init() { memory = base->reserve(capacity); }
     void* push(u64 size)
     {
         if ((used + size) > capacity) {
@@ -66,6 +68,8 @@ struct MOKLIB_API Arena<ArenaMode::Fixed> : public Allocator {
 
     void* copy_or_resize(void* ptr, u64 prev, u64 size)
     {
+        if (ptr == nullptr) return push(size);
+
         u8* last_ptr = (u8*)memory + last_offset;
 
         if ((last_ptr == ptr) && ((last_offset + size) <= capacity)) {
@@ -92,7 +96,7 @@ struct MOKLIB_API Arena<ArenaMode::Fixed> : public Allocator {
 
     void deinit()
     {
-        base.release(memory);
+        base->release(memory);
         memory      = nullptr;
         used        = 0;
         last_offset = 0;
@@ -108,7 +112,7 @@ struct MOKLIB_API Arena<ArenaMode::Fixed> : public Allocator {
     u64        used        = 0;
     u64        last_offset = 0;
     u64        capacity;
-    Allocator& base;
+    Allocator* base;
 };
 
 template <>
@@ -134,7 +138,7 @@ struct MOKLIB_API ArenaSave<ArenaMode::Fixed> {
 template <>
 struct MOKLIB_API Arena<ArenaMode::Dynamic> : public Allocator {
     Arena(Allocator& base, u64 capacity)
-        : Allocator(allocate_proc, (void*)this), capacity(capacity), base(base)
+        : Allocator(allocate_proc, (void*)this), capacity(capacity), base(&base)
     {}
     Arena() : Arena(System_Allocator, KILOBYTES(1)) {}
 
@@ -178,7 +182,7 @@ struct MOKLIB_API Arena<ArenaMode::Dynamic> : public Allocator {
         while (current_block != nullptr) {
             void* tmp     = current_block;
             current_block = header()->prev;
-            base.release(tmp);
+            base->release(tmp);
         }
         last_offset = 0;
     }
@@ -206,7 +210,7 @@ struct MOKLIB_API Arena<ArenaMode::Dynamic> : public Allocator {
 
     void* create_block()
     {
-        void* result = base.reserve(block_size());
+        void* result = base->reserve(block_size());
 
         BlockHeader* hdr = (BlockHeader*)result;
         hdr->prev        = nullptr;
@@ -252,6 +256,8 @@ struct MOKLIB_API Arena<ArenaMode::Dynamic> : public Allocator {
 
     void* copy_or_resize(void* ptr, u64 prev, u64 size)
     {
+        if (ptr == nullptr) return push(size);
+
         u8* last_ptr = block_start() + last_offset;
 
         if ((last_ptr == ptr) && ((last_offset + size) <= capacity)) {
@@ -289,7 +295,7 @@ struct MOKLIB_API Arena<ArenaMode::Dynamic> : public Allocator {
     void*      current_block = nullptr;
     u64        capacity;
     u64        last_offset = 0;
-    Allocator& base;
+    Allocator* base;
 };
 
 template <>
@@ -317,7 +323,8 @@ static _inline ArenaSave<Mode> _arena_save(Arena<Mode>& a)
     return std::move(save);
 }
 
-#define SAVE_ARENA(arena) auto MJOIN2(_arena_save_, __COUNTER__) = _arena_save(arena);
+#define SAVE_ARENA(arena) \
+    auto MJOIN2(_arena_save_, __COUNTER__) = _arena_save(arena);
 #define CREATE_SCOPED_ARENA(base, name, capacity)       \
     Arena<ArenaMode::Dynamic> name((base), (capacity)); \
     name.init()

@@ -20,7 +20,7 @@ T* alloc(Allocator& allocator, Args&&... args)
 template <typename T>
 T* alloc_array(Allocator& allocator, size_t count)
 {
-    umm ptr = allocator.reserve(sizeof(T) * count);
+    void* ptr = allocator.reserve(sizeof(T) * count);
     return (T*)ptr;
 }
 
