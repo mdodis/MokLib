@@ -28,6 +28,23 @@ struct MOKLIB_API Arena<ArenaMode::Fixed> : public Allocator {
     {}
     Arena() : Arena(System_Allocator, KILOBYTES(1)) {}
 
+    Arena(const Arena& copy)
+        : Allocator(allocate_proc, (void*)this)
+        , capacity(copy.capacity)
+        , base(copy.base)
+        , used(copy.used)
+        , last_offset(copy.last_offset)
+    {}
+
+    Arena& operator=(const Arena& copy)
+    {
+        capacity    = copy.capacity;
+        base        = copy.base;
+        last_offset = copy.last_offset;
+        used        = copy.used;
+        return *this;
+    }
+
     static PROC_ALLOCATOR_ALLOCATE(allocate_proc)
     {
         Arena* self = (Arena*)usr;
@@ -141,6 +158,23 @@ struct MOKLIB_API Arena<ArenaMode::Dynamic> : public Allocator {
         : Allocator(allocate_proc, (void*)this), capacity(capacity), base(&base)
     {}
     Arena() : Arena(System_Allocator, KILOBYTES(1)) {}
+
+    Arena(const Arena& copy)
+        : Allocator(allocate_proc, (void*)this)
+        , capacity(copy.capacity)
+        , base(copy.base)
+        , current_block(copy.current_block)
+        , last_offset(copy.last_offset)
+    {}
+
+    Arena& operator=(const Arena& copy)
+    {
+        current_block = copy.current_block;
+        last_offset   = copy.last_offset;
+        capacity      = copy.capacity;
+        base          = copy.base;
+        return *this;
+    }
 
     struct BlockHeader {
         void* prev;

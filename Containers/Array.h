@@ -52,7 +52,7 @@ struct TArray {
     u64 add(const T& item)
     {
         if (!data) {
-            if (!init(Init_Capacity)) return -1;
+            init(Init_Capacity);
         }
 
         if (capacity == (size)) {
@@ -73,7 +73,7 @@ struct TArray {
     T* add()
     {
         if (!data) {
-            if (!init(Init_Capacity)) return 0;
+            init(Init_Capacity);
         }
 
         if (capacity == (size)) {
@@ -107,16 +107,13 @@ struct TArray {
         alloc->release((umm)data);
     }
 
-    bool init(u64 amount)
+    void init(u64 amount)
     {
         data = (T*)alloc->reserve(amount * sizeof(T));
-        if (!data) {
-            return false;
-        }
+        ASSERT(data);
 
         capacity = amount;
         size     = 0;
-        return true;
     }
 
     void init_range(u64 amount)
