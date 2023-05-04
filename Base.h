@@ -32,9 +32,6 @@ typedef double f64;
 typedef char*       CStr;
 typedef const char* ConstCStr;
 
-// Signals that is function is not supposed to be used outside of the struct
-#define _internal
-
 /**
  * C Compatibility
  */

@@ -186,11 +186,28 @@ struct TArray {
     RevIter rend() const { return RevIter(data, -1); }
 };
 
+template <typename T, u32 Capacity>
+struct TInlineArray {
+    using FwdIter = SliceIterator<T>;
+
+    T elements[Capacity];
+
+    TInlineArray() = default;
+    u64 count      = 0;
+
+    u64 add(const T& value) { elements[count++] = value; }
+
+    FwdIter begin() const { return FwdIter((T*)elements, 0); }
+    FwdIter end() const { return FwdIter((T*)elements, count); }
+};
+
 template <typename T, u32 Count>
 struct TArr {
     using FwdIter = SliceIterator<T>;
 
     T elements[Count];
+
+    constexpr TArr() = default;
 
     constexpr TArr(const std::initializer_list<T> init_list)
     {

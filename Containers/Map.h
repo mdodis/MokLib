@@ -66,7 +66,7 @@ struct TMap {
 
     void add(const TKey& key, const TValue& value)
     {
-        uint32 h = hash_of(key, Hash_Seed) % num_bins;
+        uint32 h = hash_of(static_cast<TKey>(key), Hash_Seed) % num_bins;
 
         if ((!values[h].used) || values[h].key == key) {
             values[h].key  = key;
