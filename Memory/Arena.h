@@ -347,18 +347,31 @@ struct MOKLIB_API ArenaSave<ArenaMode::Dynamic> {
         last_offset = arena.last_offset;
     }
 
-    ~ArenaSave() { a->reset_to_block(block, used, last_offset); }
+    ArenaSave(ArenaSave&& other)
+    {
+        a           = other.a;
+        block       = other.block;
+        used        = other.used;
+        last_offset = other.last_offset;
+        other.a     = nullptr;
+    }
+
+    ~ArenaSave()
+    {
+        if (a) {
+            a->reset_to_block(block, used, last_offset);
+        }
+    }
 };
 
 template <EArenaMode Mode>
 static _inline ArenaSave<Mode> _arena_save(Arena<Mode>& a)
 {
-    ArenaSave<Mode> save(a);
-    return std::move(save);
+    return ArenaSave<Mode>(a);
 }
 
 #define SAVE_ARENA(arena) \
-    auto MJOIN2(_arena_save_, __COUNTER__) = _arena_save(arena);
+    auto MJOIN2(_arena_save_, __COUNTER__) = std::move(_arena_save(arena));
 #define CREATE_SCOPED_ARENA(base, name, capacity)       \
     Arena<ArenaMode::Dynamic> name((base), (capacity)); \
     name.init()
