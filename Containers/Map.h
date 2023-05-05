@@ -167,10 +167,12 @@ struct TMapIterator {
 
     void move_next()
     {
+        if (offset >= total) return;
+
         do {
             b++;
             offset++;
-        } while ((offset <= total) && !b->used);
+        } while ((offset < total) && !b->used);
     }
 
     friend bool operator==(const TMapIterator& a, const TMapIterator& b)
