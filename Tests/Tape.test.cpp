@@ -317,6 +317,82 @@ TEST_CASE("Lib/FileSystem/BufferedFileTape", "Test buffered read/write")
     return MPASSED();
 }
 
+TEST_CASE("Lib/FileSystem/BufferedReadTape", "Test read seeks")
+{
+    {
+        BufferedWriteTape<true>
+            ft(open_file_write(LIT("test.file.test")), System_Allocator, 3);
+        REQUIRE(ft.write_str(LIT("Hello, world!")), "");
+    }
+
+    {
+        CREATE_SCOPED_ARENA(System_Allocator, temp, KILOBYTES(1));
+
+        auto ft = open_read_tape(LIT("test.file.test"));
+
+        Str s = ft.read_str(temp, 5);
+        REQUIRE(s == LIT("Hello"), "");
+
+        ft.seek(-3);
+
+        s = ft.read_str(temp, 3);
+        REQUIRE(s == LIT("llo"), "");
+    }
+
+    return MPASSED();
+}
+
+TEST_CASE("Lib/FileSystem/BufferedReadTape", "Test buffered read seeks")
+{
+    {
+        BufferedWriteTape<true>
+            ft(open_file_write(LIT("test.file.test")), System_Allocator, 3);
+        REQUIRE(ft.write_str(LIT("Hello, world!")), "");
+    }
+
+    {
+        CREATE_SCOPED_ARENA(System_Allocator, temp, KILOBYTES(1));
+
+        BufferedReadTape<true>
+            ft(open_file_read(LIT("test.file.test")), System_Allocator, 3);
+
+        Str s = ft.read_str(temp, 5);
+        REQUIRE(s == LIT("Hello"), "");
+
+        ft.seek(-3);
+
+        s = ft.read_str(temp, 3);
+        REQUIRE(s == LIT("llo"), "");
+    }
+
+    {
+        CREATE_SCOPED_ARENA(System_Allocator, temp, KILOBYTES(1));
+        BufferedReadTape<true>
+            ft(open_file_read(LIT("test.file.test")), System_Allocator, 3);
+
+        Str s = ft.read_str(temp, 7);
+        REQUIRE(s == LIT("Hello, "), "");
+
+        ft.seek(-6);
+
+        s = ft.read_str(temp, 5);
+        REQUIRE(s == LIT("ello,"), "");
+    }
+
+    {
+        CREATE_SCOPED_ARENA(System_Allocator, temp, KILOBYTES(1));
+        BufferedReadTape<true>
+            ft(open_file_read(LIT("test.file.test")), System_Allocator, 3);
+
+        ft.seek(7);
+
+        Str s = ft.read_str(temp, 6);
+        REQUIRE(s == LIT("world!"), "");
+    }
+
+    return MPASSED();
+}
+
 TEST_CASE("Lib/Tape/AllocWriteTape", "AllocTape nominal behavior")
 {
     AllocWriteTape t(System_Allocator);

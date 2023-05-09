@@ -10,7 +10,6 @@ DirectoryIterator open_dir(Str filename)
 {
     DirectoryIterator result;
     result.directory = filename;
-
     return result;
 }
 
@@ -29,6 +28,13 @@ bool DirectoryIterator::next_file(FileData* result)
             (u32)directory.len,
             Cached_Directory_Entry,
             ARRAY_COUNT(Cached_Directory_Entry));
+
+        if (Cached_Directory_Entry[lenw - 1] != L'/' ||
+            Cached_Directory_Entry[lenw - 1] != L'\\')
+        {
+            Cached_Directory_Entry[lenw++] = L'/';
+        }
+
         Cached_Directory_Entry[lenw++] = L'*';
         Cached_Directory_Entry[lenw]   = 0;
 

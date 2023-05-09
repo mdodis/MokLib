@@ -354,8 +354,8 @@ struct BufferedReadTape : public FileReadTape<AutoClose> {
 
     void flush(void* dst, u64 count)
     {
-        memcpy(dst, buffer, count);
-        accumulated -= count;
+        memcpy(dst, buffer + buffer_offset, count);
+        buffer_offset += count;
     }
 
     static PROC_READ_TAPE_READ(read_proc)
@@ -370,16 +370,18 @@ struct BufferedReadTape : public FileReadTape<AutoClose> {
 
                 u64 num_read = 0;
                 while (num_read != sizeu64) {
-                    if (self->accumulated == 0) {
+                    if (self->accumulated == self->buffer_offset) {
                         self->accumulated =
                             self->_read(self->buffer, self->size);
+                        self->buffer_offset = 0;
 
                         if (self->accumulated == 0) return num_read;
                     }
 
                     // Finish any pending reads
                     u64 max_bytes_to_read = sizeu64 - num_read;
-                    u64 min_bytes_to_read = self->accumulated;
+                    u64 min_bytes_to_read =
+                        self->accumulated - self->buffer_offset;
 
                     u64 bytes_to_read = max_bytes_to_read > min_bytes_to_read
                                           ? min_bytes_to_read
@@ -396,8 +398,51 @@ struct BufferedReadTape : public FileReadTape<AutoClose> {
             } break;
 
             case ReadTapeMode::Seek: {
-                self->accumulated = 0;
-                return self->_seek(size);
+                i64 result = 0;
+
+                if (size > 0) {
+                    u64 remaining = self->accumulated - self->buffer_offset;
+
+                    u64 max_seek  = size;
+                    u64 min_seek  = remaining;
+                    u64 will_seek = max_seek > min_seek ? min_seek : max_seek;
+
+                    self->buffer_offset += will_seek;
+                    size -= will_seek;
+                    result += will_seek;
+
+                    if (size > 0) {
+                        self->buffer_offset = 0;
+                        self->accumulated   = 0;
+                        result += self->_seek(size);
+                    }
+                } else {
+                    // @todo:
+                    // - Move buffer_offset back by however much is remaining
+                    // - while size > 0 seek back once, remove size and keep
+                    // remaining
+                    // - read and increment remaining
+                    u64 sizeu64 = -size;
+
+                    u64 max_seek  = sizeu64;
+                    u64 min_seek  = self->buffer_offset;
+                    u64 will_seek = max_seek > min_seek ? min_seek : max_seek;
+
+                    self->buffer_offset -= will_seek;
+                    sizeu64 -= will_seek;
+                    result -= (i64)will_seek;
+                    i64 rest_seek = -((i64)sizeu64);
+                    result += rest_seek;
+
+                    if (sizeu64 > 0) {
+                        self->buffer_offset = 0;
+                        self->accumulated   = 0;
+                        i64 nsize           = -((i64)self->size);
+                        self->_seek(rest_seek - self->size);
+                    }
+                }
+
+                return result;
             } break;
 
             case ReadTapeMode::End: {
@@ -410,9 +455,11 @@ struct BufferedReadTape : public FileReadTape<AutoClose> {
         }
     }
 
-    umm        buffer      = 0;
-    u64        size        = 0;
-    u64        accumulated = 0;
+    umm buffer        = 0;
+    u64 size          = 0;
+    u64 accumulated   = 0;
+    u64 buffer_offset = 0;
+
     Allocator& allocator;
 };
 

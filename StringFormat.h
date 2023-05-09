@@ -168,6 +168,31 @@ struct TFmtStr {
     }
 };
 
+struct FmtPath {
+    Str in;
+    FmtPath(Str in) : in(in) {}
+};
+
+PROC_FMT_IMPL(FmtPath)
+{
+    u64 i = 0;
+
+    auto is_sep = [](char c) { return (c == '\\') || (c == '/'); };
+
+    while (i < type.in.len) {
+        if (is_sep(type.in[i])) {
+            tape->write_char('/');
+
+            while ((i < type.in.len) && is_sep(type.in[i])) {
+                i++;
+            }
+        } else {
+            tape->write_char(type.in[i]);
+            i++;
+        }
+    }
+}
+
 template <typename T>
 static _inline void fmt(WriteTape* tape, const TFmtHex<T>& type)
 {
