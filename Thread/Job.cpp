@@ -37,7 +37,7 @@ static bool do_next_job_entry(JobQueue* queue)
         if (index == original_next_read_entry) {
             JobQueue::Entry* entry = queue->entries + index;
 
-            entry->job(entry->data);
+            entry->delegate.call();
 
             inc_and_fetch(&queue->completion_count);
         }
@@ -59,14 +59,13 @@ void JobQueue::init(Allocator& alloc, u32 max_entries)
     ASSERT(entries);
 }
 
-void JobQueue::add_job(ProcJob* job, void* data)
+void JobQueue::add_job(Delegate<void>&& delegate)
 {
     u32 new_next_write_entry = (next_write_entry + 1) % num_entries;
     ASSERT(new_next_write_entry != next_read_entry);
 
     JobQueue::Entry* entry = entries + next_write_entry;
-    entry->job             = job;
-    entry->data            = data;
+    entry->delegate        = std::move(delegate);
 
     completion_target = completion_target + 1;
 

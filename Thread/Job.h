@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include "Delegates.h"
 #include "Memory/Base.h"
 #include "Thread/Semaphore.h"
 #include "Thread/Thread.h"
@@ -9,8 +10,7 @@ typedef PROC_JOB(ProcJob);
 
 struct JobQueue {
     struct Entry {
-        ProcJob* job;
-        void*    data;
+        Delegate<void> delegate;
     };
 
     volatile u32 completion_target = 0;
@@ -26,7 +26,7 @@ struct JobQueue {
     void init(Allocator& alloc, u32 max_entries = 128);
     /** Add a new job. Should only be done from a single thread (the main
      * thread) */
-    void add_job(ProcJob* job, void* data);
+    void add_job(Delegate<void>&& delegate);
 
     static PROC_THREAD(thread_proc);
 };

@@ -19,6 +19,9 @@ add_executable(MokLibTests ${SOURCES})
 
 target_link_libraries(MokLibTests
     MokLib)
-add_test(NAME MokLibTests COMMAND MokLibTests)
+add_test(
+    NAME MokLibTests
+    COMMAND MokLibTests
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 set_property(TEST MokLibTests PROPERTY PASS_REGULAR_EXPRESSION "Passed")
 set_property(TEST MokLibTests PROPERTY FAIL_REGULAR_EXPRESSION "Failed")
