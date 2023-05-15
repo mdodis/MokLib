@@ -296,7 +296,7 @@ Str to_absolute_path(Str relative, Allocator& alloc)
 
     u32 wabsolute_len = GetFullPathNameW(wrelative, 0, 0, 0);
 
-    wchar_t* wptr = (wchar_t*)alloc.reserve(wabsolute_len);
+    wchar_t* wptr = (wchar_t*)alloc.reserve(wabsolute_len * sizeof(wchar_t));
     DEFER(alloc.release(wptr));
 
     GetFullPathNameW(wrelative, wabsolute_len, wptr, 0);
