@@ -55,7 +55,7 @@ struct TArg<Str> : IArg {
 
         if (tape->read(data, count) != count) return false;
 
-        current = Str(data, count);
+        current = Str(data, count, data[count - 1] == 0);
         return true;
     }
 };

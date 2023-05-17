@@ -105,6 +105,7 @@ MOKLIB_API Str get_base_path(Allocator& alloc);
 MOKLIB_API Str to_absolute_path(Str relative, Allocator& alloc);
 
 MOKLIB_API Str directory_of(Str file_path);
+MOKLIB_API Str get_file_name(Str directory_path);
 
 static _inline FileHandle open_file_write(Str path)
 {

@@ -24,6 +24,35 @@ Str directory_of(Str file_path)
         last_separator == 0 ? last_separator : last_separator - 1);
 }
 
+Str get_file_name(Str directory_path)
+{
+    auto is_sep = [](char c) { return c == '/' || c == '\\'; };
+    u64  start  = directory_path.len - 1;
+    u64  i      = start;
+
+    // Find the last '/' or '\\'
+    while (i != 0) {
+        if (!is_sep(directory_path[i])) {
+            break;
+        }
+        i--;
+    }
+
+    u64 r_end = i + 1;
+
+    // Find the next '/' or '\\'
+    while (i != 0) {
+        if (is_sep(directory_path[i])) {
+            break;
+        }
+        i--;
+    }
+
+    u64 r_start = i + 1;
+
+    return directory_path.chop_middle(r_start, r_end);
+}
+
 #if OS_MSWINDOWS
 #include "Compat/Win32Internal.inc"
 
@@ -299,9 +328,9 @@ Str to_absolute_path(Str relative, Allocator& alloc)
     wchar_t* wptr = (wchar_t*)alloc.reserve(wabsolute_len * sizeof(wchar_t));
     DEFER(alloc.release(wptr));
 
-    GetFullPathNameW(wrelative, wabsolute_len, wptr, 0);
+    u32 wwritten = GetFullPathNameW(wrelative, wabsolute_len, wptr, 0);
 
-    return wstr_to_multibyte(wptr, wabsolute_len, alloc);
+    return wstr_to_multibyte(wptr, wwritten, alloc);
 }
 
 PROC_READ_TAPE_READ(StreamReadTape::read_proc)

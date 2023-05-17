@@ -12,6 +12,7 @@ set(SOURCES
     "./JSON.test.cpp"
     "./Map.test.cpp"
     "./Arena.test.cpp"
+    "./FileSystem.test.cpp"
     "./Tests.cpp"
     )
 
