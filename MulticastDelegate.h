@@ -65,6 +65,26 @@ struct MulticastDelegate : DelegateBase {
         return pairs.last()->handle;
     }
 
+    bool del(DelegateHandle& handle)
+    {
+        if (!(handle)) return false;
+
+        for (u64 i = 0; i < pairs.size; ++i) {
+            if (pairs[i].Handle == handle) {
+                if (is_locked()) {
+                    pairs[i].callback.clear();
+                } else {
+                    std::swap(pairs[i], pairs[pairs.size - 1]);
+                    pairs.pop();
+                }
+                handle.reset();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     template <typename T, typename... Args2>
     DelegateHandle add_raw(
         T* object, MemberProc<T, Args2...> proc, Args2&&... args)
@@ -79,6 +99,8 @@ struct MulticastDelegate : DelegateBase {
         return add(
             DelegateT::create_static(proc, std::forward<Args2>(args)...));
     }
+
+    bool is_locked() const { return locks > 0; }
 
     void lock() { locks++; }
 
