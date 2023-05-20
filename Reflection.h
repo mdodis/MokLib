@@ -204,6 +204,60 @@ struct FixedArrayDescriptor : IArrayDescriptor {
         if (i >= Count) return 0;
 
         StorageType&    ar  = *((StorageType*)self);
+        StorageSubType* sub = (StorageSubType*)(&ar[i]);
+
+        i++;
+        return (umm)sub;
+    }
+
+    virtual u64 size(umm self) override { return i; }
+
+    virtual umm get(umm self, u64 index) override
+    {
+        if (index >= Count) return 0;
+
+        StorageType& ar = *(StorageType*)self;
+        return (umm)(&ar[(int)index]);
+    }
+
+    virtual Str type_name() const override { return type_name_str; }
+
+    int i;
+    Str type_name_str;
+};
+
+/**
+ * Descriptor for a simple c-style array
+ */
+template <typename StorageSubType, u64 Count>
+struct StaticArrayDescriptor : IArrayDescriptor {
+    using StorageType = StorageSubType[Count];
+
+    constexpr StaticArrayDescriptor(u64 offset, Str name)
+        : IArrayDescriptor(offset, name)
+        , type_name_str(Str(typeid(StorageType).name()))
+        , i(Count)
+    {}
+
+    virtual IDescriptor* get_subtype_descriptor() override
+    {
+        return descriptor_of(((StorageType*)0));
+    }
+
+    virtual void init_read() override { i = Count; }
+
+    virtual void init(umm self, Allocator& alloc) override
+    {
+        i               = 0;
+        StorageType* ar = (StorageType*)self;
+        *ar             = StorageType();
+    }
+
+    virtual umm add(umm self) override
+    {
+        if (i >= Count) return 0;
+
+        StorageType&    ar  = *((StorageType*)self);
         StorageSubType* sub = &ar[i];
 
         i++;
@@ -281,13 +335,13 @@ struct ArrayDescriptor : IArrayDescriptor {
  * Declare the descriptor object of the type
  * @param  T  The type descriptor
  */
-#define DECLARE_DESCRIPTOR_OF(T)                              \
-    ENABLE_DESCRIPTOR(T);                                     \
-    extern MCONCAT(T, Descriptor) MCONCAT2(T, _, Descriptor); \
-    template <>                                               \
-    IDescriptor* descriptor_of(T* what)                       \
-    {                                                         \
-        return &MCONCAT2(T, _, Descriptor);                   \
+#define DECLARE_DESCRIPTOR_OF(T)                                       \
+    ENABLE_DESCRIPTOR(T);                                              \
+    extern MCONCAT(T, Descriptor) MCONCAT2(T, _, Descriptor);          \
+    template <>                                                        \
+    IDescriptor* descriptor_of(T* what)                                \
+    {                                                                  \
+        return static_cast<IDescriptor*>(&MCONCAT2(T, _, Descriptor)); \
     }
 
 #define DEFINE_DESCRIPTOR_OF_INL(T)                           \
