@@ -114,6 +114,12 @@ struct MOKLIB_API Str {
         return chop_left(last_of(c) - 1);
     }
 
+    /** Shorthand for chop_left(first_of(c) - 1) */
+    _inline Str chop_left_first_of(char c) const
+    {
+        return chop_left(first_of(c) - 1);
+    }
+
     _inline Str chop_right_last_of(const Str& s) const
     {
         return chop_right(last_of(s) - 1);
